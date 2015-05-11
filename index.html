@@ -4,6 +4,50 @@
 </head>
 <body>
 <h1>FLASJS Implementation Blog</h1>
+<h2>Second Example: Primes</h2>
+Another classic in functional programming is the Sieve of Eratosothenes.
+This is a method for finding prime numbers by starting off assuming that
+every number could be prime and going through them one by one saying that the
+"first" number is prime and that all subsequent numbers can only be prime
+if they do not have it as a divisor.
+<p>
+More formally, we can write:
+<pre>
+primes = sieve [2..]
+sieve (p:l) = p:sieve (filter (notp p) l)
+notp p n = n % p != 0
+</pre>
+Obviously, this is going to produce an infinite list (since there is an
+infinite number of primes).  To avoid generating an infinite number, the
+test will simply "take" the first few:
+<pre>
+take 7 primes
+</pre>
+This requires defining a "standard library" to provide functions such as
+<tt>filter</tt> and <tt>take</tt>.  These are fairly boring, except for the
+use of a curried function as an argument to <tt>filter</tt>.
+I chose to implement the curried function as a JavaScript function, albeit
+one that is nested within another function.  The <tt>FLEval.curry</tt>
+method takes the "actual function" to call (in this case <tt>notp</tt>),
+the defined arity of the function (which can only really be inferred during
+type checking, but as a human I'm filling that role and saying it's 2), and
+then whatever arguments are already on hand (in this case the prime number to
+check against).  Filter then just calls this "function" on the remaining
+argument (the prospective element of the list) and expects to get a boolean
+back: if true, the element is added to the "result list";
+if false, it is discarded.
+<p>
+As before, I think the JavaScript basically speaks for itself, with a
+similar translation.  For example, the main function for primes is defined
+as follows:
+<pre>
+primes =
+  construct 3 closures:
+    c1 = CLOSURE(List.intsFrom, 2);
+    c2 = CLOSURE(sieve, c1)
+  and return c2
+</pre>
+
 <h2>First Commit: Fib</h2>
 There are classic problems in functional programming and it seems to me
 that the right place to start is to try and implement some of those.
