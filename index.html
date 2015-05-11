@@ -1,0 +1,69 @@
+<html>
+<head>
+  <title>FLASJS Implementation Blog</title>
+</head>
+<body>
+<h1>FLASJS Implementation Blog</h1>
+<h2>First Commit: Fib</h2>
+There are classic problems in functional programming and it seems to me
+that the right place to start is to try and implement some of those.
+<p>
+One of my favorites is the fibonacci sequence because it has two interesting
+properties: it is very, very easy to write in the obvious way; and that
+implementation is seriously flawed.
+<p>
+So the objective for "Lesson 1" is to get a lazy version of of this code
+running:
+<p>
+<pre>
+fib 0 = 1
+fib 1 = 2
+fib n = fib (n-1) + fib (n-2)
+</pre>
+<p>
+Obviously, we're not going to write a compiler (just yet) for that; we're
+just going to try and get it manually working.  So, what does that look like?
+<p>
+Well, without descending into JavaScript just yet, this is really equivalent to something like the following:
+<p>
+<pre>
+fib n =
+  EVALUATE n
+  IS n AN INTEGER?
+    yes =>
+      Is it 0?  yes => return 1
+      Is it 1?  yes => return 1
+      Otherwise, construct five closures:
+        c1 = CLOSURE(-, n, 1);
+	c2 = CLOSURE(fib, c1);
+        c3 = CLOSURE(-, n, 2);
+	c4 = CLOSURE(fib, c3);
+	c5 = CLOSURE(+, c2, c4);
+      and return c5
+    no =>
+      return an error object
+</pre>
+<p>
+In this context, the statement <tt>EVALUATE n</tt> means to iterate until you have
+an actual value: any time the expression has a head which is a "closure" or
+other intermediate form, it needs to be evaluated by calling the function
+in the first part with the remaining arguments.  Note that BECAUSE this is
+lazy evaluation, it is up to the function being called to decide if and when
+any arguments will be evaluated.
+<p>
+I claim almost all the rest of the logic can be determined by a perusal
+of <tt>testfib.js</tt>.  I'm sure this can be run in a browser, but I've been testing
+this using iojs on the command line.
+<p>
+Most of the plumbing at this point is just manipulating things, for example,
+defining the <tt>plus</tt> function to do the add operation as a function.
+<tt>FLError</tt>
+and <tt>FLClosure</tt> are just types to support errors and closures.
+<p>
+The head method is responsible for doing "head" evaluation of a closure.
+Obviously, if it has already been head evaluated then it just returns the
+value; otherwise it attempts to evaluate it.  To handle "tail recursion" a
+loop is used to allow any method to return a closure which will again be
+evaluated (so as to avoid infinite depth of recursion).
+</body>
+</html>
