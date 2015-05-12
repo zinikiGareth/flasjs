@@ -28,7 +28,39 @@ List.intsFrom = function(n) {
 	return FLEval.closure(List.cons, n, FLEval.closure(List.intsFrom, FLEval.closure(FLEval.plus, n, 1)));
 }
 
+List.prototype.toString = function() {
+	var ret = "[";
+	var sep = "";
+	for (var x = this;x && x._ctor !== 'nil';x = x.tail) {
+		ret += sep + (x.head?x.head.toString():"");
+		sep = ",";
+	}
+	return ret +"]";
+}
 StdLib.List = List;
+
+function Tuple() {
+}
+
+Tuple.tuple = function() {
+	var ret = new Tuple();
+	ret.length = arguments.length;
+	ret.members = [];
+	for (var i=0;i<ret.length;i++)
+		ret.members[i] = arguments[i];
+	return ret;
+}
+
+Tuple.prototype.toString = function() {
+	var ret = "(";
+	var sep = "";
+	for (var i=0;i<this.length;i++) {
+		ret += sep + this.members[i];
+		sep = ",";
+	}
+	return ret + ")";
+}
+StdLib.Tuple = Tuple;
 
 // Standard library "take" function, defined as something like:
 // take 0 l = []
@@ -103,3 +135,5 @@ StdLib.filter = function(f, al) {
 		}
 	}
 }
+
+StdLib;
