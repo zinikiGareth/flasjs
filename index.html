@@ -4,6 +4,33 @@
 </head>
 <body>
 <h1>FLASJS Implementation Blog</h1>
+<h2>DOM Access</h2>
+Since this is JavaScript, can we really do anything without DOM access?
+Probably not.  So this time, I'm going to try and render a trivial, hello-world
+like page functionally.
+<p>
+To do this, I'm going to introduce a new library, <tt>DOM</tt>, which has one main type
+with a single constructor <tt>Element</tt> which represents a DOM Element with
+attributes and nested elements.  I'm also going to limit myself (for now) to
+nested elements which are text-ish (JavaScript strings and numbers) or else
+other <tt>Element</tt>s.
+<p>
+In a standard notation, this would be something like:
+<pre>
+data DOM.Element = Element (String tag) ([(String, String)] attrs) ([Node] contents)
+type DOM.Node = DOM.Element | String
+</pre>
+There do need to be some caveats, because not all strings are legal tags (you could argue that only the set of HTML4 or HTML5 tags are actually legal), neither are all attribute names.
+<p>
+The code consists of a prelude that gets the right ducks lined up, and then the main code consists of building a structure like this:
+<pre>
+e1 = DOM.Element "div" [("id", "k16")] ["hello world", DOM.Element "div" [] []] 
+</pre>
+(it just takes a little more space written as closure evaluations).
+<p>
+We then fully evaluate that object and call the (under the covers?) method on
+<tt>DOM.Element</tt> to convert this functional structure into a genuine DOM Element
+in the browser.  We then add it "by hand" to the body element.
 <h2>Second Example: Primes</h2>
 Another classic in functional programming is the Sieve of Eratosothenes.
 This is a method for finding prime numbers by starting off assuming that
