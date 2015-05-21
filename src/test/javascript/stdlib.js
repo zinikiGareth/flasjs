@@ -63,8 +63,8 @@ Tuple.prototype.toString = function() {
 StdLib.Tuple = Tuple;
 
 // Standard library "take" function, defined as something like:
-// take 0 l = []
-// take n [] = []
+// take n []    = []
+// take 0 (_:_) = []
 // take n (a:l) = a:(take (n-1) l)
 
 StdLib.take = function(n, l) {
