@@ -1,100 +1,6 @@
-// The Standard Library, exported under the "function" StdLib
+// The Standard Library, exported under the "package" StdLib
 
 function StdLib() {
-}
-
-// Lists are built in with operators for things like "empty list", "cons" and comprehensions.
-function List() {
-}
-
-// Define an empty list by setting "_ctor" to "nil"
-List.nil = function() {
-	var ret = new List();
-	ret._ctor = 'nil';
-	return ret;
-}
-
-// Define a cons node by providing (possible closures for) head and tail and setting "_ctor" to "cons"
-List.cons = function(a, l) {
-	var ret = new List();
-	ret._ctor = 'cons';
-	ret.head = a;
-	ret.tail = l;
-	return ret;
-}
-
-// List comprehension for integers starting at n (and going to infinity)
-List.intsFrom = function(n) {
-	return FLEval.closure(List.cons, n, FLEval.closure(List.intsFrom, FLEval.closure(FLEval.plus, n, 1)));
-}
-
-List.prototype.toString = function() {
-	var ret = "[";
-	var sep = "";
-	for (var x = this;x && x._ctor !== 'nil';x = x.tail) {
-		ret += sep + (x.head?x.head.toString():"");
-		sep = ",";
-	}
-	return ret +"]";
-}
-StdLib.List = List;
-
-function Tuple() {
-}
-
-Tuple.tuple = function() {
-	var ret = new Tuple();
-	ret.length = arguments.length;
-	ret.members = [];
-	for (var i=0;i<ret.length;i++)
-		ret.members[i] = arguments[i];
-	return ret;
-}
-
-Tuple.prototype.toString = function() {
-	var ret = "(";
-	var sep = "";
-	for (var i=0;i<this.length;i++) {
-		ret += sep + this.members[i];
-		sep = ",";
-	}
-	return ret + ")";
-}
-StdLib.Tuple = Tuple;
-
-// Standard library "take" function, defined as something like:
-// take n []    = []
-// take 0 (_:_) = []
-// take n (a:l) = a:(take (n-1) l)
-
-StdLib.take = function(n, l) {
-	n = FLEval.head(n);
-	if (n instanceof FLError)
-		return n;
-	l = FLEval.head(l);
-	if (l instanceof FLError)
-		return l;
-	if (FLEval.isInteger(n) && l instanceof List) {
-		if (n === 0)
-			return List.nil;
-		if (l._ctor === 'nil')
-			return List.nil;
-		if (l._ctor === 'cons')
-			return FLEval.closure(
-				List.cons,
-				l.head,
-				FLEval.closure(
-					StdLib.take,
-					FLEval.closure(
-						FLEval.minus,
-						n,
-						1
-					),
-					l.tail
-				)
-			);
-	}
-	return FLEval.error("take: case not handled");
 }
 
 // The standard library "filter" function, which can be imagined as:
@@ -108,8 +14,8 @@ StdLib.filter = function(f, al) {
 	if (al instanceof FLError)
 		return al;
 	if (al instanceof List) {
-		if (al.__ctor == 'nil')
-			return List.nil;
+		if (al.__ctor == 'Nil')
+			return Nil;
 		f = FLEval.head(f);
 		if (f instanceof FLError)
 			return f;
@@ -117,7 +23,7 @@ StdLib.filter = function(f, al) {
 			var b = FLEval.head(f.apply(undefined, [al.head]));
 			if (b) {
 				return FLEval.closure(
-					List.cons,
+					Cons,
 					al.head,
 					FLEval.closure(
 						StdLib.filter,
@@ -135,5 +41,3 @@ StdLib.filter = function(f, al) {
 		}
 	}
 }
-
-StdLib;

@@ -2,17 +2,27 @@ function FLError(s) {
 	this.message = s;
 }
 
+var closureCount = 0;
+
 function FLClosure(fn, args) {
+	this._closure = ++closureCount;
 	this.fn = fn;
 	this.args = args;
+}
+
+FLClosure.prototype.toString = function() {
+	return "Closure[" + this._closure +"]";
 }
 
 function FLEval() {
 }
 
 FLEval.head = function(x) {
+	console.log("head(" + x + ")");
 	while (x instanceof FLClosure) {
-		x = x.fn.apply(undefined, x.args);
+		console.log("evaluating " + x.fn);
+		x = x.fn.apply(null, x.args);
+		console.log("head saw " + x);
 	}
 	return x;
 }
@@ -20,11 +30,13 @@ FLEval.head = function(x) {
 FLEval.full = function(x) {
 	// head evaluate me
 	x = FLEval.head(x);
-
+	console.log("full(" + x + ")");
 	// fully evaluate all my props
 	if (typeof x === 'object' && x['_ctor']) {
+		console.log("ctor = " + x['_ctor']);
 		for (var p in x) {
 			if (p !== '_ctor' && x.hasOwnProperty(p)) {
+				console.log("fully evaluating " + p, x[p]);
 				if (x[p] instanceof FLClosure)
 					x[p] = FLEval.full(x[p]);
 			}
@@ -39,6 +51,19 @@ FLEval.closure = function() {
 	for (var i=1;i<arguments.length;i++)
 		args[i-1] = arguments[i];
 	return new FLClosure(arguments[0], args);
+}
+
+FLEval.makeNew = function() {
+	var args = [];
+	for (var i=1;i<arguments.length;i++)
+		args[i-1] = arguments[i];
+	return new arguments[0](args);
+}
+
+FLEval.field = function(from, fieldName) {
+	console.log("get field " + fieldName +" from ", from);
+	from = FLEval.head(from);
+	return from[fieldName];
 }
 
 // curry a function (which can include a previous curried function)
