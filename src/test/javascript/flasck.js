@@ -35,7 +35,7 @@ FlasckService.TimerService = function() {
 	return this;
 }
 FlasckService.TimerService.prototype.addClient = addClient;
-FlasckService.TimerService.prototype.requestTicks = function(handler, amount) {
+FlasckService.TimerService.prototype.requestTicks = function(client, handler, amount) {
 	console.log("Add timer for handler", handler);
 	console.log("interval should be every " + amount + "s");
 }
@@ -55,10 +55,9 @@ FlasckClient = function(chan, svc) {
 	svc.addClient(this);
 }
 
-FlasckClient.prototype.request = function(msg) {
-	console.log("service request for ", msg.method);
-	console.log("args = ", msg.args);
-	this.service[msg.method].apply(this.service, msg.args);
+FlasckClient.prototype.request = function(method, args) {
+	args.splice(0, 0, this);
+	this.service[method].apply(this.service, args);
 }
 
 // This is the thing that "represents" the card on the container side
@@ -91,8 +90,8 @@ DownConnection = function(handle) {
 	this.chan = 2;
 	this.dispatch = {};
 	this.dispatch[0] = new Object();
-	this.dispatch[0].request = function(newChanMsg) {
-		self.handle.newChannel(newChanMsg.chan, newChanMsg.contract);
+	this.dispatch[0].request = function(method, args) {
+		self.handle.newChannel(args.chan, args.contract);
 	}
 }
 
@@ -101,7 +100,7 @@ DownConnection.prototype.newChannel = function(ctr, handler) {
 	this.handler = handler;
 	var ret = new Channel(this, this.chan, handler);
 	this.dispatch[this.chan] = ret;
-	this.up.deliver({ chan: 0, message: { chan: this.chan, contract: ctr }});
+	this.up.deliver({ chan: 0, message: { method: "newChannel", args: { chan: this.chan, contract: ctr }}});
 	this.chan += 2;
 	return ret;
 }
@@ -120,7 +119,15 @@ DownConnection.prototype.send = function(msg) {
 
 DownConnection.prototype.deliver = function(msg) {
 	console.log("down deliver: ", this.dispatch, msg);
-	this.dispatch[msg.chan].request(msg.message);
+	var handle = this.dispatch[msg.chan];
+	var args = msg.message.args;
+	console.log("service request for ", msg.message.method);
+	for (var i=0;i<args.length;i++) {
+		console.log(args[i]);
+		if (args[i].type && args[i].type === 'handler' && args[i].chan)
+			args[i] = this.dispatch[args[i].chan];
+	}
+	handle.request(msg.message.method, msg.message.args);
 }
 
 // UpConnection is in the "sandbox" and sends messages "Up" and receives and dispatches "Down" messages
@@ -135,7 +142,7 @@ UpConnection.prototype.newChannel = function(ctr, handler) {
 	this.handler = handler;
 	var ret = new Channel(this, this.chan, handler);
 	this.dispatch[this.chan] = ret;
-	this.down.deliver({ chan: 0, message: { chan: this.chan, contract: ctr }});
+	this.down.deliver({ chan: 0, message: { method: "newChannel", args: { chan: this.chan, contract: ctr }}});
 	this.chan += 2;
 	return ret;
 }
