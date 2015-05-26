@@ -83,11 +83,11 @@ _Send = function(target, method, args) {
 
 Send = function(t, m, a) { return new _Send(t, m, a); }
 
-_Assign = function(lvar, expr) {
+_Assign = function(field, value) {
 	"use strict";
 	this._ctor = 'Assign';
-	this.lvar = lvar;
-	this.expr = expr;
+	this.field = field;
+	this.value = value;
 }
 
-Assign = function(lvar, expr) { return new _Assign(lvar, expr); }
+Assign = function(field, value) { return new _Assign(field, value); }

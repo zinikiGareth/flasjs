@@ -257,6 +257,11 @@ FlasckWrapper.prototype.processOne = function(msg) {
 		}
 		console.log(args);
 		channel.send(meth, args);
+	} else if (msg._ctor === 'Assign') {
+		console.log("card = ", this.card);
+		console.log("field = ", msg.field);
+		console.log("value = ", msg.value);
+		this.card[msg.field] = msg.value;
 	} else
 		throw new Error("The method message " + msg._ctor + " is not supported");
 }

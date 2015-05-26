@@ -12,7 +12,7 @@ var DOM = vm.runInThisContext(fs.readFileSync('../javascript/dom.js', 'utf8'));
 var PKG = vm.runInThisContext(fs.readFileSync('../../../../../FLAS2/src/test/resources/cards/test.ziniki/desired.js', 'utf8'));
 
 // So this is a perfectly normal object we're creating to start the ball rolling
-var myCounter = new (PKG.CounterObj)({ inc: 7 });
+var myCounter = new (PKG.CounterObj)({ inc: 3 });
 console.log("counter = ",  myCounter);
 
 // Create a new card-containing environment with services
