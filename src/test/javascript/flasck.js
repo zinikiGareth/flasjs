@@ -38,6 +38,10 @@ FlasckService.TimerService.prototype.addClient = addClient;
 FlasckService.TimerService.prototype.requestTicks = function(client, handler, amount) {
 	console.log("Add timer for handler", handler);
 	console.log("interval should be every " + amount + "s");
+	setInterval(function() {
+		console.log("hello");
+		client.handle.sendTo(handler.chan, "onTick")
+	}, 1000);
 }
 
 // TODO: it seems wrong to me to have a "service" for a handler, but the logic as currently written requires it.
@@ -49,8 +53,9 @@ FlasckService.OnTickService = function() {
 FlasckService.OnTickService.prototype.addClient = addClient;
 
 // Clients are the "handles" connecting to the "proxy"; exists on the "real" side
-FlasckClient = function(chan, svc) {
+FlasckClient = function(chan, handle, svc) {
 	this.chan = chan;
+	this.handle = handle;
 	this.service = svc;
 	svc.addClient(this);
 }
@@ -69,13 +74,22 @@ FlasckHandle = function(container) {
 }
 
 FlasckHandle.prototype.newChannel = function(chan, contract) {
-	this.conn.dispatch[chan] = new FlasckClient(chan, this.container.getService(contract));
+	this.conn.dispatch[chan] = new FlasckClient(chan, this, this.container.getService(contract));
 	this.channels[contract] = chan;
 }
 
 FlasckHandle.prototype.send = function(ctr, method /* args */) {
 	var chan = this.channels[ctr];
 	console.log("sending to " + chan);
+	var args = [];
+	for (var i=2;i<arguments.length;i++)
+		args[i-2] = arguments[i];
+	this.conn.send({ chan: chan, message: { method: method, args: args } });
+}
+
+FlasckHandle.prototype.sendTo = function(chan, method /* args */) {
+	console.log("sending to " + chan);
+	console.log("method is " + method);
 	var args = [];
 	for (var i=2;i<arguments.length;i++)
 		args[i-2] = arguments[i];
@@ -155,7 +169,7 @@ UpConnection.prototype.send = function(msg) {
 }
 
 UpConnection.prototype.deliver = function(msg) {
-	console.log("up deliver: ", this.dispatch[msg.chan].handler);
+	console.log("up deliver: ", msg); //this.dispatch[msg.chan].handler);
 	this.dispatch[msg.chan].handler.invoke(msg.message);
 }
 
@@ -210,12 +224,12 @@ FlasckWrapper.prototype.deliver = function(ctr, meth) { // and arguments
 
 FlasckWrapper.prototype.processMessages = function(l) {
 	while (l && l._ctor === 'Cons') {
-		processOne(l.head);
+		this.processOne(l.head);
 		l = l.tail;
 	}
 }
 
-var processOne = function(msg) {
+FlasckWrapper.prototype.processOne = function(msg) {
 	console.log("Message: ", msg);
 	if (msg._ctor === 'Send') {
 		var channel = msg.target._proxy.chan;
@@ -230,9 +244,12 @@ var processOne = function(msg) {
 			var a = args[p];
 			if (a._special) {
 				if (!a._onchan) {
-					if (a._special === 'handler')
-						a._onchan = channel.conn.newChannel(a._contract, a).chan;
-					else
+					if (a._special === 'handler') {
+						var proxy = new FlasckProxy(this, a);
+						var chan = channel.conn.newChannel(a._contract, proxy);
+						a._onchan = chan.chan;
+						proxy.channel(chan);
+					} else
 						throw new Error("Cannot send an object of type " + a._special);
 				}
 				args[p] = { type: a._special, chan: a._onchan };
@@ -240,7 +257,8 @@ var processOne = function(msg) {
 		}
 		console.log(args);
 		channel.send(meth, args);
-	}
+	} else
+		throw new Error("The method message " + msg._ctor + " is not supported");
 }
 
 FlasckProxy = function(wrapper, flctr) {
