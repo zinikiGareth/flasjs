@@ -66,6 +66,16 @@ FLEval.field = function(from, fieldName) {
 	return from[fieldName];
 }
 
+FLEval.flattenList = function(list) {
+	list = FLEval.full(list);
+	var ret = [];
+	while (list && list._ctor == 'Cons') {
+		ret.push(list.head);
+		list = list.tail;
+	}
+	return ret;
+}
+
 // curry a function (which can include a previous curried function)
 // args are:
 //   the function - a javascript function
