@@ -8,8 +8,8 @@ vm.runInThisContext(fs.readFileSync('../javascript/builtin.js', 'utf8'));
 vm.runInThisContext(fs.readFileSync('../javascript/stdlib.js', 'utf8'));
 vm.runInThisContext(fs.readFileSync('../javascript/flasck.js', 'utf8'));
 var DOM = vm.runInThisContext(fs.readFileSync('../javascript/dom.js', 'utf8'));
-//var PKG = vm.runInThisContext(fs.readFileSync('../../../../../FLAS2/src/test/resources/cards/test.ziniki/counter.js', 'utf8'));
-var PKG = vm.runInThisContext(fs.readFileSync('../../../../../FLAS2/src/test/resources/cards/test.ziniki/desired.js', 'utf8'));
+var PKG = vm.runInThisContext(fs.readFileSync('../../../../../FLAS2/src/test/resources/cards/test.ziniki/counter.js', 'utf8'));
+//var PKG = vm.runInThisContext(fs.readFileSync('../../../../../FLAS2/src/test/resources/cards/test.ziniki/desired.js', 'utf8'));
 
 // So this is a perfectly normal object we're creating to start the ball rolling
 var myCounter = new (PKG.CounterObj)({ inc: 3 });
@@ -19,7 +19,7 @@ console.log("counter = ",  myCounter);
 var env = new FlasckContainer();
 env.addService("test.ziniki.Init", new FlasckService.InitService());
 env.addService("test.ziniki.Timer", new FlasckService.TimerService());
-env.addService("test.ziniki.OnTick", new FlasckService.OnTickService());
+env.addService("test.ziniki.OnCounter", new FlasckService.OnTickService());
 
 // Now we simulate the creation of a card and link them together
 // should this be a simple function of the "createLocalCard/createSandboxCard" variety?
