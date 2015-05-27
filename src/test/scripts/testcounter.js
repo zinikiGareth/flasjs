@@ -18,7 +18,7 @@ var window = doc.defaultView;
 
 // So this is a perfectly normal object we're creating to start the ball rolling
 var myCounter = new (PKG.CounterObj)({ inc: 3 });
-console.log("counter = ",  myCounter);
+//console.log("counter = ",  myCounter);
 
 // Create a new card-containing environment with services
 var env = new FlasckContainer();
@@ -42,11 +42,11 @@ idgen = function() {
 // create a div to put the HTML content for the card inside
 var myid = idgen.next();
 var mydiv = DOM.Element.element('div', { _ctor: 'Cons', head: { members: ['id', myid]}}, {_ctor: 'Nil'});
-console.log(mydiv.toString());
+//console.log(mydiv.toString());
 var body = doc.getElementsByTagName("body")[0];
 var actualDiv = body.appendChild(mydiv.toElement(doc));
-console.log(actualDiv);
-console.log(body.innerHTML);
+//console.log(actualDiv);
+//console.log(body.innerHTML);
 
 // create a connection pair
 var handle = new FlasckHandle(env);

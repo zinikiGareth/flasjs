@@ -18,11 +18,11 @@ function FLEval() {
 }
 
 FLEval.head = function(x) {
-	console.log("head(" + x + ")");
+//	console.log("head(" + x + ")");
 	while (x instanceof FLClosure) {
-		console.log("evaluating " + x.fn);
+//		console.log("evaluating " + x.fn);
 		x = x.fn.apply(null, x.args);
-		console.log("head saw " + x);
+//		console.log("head saw " + x);
 	}
 	return x;
 }
@@ -30,13 +30,13 @@ FLEval.head = function(x) {
 FLEval.full = function(x) {
 	// head evaluate me
 	x = FLEval.head(x);
-	console.log("full(" + x + ")");
+//	console.log("full(" + x + ")");
 	// fully evaluate all my props
 	if (typeof x === 'object' && x['_ctor']) {
-		console.log("ctor = " + x['_ctor']);
+//		console.log("ctor = " + x['_ctor']);
 		for (var p in x) {
 			if (p !== '_ctor' && x.hasOwnProperty(p)) {
-				console.log("fully evaluating " + p, x[p]);
+//				console.log("fully evaluating " + p, x[p]);
 				if (x[p] instanceof FLClosure)
 					x[p] = FLEval.full(x[p]);
 			}
@@ -61,7 +61,7 @@ FLEval.makeNew = function() {
 }
 
 FLEval.field = function(from, fieldName) {
-	console.log("get field " + fieldName +" from ", from);
+//	console.log("get field " + fieldName +" from ", from);
 	from = FLEval.head(from);
 	return from[fieldName];
 }

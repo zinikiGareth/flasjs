@@ -71,7 +71,7 @@ Tuple = function() { return new _Tuple(arguments); }
 
 _Send = function(target, method, args) {
 	'use strict';
-	console.log("creating Send object, this = " + this);
+//	console.log("creating Send object, this = " + this);
 	if (!this)
 		throw "must be called with new";
 	this._ctor = 'Send';

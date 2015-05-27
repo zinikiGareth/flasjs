@@ -36,10 +36,9 @@ FlasckService.TimerService = function() {
 }
 FlasckService.TimerService.prototype.addClient = addClient;
 FlasckService.TimerService.prototype.requestTicks = function(client, handler, amount) {
-	console.log("Add timer for handler", handler);
-	console.log("interval should be every " + amount + "s");
+//	console.log("Add timer for handler", handler);
+//	console.log("interval should be every " + amount + "s");
 	setInterval(function() {
-		console.log("hello");
 		client.handle.sendTo(handler.chan, "onTick")
 	}, 1000);
 }
@@ -80,7 +79,7 @@ FlasckHandle.prototype.newChannel = function(chan, contract) {
 
 FlasckHandle.prototype.send = function(ctr, method /* args */) {
 	var chan = this.channels[ctr];
-	console.log("sending to " + chan);
+//	console.log("sending to " + chan);
 	var args = [];
 	for (var i=2;i<arguments.length;i++)
 		args[i-2] = arguments[i];
@@ -88,8 +87,8 @@ FlasckHandle.prototype.send = function(ctr, method /* args */) {
 }
 
 FlasckHandle.prototype.sendTo = function(chan, method /* args */) {
-	console.log("sending to " + chan);
-	console.log("method is " + method);
+//	console.log("sending to " + chan);
+//	console.log("method is " + method);
 	var args = [];
 	for (var i=2;i<arguments.length;i++)
 		args[i-2] = arguments[i];
@@ -122,7 +121,6 @@ DownConnection.prototype.newChannel = function(ctr, handler) {
 DownConnection.prototype.send = function(msg) {
 	// we should clone this message
 	msg = JSON.parse(JSON.stringify(msg));
-	console.log(msg);
 	this.up.deliver(msg);
 //	console.log(this.dispatch, chan);
 //	var hdlr = this.dispatch[chan];
@@ -132,12 +130,12 @@ DownConnection.prototype.send = function(msg) {
 }
 
 DownConnection.prototype.deliver = function(msg) {
-	console.log("down deliver: ", this.dispatch, msg);
+//	console.log("down deliver: ", this.dispatch, msg);
 	var handle = this.dispatch[msg.chan];
 	var args = msg.message.args;
-	console.log("service request for ", msg.message.method);
+//	console.log("service request for ", msg.message.method);
 	for (var i=0;i<args.length;i++) {
-		console.log(args[i]);
+//		console.log(args[i]);
 		if (args[i].type && args[i].type === 'handler' && args[i].chan)
 			args[i] = this.dispatch[args[i].chan];
 	}
@@ -151,7 +149,7 @@ UpConnection = function() {
 }
 
 UpConnection.prototype.newChannel = function(ctr, handler) {
-	console.log(ctr, handler);
+//	console.log(ctr, handler);
 	this.ctr = ctr;
 	this.handler = handler;
 	var ret = new Channel(this, this.chan, handler);
@@ -163,13 +161,13 @@ UpConnection.prototype.newChannel = function(ctr, handler) {
 
 UpConnection.prototype.send = function(msg) {
 	// we should clone this message
-	console.log("sending message ", msg)
+//	console.log("sending message ", msg)
 	msg = JSON.parse(JSON.stringify(msg));
 	this.down.deliver(msg);
 }
 
 UpConnection.prototype.deliver = function(msg) {
-	console.log("up deliver: ", msg); //this.dispatch[msg.chan].handler);
+//	console.log("up deliver: ", msg); //this.dispatch[msg.chan].handler);
 	this.dispatch[msg.chan].handler.invoke(msg.message);
 }
 
@@ -181,7 +179,7 @@ Channel = function(conn, chan, handler) {
 }
 
 Channel.prototype.send = function(method, args) {
-	console.log("sending to " + this.chan);
+//	console.log("sending to " + this.chan);
 	this.conn.send({ chan: this.chan, message: { method: method, args: args } });
 }
 
@@ -215,8 +213,8 @@ FlasckWrapper.prototype.getService = function(s) {
 
 FlasckWrapper.prototype.deliver = function(ctr, meth) { // and arguments
 	var hdlr = this.card.contracts[ctr];
-	console.log(hdlr);
-	console.log(hdlr[meth]);
+//	console.log(hdlr);
+//	console.log(hdlr[meth]);
 	var args = [];
 	for (var i=2;i<arguments.length;i++)
 		args[i-2] = arguments[i];
@@ -231,16 +229,16 @@ FlasckWrapper.prototype.processMessages = function(l) {
 }
 
 FlasckWrapper.prototype.processOne = function(msg) {
-	console.log("Message: ", msg);
+//	console.log("Message: ", msg);
 	if (msg._ctor === 'Send') {
 		var channel = msg.target._proxy.chan;
 		var meth = msg.method;
 //		var invoke = target.request;
-		console.log("channel ", channel, channel instanceof Channel);
-		console.log("meth " + meth);
+//		console.log("channel ", channel, channel instanceof Channel);
+//		console.log("meth " + meth);
 //		console.log("invoke " + invoke);
 		var args = FLEval.flattenList(msg.args);
-		console.log(args);
+//		console.log(args);
 		for (var p=0;p<args.length;p++) {
 			var a = args[p];
 			if (a._special) {
@@ -256,12 +254,12 @@ FlasckWrapper.prototype.processOne = function(msg) {
 				args[p] = { type: a._special, chan: a._onchan };
 			}
 		}
-		console.log(args);
+//		console.log(args);
 		channel.send(meth, args);
 	} else if (msg._ctor === 'Assign') {
-		console.log("card = ", this.card);
-		console.log("field = ", msg.field);
-		console.log("value = ", msg.value);
+//		console.log("card = ", this.card);
+//		console.log("field = ", msg.field);
+//		console.log("value = ", msg.value);
 		this.card[msg.field] = msg.value;
 	} else
 		throw new Error("The method message " + msg._ctor + " is not supported");
@@ -288,10 +286,27 @@ FlasckWrapper.prototype.renderAssign = function(asgn) {
 	var changedVar = asgn.field;
 	// TODO: We then need to track down where this is used
 	// TODO: then we need to figure out what the associated ID and function are
-	var renderFn = this.card._templateLine1;
-	var id = 'flasck_2';
-	// and ask it to (re-)render (if renderedId is null, it will create, otherwise replace)
-	this.renderedId = renderFn.call(this.card, this.div, this.renderedId);
+	// TODO: We will need to get "inside" from somewhere in the "create" case, but fairly obviously it can't actually come from here ... (this structure will not exist in that case)
+	var entryInAllegedMap = { id: this.myId, inside: this.div, command: this.card._templateLine1 };
+
+	var myId = entryInAllegedMap.id;
+	var renderFn = entryInAllegedMap.command;
+	// make sure the element it needs is there; if replacing, clear it out
+	var doc = this.div.ownerDocument;
+	var elt;
+	if (myId) {
+		elt = doc.getElementById(myId);
+		elt.innerHTML = '';
+	} else {
+		myId = idgen.next();
+		elt = doc.createElement(renderFn.tag);
+		elt.id = myId;
+		entryInAllegedMap.inside.appendChild(elt);
+		this.myId = myId;
+	}
+
+	renderFn.render.call(this.card, doc, elt);
+	console.log(this.div.innerHTML);
 }
 
 FlasckProxy = function(wrapper, flctr) {
@@ -306,9 +321,9 @@ FlasckProxy.prototype.channel = function(chan) {
 }
 
 FlasckProxy.prototype.invoke = function(msg) {
-	console.log("msg = ", msg);
-	console.log("need to send to", this.flctr);
-	console.log("method = " + this.flctr[msg.method]);
+//	console.log("msg = ", msg);
+//	console.log("need to send to", this.flctr);
+//	console.log("method = " + this.flctr[msg.method]);
 	var msgs = FLEval.full(this.flctr[msg.method].apply(this.flctr, msg.args));
 	this.wrapper.processMessages(msgs);
 	this.wrapper.renderChanges(msgs);

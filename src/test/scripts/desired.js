@@ -66,23 +66,11 @@ test.ziniki.CounterCard._H0.prototype.onTick = function() {
   return FLEval.closure(Cons, v1, Nil);
 }
 
-// first argument here is parent
-test.ziniki.CounterCard.prototype._templateLine1 = function(inside, myId) {
-//	console.log(inside);
-	console.log(myId);
-	var doc = inside.ownerDocument;
-	if (myId) {
-		var span = doc.getElementById(myId);
-		span.innerHTML = '';
-	} else {
-		myId = idgen.next();
-		var span = doc.createElement('span');
-		span.id = myId;
-		inside.appendChild(span);
+test.ziniki.CounterCard.prototype._templateLine1 = {
+	tag: 'span',
+	render: function(doc, myblock) {
+		myblock.appendChild(doc.createTextNode(this.counter));
 	}
-	span.appendChild(doc.createTextNode(this.counter));
-	console.log(inside.innerHTML);
-	return myId;
 }
 
 test.ziniki.CounterObj = function(v0) {
