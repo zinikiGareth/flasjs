@@ -1,0 +1,62 @@
+<html>
+  <head>
+  	<title>A Simple Counter</title>
+  	<script type='text/javascript' src='../javascript/flenv.js'></script>
+  	<script type='text/javascript' src='../javascript/builtin.js'></script>
+  	<script type='text/javascript' src='../javascript/flasck.js'></script>
+  	<script type='text/javascript' src='../javascript/dom.js'></script>
+  	<script type='text/javascript' src='../../../../../FLAS2/src/test/resources/cards/test.ziniki/counter.js'></script>
+  </head>
+  <body>
+  	<script type='text/javascript'>
+  	  var doc = document;
+// So this is a perfectly normal object we're creating to start the ball rolling
+  	  myCounter = new (test.ziniki.CounterObj)({ inc: 3 });
+  	  console.log(myCounter);
+
+// Create a new card-containing environment with services
+  	  env = new FlasckContainer();
+	  env.addService("test.ziniki.Init", new FlasckService.InitService());
+	  env.addService("test.ziniki.Timer", new FlasckService.TimerService());
+	  env.addService("test.ziniki.OnCounter", new FlasckService.OnTickService());
+  	  console.log(env);
+
+// We need something that can issue IDs
+// We actually want one of these per sandbox
+  	  idgen = function() {
+	    this.id = 1;
+	    this.next = function() {
+		  return "flasck_" + this.id++;
+	    }
+	    return this;
+      }();
+      
+// Now we simulate the creation of a card and link them together
+// should this be a simple function of the "createLocalCard/createSandboxCard" variety?
+
+// create a div to put the HTML content for the card inside
+      var myid = idgen.next();
+      var mydiv = DOM.Element.element('div', { _ctor: 'Cons', head: { members: ['id', myid]}}, {_ctor: 'Nil'});
+      var body = doc.getElementsByTagName("body")[0];
+      var actualDiv = body.appendChild(mydiv.toElement(doc));
+
+// create a connection pair
+      var handle = new FlasckHandle(env);
+      var downconn = new DownConnection(handle);
+      handle.conn = downconn;
+      var upconn = new UpConnection(env);
+      downconn.up = upconn;
+      upconn.down = downconn;
+
+// Create a wrapper around the card which is its proto-environment to link back up to the real environment
+      var wrapper = new FlasckWrapper(upconn, actualDiv, ['test.ziniki.Init', 'test.ziniki.Timer']);
+
+// Now create the card and tell the wrapper about it
+      var myCard = new test.ziniki.CounterCard({ wrapper: wrapper });
+      wrapper.cardCreated(myCard);
+
+// Tell it to load the basic object, and see what it says
+      handle.send('test.ziniki.Init', 'load', myCounter);
+  	</script>
+  </body>
+</html>

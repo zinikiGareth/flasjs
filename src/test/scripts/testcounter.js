@@ -8,8 +8,8 @@ vm.runInThisContext(fs.readFileSync('../javascript/builtin.js', 'utf8'));
 vm.runInThisContext(fs.readFileSync('../javascript/stdlib.js', 'utf8'));
 vm.runInThisContext(fs.readFileSync('../javascript/flasck.js', 'utf8'));
 var DOM = vm.runInThisContext(fs.readFileSync('../javascript/dom.js', 'utf8'));
-//var PKG = vm.runInThisContext(fs.readFileSync('../../../../../FLAS2/src/test/resources/cards/test.ziniki/counter.js', 'utf8'));
-var PKG = vm.runInThisContext(fs.readFileSync('../../../../../FLAS2/src/test/resources/cards/test.ziniki/desired.js', 'utf8'));
+var PKG = vm.runInThisContext(fs.readFileSync('../../../../../FLAS2/src/test/resources/cards/test.ziniki/counter.js', 'utf8'));
+//var PKG = vm.runInThisContext(fs.readFileSync('../../../../../FLAS2/src/test/resources/cards/test.ziniki/desired.js', 'utf8'));
 
 //Read in the minimal HTML file
 var html = fs.readFileSync('simple.html', 'utf8');
