@@ -189,8 +189,9 @@ Channel.prototype.send = function(method, args) {
 
 // FlasckWrapper is the pseudo "environment" on the card side
 // It presumably gets delivered a "connection"
-FlasckWrapper = function(conn, serviceNames) {
+FlasckWrapper = function(conn, div, serviceNames) {
 	this.conn = conn;
+	this.div = div;
 	this.serviceNames = serviceNames;
 	this.card = null; // will be filled in later
 	return this;
@@ -266,6 +267,33 @@ FlasckWrapper.prototype.processOne = function(msg) {
 		throw new Error("The method message " + msg._ctor + " is not supported");
 }
 
+FlasckWrapper.prototype.renderChanges = function(msgs) {
+	// TODO: we should be able to "disable" render, eg. server side
+	// So check that "render" has been called on the init contract
+	// which should also be accessible to the user
+	// TODO: the first time through the logic is a little different,
+	// because we need to build up a picture of the entire state
+	// Consequently, we don't need to look at the messages but render everything
+	while (msgs && msgs._ctor === 'Cons') {
+		if (msgs.head._ctor == 'Assign')
+			this.renderAssign(msgs.head);
+		// throw away Sends
+		// TODO: list edits/inserts etc.
+		msgs = msgs.tail;
+	}
+}
+
+FlasckWrapper.prototype.renderAssign = function(asgn) {
+	// The logic here should be to figure out the variable that changed
+	var changedVar = asgn.field;
+	// TODO: We then need to track down where this is used
+	// TODO: then we need to figure out what the associated ID and function are
+	var renderFn = this.card._templateLine1;
+	var id = 'flasck_2';
+	// and ask it to (re-)render (if renderedId is null, it will create, otherwise replace)
+	this.renderedId = renderFn.call(this.card, this.div, this.renderedId);
+}
+
 FlasckProxy = function(wrapper, flctr) {
 	this.wrapper = wrapper;
 	this.flctr = flctr;
@@ -283,4 +311,5 @@ FlasckProxy.prototype.invoke = function(msg) {
 	console.log("method = " + this.flctr[msg.method]);
 	var msgs = FLEval.full(this.flctr[msg.method].apply(this.flctr, msg.args));
 	this.wrapper.processMessages(msgs);
+	this.wrapper.renderChanges(msgs);
 }

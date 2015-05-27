@@ -18,10 +18,10 @@ DOM.Element.element = function(tag, attrMap, contents) {
 
 DOM.Element.prototype.toElement = function (doc) {
 	var ret = doc.createElement(this.tag);
-	for (var attr = this.attrMap;attr && attr._ctor === 'cons'; attr = attr.tail) {
+	for (var attr = this.attrMap;attr && attr._ctor === 'Cons'; attr = attr.tail) {
 		ret.setAttribute(attr.head.members[0], attr.head.members[1]);
 	}
-	for (var c = this.contents;c && c._ctor === 'cons'; c = c.tail) {
+	for (var c = this.contents;c && c._ctor === 'Cons'; c = c.tail) {
 		if (typeof(c.head) === 'string' || typeof(c.head) === 'number') {
 			ret.appendChild(doc.createTextNode(c.head));
 		} else if (c.head instanceof DOM.Element) {
