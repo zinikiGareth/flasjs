@@ -3,20 +3,16 @@
 function DOM() {
 }
 
-DOM.Element = function() {
-}
-
-DOM.Element.element = function(tag, attrMap, contents) {
-	var ret = new DOM.Element();
-	ret._ctor = 'element';
+DOM._Element = function(tag, attrMap, contents) {
+	this._ctor = 'DOM.Element';
 	// TODO: check tag and attribute (names?) for validity
-	ret.tag = tag;
-	ret.attrMap = attrMap;
-	ret.contents = contents;
-	return ret;
+	this.tag = tag;
+	this.attrMap = attrMap;
+	this.contents = contents;
+	return this;
 }
 
-DOM.Element.prototype.toElement = function (doc) {
+DOM._Element.prototype.toElement = function (doc) {
 	var ret = doc.createElement(this.tag);
 	for (var attr = this.attrMap;attr && attr._ctor === 'Cons'; attr = attr.tail) {
 		ret.setAttribute(attr.head.members[0], attr.head.members[1]);
@@ -31,8 +27,10 @@ DOM.Element.prototype.toElement = function (doc) {
 	return ret;
 }
 
-DOM.Element.prototype.toString = function() {
+DOM._Element.prototype.toString = function() {
 	return "Element " + this.tag + " " + this.attrMap.toString() + " " + this.contents.toString();
 }
+
+DOM.Element = function(t,a,c) { return new DOM._Element(t,a,c); }
 
 DOM;

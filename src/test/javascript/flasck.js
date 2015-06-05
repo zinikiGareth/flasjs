@@ -306,7 +306,7 @@ FlasckWrapper.prototype.renderAssign = function(asgn) {
 	}
 
 	renderFn.render.call(this.card, doc, elt);
-	console.log(this.div.innerHTML);
+//	console.log(this.div.innerHTML);
 }
 
 FlasckProxy = function(wrapper, flctr) {

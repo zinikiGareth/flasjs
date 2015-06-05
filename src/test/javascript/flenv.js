@@ -21,6 +21,8 @@ FLEval.head = function(x) {
 //	console.log("head(" + x + ")");
 	while (x instanceof FLClosure) {
 //		console.log("evaluating " + x.fn);
+		if (x.fn instanceof FLClosure)
+		  x.fn = FLEval.head(x.fn);
 		x = x.fn.apply(null, x.args);
 //		console.log("head saw " + x);
 	}
@@ -64,6 +66,10 @@ FLEval.field = function(from, fieldName) {
 //	console.log("get field " + fieldName +" from ", from);
 	from = FLEval.head(from);
 	return from[fieldName];
+}
+
+FLEval.tuple = function() { // need to use arguments because it's varargs
+  return new _Tuple(arguments); // defined in builtin
 }
 
 FLEval.flattenList = function(list) {

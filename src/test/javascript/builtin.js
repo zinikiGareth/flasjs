@@ -46,12 +46,12 @@ List.prototype.toString = function() {
 }
 */
 
-function _Tuple() {
+function _Tuple(members) {
 	"use strict"
-	this.length = arguments.length;
+	this.length = members.length;
 	this.members = [];
 	for (var i=0;i<this.length;i++)
-		this.members[i] = arguments[i];
+		this.members[i] = members[i];
 	return this;
 }
 
