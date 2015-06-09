@@ -75,7 +75,7 @@ test.ziniki.CounterCard._H0.prototype.onTick = function() {
 test.ziniki.CounterCard._C0.prototype.load = function(v0) {
   "use strict";
   var v1 = FLEval.closure(FLEval.field, v0, 'inc');
-  var v2 = FLEval.closure(FLEval.makeNew, test.ziniki.CounterCard._H0, this._card, v1);
+  var v2 = FLEval.oclosure(this._card, test.ziniki.CounterCard._H0, v1);
   var v3 = FLEval.closure(Cons, 1000, Nil);
   var v4 = FLEval.closure(Cons, v2, v3);
   var v5 = FLEval.closure(Send, this._card.timer, 'requestTicks', v4);

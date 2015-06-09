@@ -4,8 +4,9 @@ function FLError(s) {
 
 var closureCount = 0;
 
-function FLClosure(fn, args) {
+function FLClosure(obj, fn, args) {
 	this._closure = ++closureCount;
+	this.obj = obj;
 	this.fn = fn;
 	this.args = args;
 }
@@ -23,7 +24,7 @@ FLEval.head = function(x) {
 //		console.log("evaluating " + x.fn);
 		if (x.fn instanceof FLClosure)
 		  x.fn = FLEval.head(x.fn);
-		x = x.fn.apply(null, x.args);
+		x = x.fn.apply(x.obj, x.args);
 //		console.log("head saw " + x);
 	}
 	return x;
@@ -52,20 +53,14 @@ FLEval.closure = function() {
 	var args = [];
 	for (var i=1;i<arguments.length;i++)
 		args[i-1] = arguments[i];
-	return new FLClosure(arguments[0], args);
+	return new FLClosure(null, arguments[0], args);
 }
 
-FLEval.makeNew = function() {
-	var ctor = arguments[0];
+FLEval.oclosure = function() {
 	var args = [];
-	for (var i=1;i<arguments.length;i++)
-		args[i-1] = arguments[i];
-    function F() {
-        return ctor.apply(this, args);
-    }
-    F.prototype = ctor.prototype;
-    var ret = new F();
-    return ret;
+	for (var i=2;i<arguments.length;i++)
+		args[i-2] = arguments[i];
+	return new FLClosure(arguments[0], arguments[1], args);
 }
 
 FLEval.field = function(from, fieldName) {
