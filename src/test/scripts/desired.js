@@ -45,14 +45,6 @@ test.ziniki.CounterCard._H0 = function(v0, v1) {
   this.inc = v1;
 }
 
-test.ziniki.CounterCard.prototype._templateLine1 = {
-  tag: 'span',
-  render: function(doc, myblock) {
-    "use strict";
-    myblock.appendChild(doc.createTextNode(this.counter));
-  }
-}
-
 test.ziniki.CounterObj = function(v0) {
   "use strict";
   if (v0) {
@@ -68,6 +60,11 @@ test.ziniki.CounterObj = function(v0) {
   }
 }
 
+test.ziniki.CounterCard.prototype._templateNode_1 = function() {
+  "use strict";
+  return this.counter;
+}
+
 test.ziniki.CounterCard._H0.prototype.onTick = function() {
   "use strict";
   var v0 = FLEval.closure(FLEval.plus, this._card.counter, this.inc);
@@ -77,13 +74,12 @@ test.ziniki.CounterCard._H0.prototype.onTick = function() {
 
 test.ziniki.CounterCard._C0.prototype.load = function(v0) {
   "use strict";
-  var v1 = FLEval.closure(test.ziniki.CounterCard._H0, this._card);
-  var v2 = FLEval.closure(FLEval.field, v0, 'inc');
-  var v3 = FLEval.closure(v1, v2);
-  var v4 = FLEval.closure(Cons, 1000, Nil);
-  var v5 = FLEval.closure(Cons, v3, v4);
-  var v6 = FLEval.closure(Send, this._card.timer, 'requestTicks', v5);
-  return FLEval.closure(Cons, v6, Nil);
+  var v1 = FLEval.closure(FLEval.field, v0, 'inc');
+  var v2 = FLEval.closure(FLEval.makeNew, test.ziniki.CounterCard._H0, this._card, v1);
+  var v3 = FLEval.closure(Cons, 1000, Nil);
+  var v4 = FLEval.closure(Cons, v2, v3);
+  var v5 = FLEval.closure(Send, this._card.timer, 'requestTicks', v4);
+  return FLEval.closure(Cons, v5, Nil);
 }
 
 test.ziniki;

@@ -287,7 +287,7 @@ FlasckWrapper.prototype.renderAssign = function(asgn) {
 	// TODO: We then need to track down where this is used
 	// TODO: then we need to figure out what the associated ID and function are
 	// TODO: We will need to get "inside" from somewhere in the "create" case, but fairly obviously it can't actually come from here ... (this structure will not exist in that case)
-	var entryInAllegedMap = { id: this.myId, inside: this.div, command: this.card._templateLine1 };
+	var entryInAllegedMap = { id: this.myId, inside: this.div, command: this.card._templateNode_1 };
 
 	var myId = entryInAllegedMap.id;
 	var renderFn = entryInAllegedMap.command;
@@ -299,14 +299,15 @@ FlasckWrapper.prototype.renderAssign = function(asgn) {
 		elt.innerHTML = '';
 	} else {
 		myId = idgen.next();
-		elt = doc.createElement(renderFn.tag);
+		elt = doc.createElement('span');
 		elt.id = myId;
 		entryInAllegedMap.inside.appendChild(elt);
 		this.myId = myId;
 	}
 
-	renderFn.render.call(this.card, doc, elt);
-//	console.log(this.div.innerHTML);
+	var tx = renderFn.call(this.card, doc, elt);
+	elt.appendChild(doc.createTextNode(tx));
+	console.log(this.div.innerHTML);
 }
 
 FlasckProxy = function(wrapper, flctr) {

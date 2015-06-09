@@ -56,10 +56,16 @@ FLEval.closure = function() {
 }
 
 FLEval.makeNew = function() {
+	var ctor = arguments[0];
 	var args = [];
 	for (var i=1;i<arguments.length;i++)
 		args[i-1] = arguments[i];
-	return new arguments[0](args);
+    function F() {
+        return ctor.apply(this, args);
+    }
+    F.prototype = ctor.prototype;
+    var ret = new F();
+    return ret;
 }
 
 FLEval.field = function(from, fieldName) {

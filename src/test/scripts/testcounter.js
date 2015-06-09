@@ -8,7 +8,8 @@ vm.runInThisContext(fs.readFileSync('../javascript/builtin.js', 'utf8'));
 vm.runInThisContext(fs.readFileSync('../javascript/stdlib.js', 'utf8'));
 vm.runInThisContext(fs.readFileSync('../javascript/flasck.js', 'utf8'));
 var DOM = vm.runInThisContext(fs.readFileSync('../javascript/dom.js', 'utf8'));
-var PKG = vm.runInThisContext(fs.readFileSync('../../../../../FLAS2/src/test/resources/cards/test.ziniki/counter.js', 'utf8'));
+//var PKG = vm.runInThisContext(fs.readFileSync('../../../../../FLAS2/src/test/resources/cards/test.ziniki/counter.js', 'utf8'));
+var PKG = vm.runInThisContext(fs.readFileSync('../../../../../FLAS2/src/test/resources/cards/test.ziniki/test.ziniki.js', 'utf8'));
 //var PKG = vm.runInThisContext(fs.readFileSync('../../../../../FLAS2/src/test/resources/cards/test.ziniki/desired.js', 'utf8'));
 
 //Read in the minimal HTML file
@@ -41,7 +42,7 @@ idgen = function() {
 
 // create a div to put the HTML content for the card inside
 var myid = idgen.next();
-var mydiv = DOM.Element.element('div', { _ctor: 'Cons', head: { members: ['id', myid]}}, {_ctor: 'Nil'});
+var mydiv = DOM.Element('div', { _ctor: 'Cons', head: { members: ['id', myid]}}, {_ctor: 'Nil'});
 //console.log(mydiv.toString());
 var body = doc.getElementsByTagName("body")[0];
 var actualDiv = body.appendChild(mydiv.toElement(doc));
