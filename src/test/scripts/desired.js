@@ -55,9 +55,9 @@ test.ziniki.CounterCard.__H0 = function(v0, v1) {
   this.inc = v1;
 }
 
-test.ziniki.CounterCard._H0 = function(v1) {
+test.ziniki.CounterCard._H0 = function(v0) {
   "use strict";
-  return new test.ziniki.CounterCard.__H0(this, v1);
+  return new test.ziniki.CounterCard.__H0(this, v0);
 }
 
 test.ziniki.CounterObj = function(v0) {

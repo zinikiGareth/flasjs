@@ -5,7 +5,7 @@ function FLError(s) {
 var closureCount = 0;
 
 function FLClosure(obj, fn, args) {
-	console.log("new closure for ", fn);
+//	console.log("new closure for ", fn);
 	this._closure = ++closureCount;
 	this.obj = obj;
 	this.fn = fn;
@@ -20,9 +20,9 @@ function FLEval() {
 }
 
 FLEval.head = function(x) {
-	console.log("head(" + x + ")");
+//	console.log("head(" + x + ")");
 	while (x instanceof FLClosure) {
-		console.log("evaluating " + x.fn);
+//		console.log("evaluating " + x.fn);
 		if (x.fn instanceof FLClosure)
 		  x.fn = FLEval.head(x.fn);
 		x = x.fn.apply(x.obj, x.args);
