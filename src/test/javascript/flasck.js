@@ -237,8 +237,9 @@ FlasckWrapper.prototype.processOne = function(msg) {
 //		console.log("channel ", channel, channel instanceof Channel);
 //		console.log("meth " + meth);
 //		console.log("invoke " + invoke);
+		console.log("method = " + meth + " args = " + msg.args);
 		var args = FLEval.flattenList(msg.args);
-//		console.log(args);
+		console.log(args);
 		for (var p=0;p<args.length;p++) {
 			var a = args[p];
 			if (a._special) {
@@ -322,9 +323,9 @@ FlasckProxy.prototype.channel = function(chan) {
 }
 
 FlasckProxy.prototype.invoke = function(msg) {
-//	console.log("msg = ", msg);
-//	console.log("need to send to", this.flctr);
-//	console.log("method = " + this.flctr[msg.method]);
+	console.log("msg = ", msg);
+	console.log("need to send to", this.flctr);
+	console.log("method = " + this.flctr[msg.method]);
 	var msgs = FLEval.full(this.flctr[msg.method].apply(this.flctr, msg.args));
 	this.wrapper.processMessages(msgs);
 	this.wrapper.renderChanges(msgs);

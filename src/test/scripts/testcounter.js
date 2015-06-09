@@ -9,8 +9,9 @@ vm.runInThisContext(fs.readFileSync('../javascript/stdlib.js', 'utf8'));
 vm.runInThisContext(fs.readFileSync('../javascript/flasck.js', 'utf8'));
 var DOM = vm.runInThisContext(fs.readFileSync('../javascript/dom.js', 'utf8'));
 //var PKG = vm.runInThisContext(fs.readFileSync('../../../../../FLAS2/src/test/resources/cards/test.ziniki/counter.js', 'utf8'));
-var PKG = vm.runInThisContext(fs.readFileSync('../../../../../FLAS2/src/test/resources/cards/test.ziniki/test.ziniki.js', 'utf8'));
+//var PKG = vm.runInThisContext(fs.readFileSync('../../../../../FLAS2/src/test/resources/cards/test.ziniki/test.ziniki.js', 'utf8'));
 //var PKG = vm.runInThisContext(fs.readFileSync('../../../../../FLAS2/src/test/resources/cards/test.ziniki/desired.js', 'utf8'));
+var PKG = vm.runInThisContext(fs.readFileSync('../scripts/desired.js', 'utf8'));
 
 //Read in the minimal HTML file
 var html = fs.readFileSync('simple.html', 'utf8');
@@ -64,5 +65,7 @@ var wrapper = new FlasckWrapper(upconn, actualDiv, ['test.ziniki.Init', 'test.zi
 var myCard = new test.ziniki.CounterCard({ wrapper: wrapper });
 wrapper.cardCreated(myCard);
 
+console.log("ready");
 // Tell it to load the basic object, and see what it says
 handle.send('test.ziniki.Init', 'load', myCounter);
+console.log("back in event loop");
