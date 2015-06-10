@@ -3,12 +3,13 @@
 function DOM() {
 }
 
-DOM._Element = function(tag, attrMap, contents) {
+DOM._Element = function(tag, attrMap, contents, events) {
 	this._ctor = 'DOM.Element';
 	// TODO: check tag and attribute (names?) for validity
 	this.tag = tag;
 	this.attrMap = attrMap;
 	this.contents = contents;
+	this.events = events;
 	return this;
 }
 
@@ -31,6 +32,6 @@ DOM._Element.prototype.toString = function() {
 	return "Element " + this.tag + " " + this.attrMap.toString() + " " + this.contents.toString();
 }
 
-DOM.Element = function(t,a,c) { return new DOM._Element(t,a,c); }
+DOM.Element = function(t,a,c,e) { return new DOM._Element(t,a,c,e); }
 
 DOM;

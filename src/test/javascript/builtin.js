@@ -48,6 +48,7 @@ List.prototype.toString = function() {
 
 function _Tuple(members) {
 	"use strict"
+	this._ctor = 'Tuple';
 	this.length = members.length;
 	this.members = [];
 	for (var i=0;i<this.length;i++)
