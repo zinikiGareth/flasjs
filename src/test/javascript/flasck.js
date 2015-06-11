@@ -318,6 +318,7 @@ FlasckWrapper.prototype.doRender = function(msgs) {
   // TODO: should have a "cachedstate" member variable
   var cached = null;
   if (!cached) { // init case, render the whole tree
+    into.innerHTML = "";
 	renderSubtree(doc, into, card, tree, this);
   }
 }
