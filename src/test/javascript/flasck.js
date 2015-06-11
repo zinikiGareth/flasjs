@@ -11,7 +11,35 @@ FlasckContainer.prototype.addService = function(name, service) {
 }
 
 FlasckContainer.prototype.getService = function(name) {
+	if (!this.services[name])
+		throw new Error("There is no service " + name);
 	return this.services[name];
+}
+
+FlasckContainer.prototype.createCard = function(cardClz, inside, contracts) {
+	// put it somewhere
+	var doc = inside.ownerDocument;
+	var elt = doc.createElement("div");
+	var actualDiv = inside.appendChild(elt);
+
+	// create the plumbing
+	var handle = new FlasckHandle(this);
+	var downconn = new DownConnection(handle);
+	handle.conn = downconn;
+	var upconn = new UpConnection(this);
+	downconn.up = upconn;
+	upconn.down = downconn;
+
+	// Create a wrapper around the card which is its proto-environment to link back up to the real environment
+	var wrapper = new FlasckWrapper(upconn, actualDiv, contracts, cardClz);
+
+	// Now create the card and tell the wrapper about it
+	var myCard = new cardClz({ wrapper: wrapper });
+	wrapper.cardCreated(myCard);
+	
+	// this only works because we're in the same scope
+	handle._cheatAccess = { card: myCard, wrapper: wrapper };
+	return handle;
 }
 
 // Services are the individual objects that do work on the "real" side
@@ -77,7 +105,13 @@ FlasckHandle.prototype.newChannel = function(chan, contract) {
 	this.channels[contract] = chan;
 }
 
+FlasckHandle.prototype.hasContract = function(ctr) {
+	return !!this.channels[ctr];
+}
+
 FlasckHandle.prototype.send = function(ctr, method /* args */) {
+	if (!this.channels[ctr])
+		throw new Error("There is no channel for contract " + ctr);
 	var chan = this.channels[ctr];
 //	console.log("sending to " + chan);
 	var args = [];
@@ -120,7 +154,8 @@ DownConnection.prototype.newChannel = function(ctr, handler) {
 
 DownConnection.prototype.send = function(msg) {
 	// we should clone this message
-	msg = JSON.parse(JSON.stringify(msg));
+//	console.log("sending down ", msg);
+//	msg = JSON.parse(JSON.stringify(msg));
 	this.up.deliver(msg);
 //	console.log(this.dispatch, chan);
 //	var hdlr = this.dispatch[chan];
@@ -166,8 +201,13 @@ UpConnection.prototype.send = function(msg) {
 	this.down.deliver(msg);
 }
 
+// This is where we deliver messages DOWN to the CARD
 UpConnection.prototype.deliver = function(msg) {
 //	console.log("up deliver: ", msg); //this.dispatch[msg.chan].handler);
+	if (!this.dispatch[msg.chan]) {
+		console.log("There is no card-side channel " + msg.chan);
+		return;
+	}
 	this.dispatch[msg.chan].handler.invoke(msg.message);
 }
 
@@ -187,10 +227,11 @@ Channel.prototype.send = function(method, args) {
 
 // FlasckWrapper is the pseudo "environment" on the card side
 // It presumably gets delivered a "connection"
-FlasckWrapper = function(conn, div, serviceNames) {
+FlasckWrapper = function(conn, div, serviceNames, cardClz) {
 	this.conn = conn;
 	this.div = div;
 	this.serviceNames = serviceNames;
+	this.cardClz = cardClz;
 	this.card = null; // will be filled in later
 	return this;
 }
@@ -198,11 +239,12 @@ FlasckWrapper = function(conn, div, serviceNames) {
 FlasckWrapper.prototype.cardCreated = function(card) {
 	this.card = card;
 	this.proxies = {};
-	for (var i=0;i<this.serviceNames.length;i++) {
-		var s = this.serviceNames[i];
-		var ctr = card.contracts[s];
-		var proxy = this.proxies[s] = new FlasckProxy(this, ctr);
-		proxy.channel(this.conn.newChannel(s, proxy));
+	for (var ctr in card.contracts) {
+		var svc = this.serviceNames[ctr];
+		if (ctr == null)
+			throw new Error("There is no service provided for " + ctr);
+		var proxy = this.proxies[svc] = new FlasckProxy(this, card.contracts[ctr]);
+		proxy.channel(this.conn.newChannel(ctr, proxy));
 		ctr._proxy = proxy;
 	}
 }
@@ -266,50 +308,104 @@ FlasckWrapper.prototype.processOne = function(msg) {
 		throw new Error("The method message " + msg._ctor + " is not supported");
 }
 
-FlasckWrapper.prototype.renderChanges = function(msgs) {
-	// TODO: we should be able to "disable" render, eg. server side
-	// So check that "render" has been called on the init contract
-	// which should also be accessible to the user
-	// TODO: the first time through the logic is a little different,
-	// because we need to build up a picture of the entire state
-	// Consequently, we don't need to look at the messages but render everything
-	while (msgs && msgs._ctor === 'Cons') {
-		if (msgs.head._ctor == 'Assign')
-			this.renderAssign(msgs.head);
-		// throw away Sends
-		// TODO: list edits/inserts etc.
-		msgs = msgs.tail;
-	}
+var nextid = 1; // TODO: this might actually be the right scoping, but I want it global per document
+FlasckWrapper.prototype.doRender = function(msgs) {
+	console.log("rendering");
+  var into = this.div;
+  var doc = into.ownerDocument;
+  var card = this.card;
+  var tree = this.cardClz.template;
+  // TODO: should have a "cachedstate" member variable
+  var cached = null;
+  if (!cached) { // init case, render the whole tree
+	renderSubtree(doc, into, card, tree, this);
+  }
 }
 
-FlasckWrapper.prototype.renderAssign = function(asgn) {
-	// The logic here should be to figure out the variable that changed
-	var changedVar = asgn.field;
-	// TODO: We then need to track down where this is used
-	// TODO: then we need to figure out what the associated ID and function are
-	// TODO: We will need to get "inside" from somewhere in the "create" case, but fairly obviously it can't actually come from here ... (this structure will not exist in that case)
-	var entryInAllegedMap = { id: this.myId, inside: this.div, command: this.card._templateNode_1 };
-
-	var myId = entryInAllegedMap.id;
-	var renderFn = entryInAllegedMap.command;
-	// make sure the element it needs is there; if replacing, clear it out
-	var doc = this.div.ownerDocument;
-	var elt;
-	if (myId) {
-		elt = doc.getElementById(myId);
-		elt.innerHTML = '';
-	} else {
-		myId = idgen.next();
-		elt = doc.createElement('span');
-		elt.id = myId;
-		entryInAllegedMap.inside.appendChild(elt);
-		this.myId = myId;
-	}
-
-	var tx = renderFn.call(this.card, doc, elt);
-	elt.appendChild(doc.createTextNode(tx));
-	console.log(this.div.innerHTML);
+function dispatchEvent(wrapper, ev, handler) {
+  var msgs = FLEval.full(new FLClosure(wrapper.card, handler, [ev]));
+  console.log("event produced " + msgs);
+  wrapper.processMessages(msgs);
+  wrapper.doRender(msgs);
 }
+
+function renderSubtree(doc, into, card, tree, wrapper) {
+  var line = FLEval.full(tree.fn.apply(card));
+  var html;
+  if (line instanceof DOM._Element) {
+    html = line.toElement(doc);
+    var evh = line.events;
+    while (evh && evh._ctor === 'Cons') {
+      var ev = evh.head;
+      if (ev._ctor === 'Tuple' && ev.length === 2) {
+    	  html['on'+ev.members[0]] = function(event) { dispatchEvent(wrapper, event, ev.members[1]); }
+      }
+      evh = evh.tail;
+    }
+  } else if (tree.type == 'content') {
+    html = doc.createElement("span");
+    html.appendChild(doc.createTextNode(line.toString()));
+  }
+  // TODO: track the things we do in a cached state
+  html.setAttribute('id', 'id_' + nextid++);
+  if (tree.type === 'div') {
+	if (tree.children) {
+      for (var c=0;c<tree.children.length;c++) {
+        renderSubtree(doc, html, card, tree.children[c], wrapper);
+      }
+	}
+  }
+  if (tree.class && tree.class.length > 0)
+    html.setAttribute('class', tree.class.join(' '));
+  into.appendChild(html);
+}
+
+
+
+//FlasckWrapper.prototype.renderChanges = function(msgs) {
+//	// TODO: we should be able to "disable" render, eg. server side
+//	// So check that "render" has been called on the init contract
+//	// which should also be accessible to the user
+//	// TODO: the first time through the logic is a little different,
+//	// because we need to build up a picture of the entire state
+//	// Consequently, we don't need to look at the messages but render everything
+//	while (msgs && msgs._ctor === 'Cons') {
+//		if (msgs.head._ctor == 'Assign')
+//			this.renderAssign(msgs.head);
+//		// throw away Sends
+//		// TODO: list edits/inserts etc.
+//		msgs = msgs.tail;
+//	}
+//}
+
+//FlasckWrapper.prototype.renderAssign = function(asgn) {
+//	// The logic here should be to figure out the variable that changed
+//	var changedVar = asgn.field;
+//	// TODO: We then need to track down where this is used
+//	// TODO: then we need to figure out what the associated ID and function are
+//	// TODO: We will need to get "inside" from somewhere in the "create" case, but fairly obviously it can't actually come from here ... (this structure will not exist in that case)
+//	var entryInAllegedMap = { id: this.myId, inside: this.div, command: this.card._templateNode_1 };
+//
+//	var myId = entryInAllegedMap.id;
+//	var renderFn = entryInAllegedMap.command;
+//	// make sure the element it needs is there; if replacing, clear it out
+//	var doc = this.div.ownerDocument;
+//	var elt;
+//	if (myId) {
+//		elt = doc.getElementById(myId);
+//		elt.innerHTML = '';
+//	} else {
+//		myId = idgen.next();
+//		elt = doc.createElement('span');
+//		elt.id = myId;
+//		entryInAllegedMap.inside.appendChild(elt);
+//		this.myId = myId;
+//	}
+//
+//	var tx = renderFn.call(this.card, doc, elt);
+//	elt.appendChild(doc.createTextNode(tx));
+//	console.log(this.div.innerHTML);
+//}
 
 FlasckProxy = function(wrapper, flctr) {
 	this.wrapper = wrapper;
@@ -323,10 +419,10 @@ FlasckProxy.prototype.channel = function(chan) {
 }
 
 FlasckProxy.prototype.invoke = function(msg) {
-	console.log("msg = ", msg);
-	console.log("need to send to", this.flctr);
-	console.log("method = " + this.flctr[msg.method]);
+//	console.log("msg = ", msg);
+//	console.log("need to send to", this.flctr);
+//	console.log("method = " + this.flctr[msg.method]);
 	var msgs = FLEval.full(this.flctr[msg.method].apply(this.flctr, msg.args));
 	this.wrapper.processMessages(msgs);
-	this.wrapper.renderChanges(msgs);
+	this.wrapper.doRender(msgs);
 }
