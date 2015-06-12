@@ -308,9 +308,8 @@ FlasckWrapper.prototype.processOne = function(msg) {
 		throw new Error("The method message " + msg._ctor + " is not supported");
 }
 
-var nextid = 1; // TODO: this might actually be the right scoping, but I want it global per document
+var nextid = 1; // TODO: this might actually be the right scoping; what I want is for it global per document
 FlasckWrapper.prototype.doRender = function(msgs) {
-	console.log("rendering");
   var into = this.div;
   var doc = into.ownerDocument;
   var card = this.card;
@@ -356,8 +355,20 @@ function renderSubtree(doc, into, card, tree, wrapper) {
       }
 	}
   }
-  if (tree.class && tree.class.length > 0)
-    html.setAttribute('class', tree.class.join(' '));
+  if (tree.class && tree.class.length > 0) {
+	  var clz = "";
+	  var sep = "";
+	  for (var i=0;i<tree.class.length;i++) {
+		  if (typeof tree.class[i] === 'string')
+			  clz += sep + tree.class[i];
+		  else if (typeof tree.class[i] === 'function')
+			  clz += sep + FLEval.full(tree.class[i].apply(card)); // the rule is it has to be a closed-over function, just needing card
+		  else
+			  clz += sep + typeof tree.class[i];
+		  sep = " ";
+	  }
+	  html.setAttribute('class', clz);
+  }
   into.appendChild(html);
 }
 

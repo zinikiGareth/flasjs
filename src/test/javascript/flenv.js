@@ -2,6 +2,10 @@ function FLError(s) {
 	this.message = s;
 }
 
+FLError.prototype.toString = function() {
+	return "ERROR: " + this.message;
+}
+
 var closureCount = 0;
 
 function FLClosure(obj, fn, args) {
@@ -25,6 +29,8 @@ FLEval.head = function(x) {
 //		console.log("evaluating " + x.fn);
 		if (x.fn instanceof FLClosure)
 		  x.fn = FLEval.head(x.fn);
+		if (!x.fn || !x.fn.apply)
+		  return x.fn;
 		x = x.fn.apply(x.obj, x.args);
 //		console.log("head saw " + x);
 	}
@@ -40,13 +46,19 @@ FLEval.full = function(x) {
 //		console.log("ctor = " + x['_ctor']);
 		for (var p in x) {
 			if (p !== '_ctor' && x.hasOwnProperty(p)) {
-//				console.log("fully evaluating " + p, x[p]);
+//				console.log("fully evaluating " + p, x[p], x[p].constructor == Array);
 				if (x[p] instanceof FLClosure)
 					x[p] = FLEval.full(x[p]);
+				else if (x[p].constructor == Array) {
+					var y = x[p];
+					for (var i=0;i<y.length;i++) {
+					    if (y[i] instanceof FLClosure)
+					    	y[i] = FLEval.full(y[i]);
+					}
+				}
 			}
 		}
 	}
-	
 	return x;
 }
 
@@ -71,7 +83,7 @@ FLEval.field = function(from, fieldName) {
 }
 
 FLEval.tuple = function() { // need to use arguments because it's varargs
-  return new _Tuple(arguments); // defined in builtin
+	return new _Tuple(arguments); // defined in builtin
 }
 
 FLEval.flattenList = function(list) {
@@ -173,8 +185,30 @@ FLEval.mathMod = function(a, b) {
 		return FLEval.error("%: case not handled");
 }
 
+FLEval.compeq = function(a, b) {
+	a = FLEval.full(a);
+	b = FLEval.full(b);
+	return a == b;
+}
+
 FLEval.error = function(s) {
 	return new FLError(s);
+}
+
+// should this be in Stdlib?
+
+concat = function(l) {
+	var ret = "";
+	while (true) {
+		l = FLEval.head(l);
+		if (l._ctor == 'Cons') {
+			var head = FLEval.full(l.head);
+			ret += head;
+			l = l.tail;
+		} else
+			break;
+	}
+	return ret;
 }
 
 FLEval;

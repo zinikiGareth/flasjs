@@ -31,7 +31,8 @@ var handle = env.createCard(com.helpfulsidekick.chaddy.Navbar, body, ['org.zinik
 //if (handle.hasContract('test.ziniki.Init'))
 	handle.send('org.ziniki.Init', 'load', null);
 
-//console.log(body.innerHTML);
-var click = doc.getElementById("id_7").onclick;
+console.log(body.innerHTML);
+var click = doc.getElementById("id_11").onclick;
 //console.log(click);
 click.apply(null, ["event"]);
+console.log(body.innerHTML);
