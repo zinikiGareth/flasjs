@@ -310,26 +310,23 @@ FlasckWrapper.prototype.processOne = function(msg) {
 
 var nextid = 1; // TODO: this might actually be the right scoping; what I want is for it global per document
 FlasckWrapper.prototype.doRender = function(msgs) {
-  var into = this.div;
-  var doc = into.ownerDocument;
-  var card = this.card;
-  var tree = this.cardClz.template;
   // TODO: should have a "cachedstate" member variable
   var cached = null;
   if (!cached) { // init case, render the whole tree
-    into.innerHTML = "";
-	renderSubtree(doc, into, card, tree, this);
+    this.div.innerHTML = "";
+	this.renderSubtree(this.div, this.cardClz.template);
   }
 }
 
-function dispatchEvent(wrapper, ev, handler) {
-  var msgs = FLEval.full(new FLClosure(wrapper.card, handler, [ev]));
-  wrapper.processMessages(msgs);
-  wrapper.doRender(msgs);
+FlasckWrapper.prototype.dispatchEvent = function(ev, handler) {
+  var msgs = FLEval.full(new FLClosure(this.card, handler, [ev]));
+  this.processMessages(msgs);
+  this.doRender(msgs);
 }
 
-function renderSubtree(doc, into, card, tree, wrapper) {
-  var line = FLEval.full(tree.fn.apply(card));
+FlasckWrapper.prototype.renderSubtree = function(into, tree) {
+  var doc = into.ownerDocument;
+  var line = FLEval.full(tree.fn.apply(this.card));
   var html;
   if (line instanceof DOM._Element) {
     html = line.toElement(doc);
@@ -337,7 +334,8 @@ function renderSubtree(doc, into, card, tree, wrapper) {
     while (evh && evh._ctor === 'Cons') {
       var ev = evh.head;
       if (ev._ctor === 'Tuple' && ev.length === 2) {
-    	  html['on'+ev.members[0]] = function(event) { dispatchEvent(wrapper, event, ev.members[1]); }
+    	  var wrapper = this;
+    	  html['on'+ev.members[0]] = function(event) { wrapper.dispatchEvent(event, ev.members[1]); }
       }
       evh = evh.tail;
     }
@@ -350,7 +348,7 @@ function renderSubtree(doc, into, card, tree, wrapper) {
   if (tree.type === 'div') {
 	if (tree.children) {
       for (var c=0;c<tree.children.length;c++) {
-        renderSubtree(doc, html, card, tree.children[c], wrapper);
+        this.renderSubtree(html, tree.children[c]);
       }
 	}
   }
@@ -361,7 +359,7 @@ function renderSubtree(doc, into, card, tree, wrapper) {
 		  if (typeof tree.class[i] === 'string')
 			  clz += sep + tree.class[i];
 		  else if (typeof tree.class[i] === 'function')
-			  clz += sep + FLEval.full(tree.class[i].apply(card)); // the rule is it has to be a closed-over function, just needing card
+			  clz += sep + FLEval.full(tree.class[i].apply(this.card)); // the rule is it has to be a closed-over function, just needing card
 		  else
 			  clz += sep + typeof tree.class[i];
 		  sep = " ";
