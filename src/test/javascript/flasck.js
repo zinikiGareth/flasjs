@@ -324,7 +324,6 @@ FlasckWrapper.prototype.doRender = function(msgs) {
 
 function dispatchEvent(wrapper, ev, handler) {
   var msgs = FLEval.full(new FLClosure(wrapper.card, handler, [ev]));
-  console.log("event produced " + msgs);
   wrapper.processMessages(msgs);
   wrapper.doRender(msgs);
 }

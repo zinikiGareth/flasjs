@@ -37,11 +37,6 @@ com.helpfulsidekick.chaddy.Navbar.prototype._templateNode_7 = function() {
   return 'Chaddy';
 }
 
-com.helpfulsidekick.chaddy.Navbar.__C0.prototype.load = function(v0) {
-  "use strict";
-  return Nil;
-}
-
 com.helpfulsidekick.chaddy.Navbar.prototype.stringFor = function(v0, v1, v2) {
   "use strict";
   v0 = FLEval.head(v0);
@@ -57,6 +52,12 @@ com.helpfulsidekick.chaddy.Navbar.prototype.stringFor = function(v0, v1, v2) {
 }
 }
   return FLEval.error("com.helpfulsidekick.chaddy.Navbar.stringFor: case not handled");
+}
+
+com.helpfulsidekick.chaddy.Navbar.__C0.prototype.load = function(v0) {
+  "use strict";
+  var v1 = FLEval.closure(Assign, 'currentTab', 'dashboard');
+  return FLEval.closure(Cons, v1, Nil);
 }
 
 com.helpfulsidekick.chaddy.Navbar.prototype._templateNode_1 = function() {
