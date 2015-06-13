@@ -146,7 +146,10 @@ com.helpfulsidekick.chaddy.Navbar.prototype._templateNode_9 = function() {
   var v6 = FLEval.closure(FLEval.tuple, 'title', 'dashboard');
   var v7 = FLEval.closure(Cons, v6, Nil);
   var v8 = FLEval.closure(Cons, v5, v7);
-  return FLEval.closure(DOM.Element, 'a', v8, Nil, Nil);
+  var v9 = FLEval.closure(FLEval.curry, com.helpfulsidekick.chaddy.Navbar.prototype.switchTo, 2, 'dashboard');
+  var v10 = FLEval.closure(FLEval.tuple, 'click', v9);
+  var v11 = FLEval.closure(Cons, v10, Nil);
+  return FLEval.closure(DOM.Element, 'a', v8, Nil, v11);
 }
 
 com.helpfulsidekick.chaddy.Navbar.prototype.navItem = function(v0, v1, v2) {
