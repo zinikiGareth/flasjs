@@ -32,6 +32,11 @@ com.helpfulsidekick.chaddy.Navbar._C0 = function() {
   return new com.helpfulsidekick.chaddy.Navbar.__C0(this);
 }
 
+com.helpfulsidekick.chaddy.Navbar.prototype._templateNode_11 = function() {
+  "use strict";
+  return 'D';
+}
+
 com.helpfulsidekick.chaddy.Navbar.prototype._templateNode_7 = function() {
   "use strict";
   return 'Chaddy';
@@ -161,12 +166,12 @@ com.helpfulsidekick.chaddy.Navbar.prototype.navItem = function(v0, v1, v2) {
   return FLEval.closure(DOM.Element, 'a', v10, v11, v14);
 }
 
-com.helpfulsidekick.chaddy.Navbar.prototype._templateNode_11 = function() {
+com.helpfulsidekick.chaddy.Navbar.prototype._templateNode_12 = function() {
   "use strict";
   return FLEval.oclosure(this, com.helpfulsidekick.chaddy.Navbar.prototype.navItem, 'my queues', 'Q', 'myqueues');
 }
 
-com.helpfulsidekick.chaddy.Navbar.prototype._templateNode_12 = function() {
+com.helpfulsidekick.chaddy.Navbar.prototype._templateNode_13 = function() {
   "use strict";
   return FLEval.oclosure(this, com.helpfulsidekick.chaddy.Navbar.prototype.navItem, 'teams', 'T', 'organization and teams');
 }
@@ -184,11 +189,13 @@ com.helpfulsidekick.chaddy.Navbar.template = {
         }]
       }, {
         type: 'div', fn: com.helpfulsidekick.chaddy.Navbar.prototype._templateNode_8, class: ['w-col', 'w-col-8', 'nav-column'], children: [{
-          type: 'div', fn: com.helpfulsidekick.chaddy.Navbar.prototype._templateNode_9, class: ['nav-link', com.helpfulsidekick.chaddy.Navbar.prototype._templateNode_10]
-        }, {
-          type: 'content', fn: com.helpfulsidekick.chaddy.Navbar.prototype._templateNode_11, class: []
+          type: 'div', fn: com.helpfulsidekick.chaddy.Navbar.prototype._templateNode_9, class: ['nav-link', com.helpfulsidekick.chaddy.Navbar.prototype._templateNode_10], children: [{
+            type: 'content', fn: com.helpfulsidekick.chaddy.Navbar.prototype._templateNode_11, class: []
+          }]
         }, {
           type: 'content', fn: com.helpfulsidekick.chaddy.Navbar.prototype._templateNode_12, class: []
+        }, {
+          type: 'content', fn: com.helpfulsidekick.chaddy.Navbar.prototype._templateNode_13, class: []
         }]
       }]
     }]
