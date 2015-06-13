@@ -4,6 +4,21 @@ test = function() {
 test.ziniki = function() {
 }
 
+test.ziniki.CounterObj = function(v0) {
+  "use strict";
+  if (v0) {
+    if (v0.inc) {
+      this.inc = v0.inc;
+    }
+    else {
+      this.inc = 0;
+    }
+  }
+  else {
+    this.inc = 0;
+  }
+}
+
 test.ziniki.CounterCard = function(v0) {
   "use strict";
   var _self = this;
@@ -60,21 +75,6 @@ test.ziniki.CounterCard._H0 = function(v0) {
   return new test.ziniki.CounterCard.__H0(this, v0);
 }
 
-test.ziniki.CounterObj = function(v0) {
-  "use strict";
-  if (v0) {
-    if (v0.inc) {
-      this.inc = v0.inc;
-    }
-    else {
-      this.inc = 0;
-    }
-  }
-  else {
-    this.inc = 0;
-  }
-}
-
 test.ziniki.CounterCard.prototype._templateNode_1 = function() {
   "use strict";
   return this.counter;
@@ -96,5 +96,9 @@ test.ziniki.CounterCard.__C0.prototype.load = function(v0) {
   var v5 = FLEval.closure(Send, this._card.timer, 'requestTicks', v4);
   return FLEval.closure(Cons, v5, Nil);
 }
+
+test.ziniki.CounterCard.template = {
+  type: 'content', fn: test.ziniki.CounterCard.prototype._templateNode_1, class: []
+};
 
 test.ziniki;

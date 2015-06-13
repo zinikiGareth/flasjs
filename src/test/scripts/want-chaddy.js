@@ -42,15 +42,15 @@ com.helpfulsidekick.chaddy.Navbar.prototype.stringFor = function(v0, v1, v2) {
   v0 = FLEval.head(v0);
   if (v0 instanceof FLError) {
     return v0;
-}
+  }
   if (typeof v0 === 'boolean') {
-    if (v0 === true) {
-      return v1;
-}
     if (v0 === false) {
       return v2;
-}
-}
+    }
+    if (v0 === true) {
+      return v1;
+    }
+  }
   return FLEval.error("com.helpfulsidekick.chaddy.Navbar.stringFor: case not handled");
 }
 
@@ -125,6 +125,25 @@ com.helpfulsidekick.chaddy.Navbar.prototype.selectedTab = function(v0) {
   return FLEval.oclosure(this, com.helpfulsidekick.chaddy.Navbar.prototype.stringFor, v1, 'selected-tab', '');
 }
 
+com.helpfulsidekick.chaddy.Navbar.prototype._templateNode_10 = function() {
+  "use strict";
+  return FLEval.oclosure(this, com.helpfulsidekick.chaddy.Navbar.prototype.selectedTab, 'dashboard');
+}
+
+com.helpfulsidekick.chaddy.Navbar.prototype._templateNode_9 = function() {
+  "use strict";
+  var v0 = FLEval.oclosure(this, com.helpfulsidekick.chaddy.Navbar.prototype.selectedTab, 'dashboard');
+  var v1 = FLEval.closure(Nil);
+  var v2 = FLEval.closure(Cons, v0, v1);
+  var v3 = FLEval.closure(Cons, 'nav-link', v2);
+  var v4 = FLEval.closure(concat, v3);
+  var v5 = FLEval.closure(FLEval.tuple, 'class', v4);
+  var v6 = FLEval.closure(FLEval.tuple, 'title', 'dashboard');
+  var v7 = FLEval.closure(Cons, v6, Nil);
+  var v8 = FLEval.closure(Cons, v5, v7);
+  return FLEval.closure(DOM.Element, 'a', v8, Nil, Nil);
+}
+
 com.helpfulsidekick.chaddy.Navbar.prototype.navItem = function(v0, v1, v2) {
   "use strict";
   var v3 = FLEval.closure(FLEval.tuple, 'title', v0);
@@ -142,19 +161,14 @@ com.helpfulsidekick.chaddy.Navbar.prototype.navItem = function(v0, v1, v2) {
   return FLEval.closure(DOM.Element, 'a', v10, v11, v14);
 }
 
-com.helpfulsidekick.chaddy.Navbar.prototype._templateNode_10 = function() {
+com.helpfulsidekick.chaddy.Navbar.prototype._templateNode_11 = function() {
   "use strict";
   return FLEval.oclosure(this, com.helpfulsidekick.chaddy.Navbar.prototype.navItem, 'my queues', 'Q', 'myqueues');
 }
 
-com.helpfulsidekick.chaddy.Navbar.prototype._templateNode_11 = function() {
+com.helpfulsidekick.chaddy.Navbar.prototype._templateNode_12 = function() {
   "use strict";
   return FLEval.oclosure(this, com.helpfulsidekick.chaddy.Navbar.prototype.navItem, 'teams', 'T', 'organization and teams');
-}
-
-com.helpfulsidekick.chaddy.Navbar.prototype._templateNode_9 = function() {
-  "use strict";
-  return FLEval.oclosure(this, com.helpfulsidekick.chaddy.Navbar.prototype.navItem, 'dashboard', 'D', 'dashboard');
 }
 
 com.helpfulsidekick.chaddy.Navbar.template = {
@@ -170,11 +184,11 @@ com.helpfulsidekick.chaddy.Navbar.template = {
         }]
       }, {
         type: 'div', fn: com.helpfulsidekick.chaddy.Navbar.prototype._templateNode_8, class: ['w-col', 'w-col-8', 'nav-column'], children: [{
-          type: 'content', fn: com.helpfulsidekick.chaddy.Navbar.prototype._templateNode_9, class: []
-        }, {
-          type: 'content', fn: com.helpfulsidekick.chaddy.Navbar.prototype._templateNode_10, class: []
+          type: 'div', fn: com.helpfulsidekick.chaddy.Navbar.prototype._templateNode_9, class: ['nav-link', com.helpfulsidekick.chaddy.Navbar.prototype._templateNode_10]
         }, {
           type: 'content', fn: com.helpfulsidekick.chaddy.Navbar.prototype._templateNode_11, class: []
+        }, {
+          type: 'content', fn: com.helpfulsidekick.chaddy.Navbar.prototype._templateNode_12, class: []
         }]
       }]
     }]

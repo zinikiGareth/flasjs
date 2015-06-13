@@ -47,7 +47,9 @@ FLEval.full = function(x) {
 		for (var p in x) {
 			if (p !== '_ctor' && x.hasOwnProperty(p)) {
 //				console.log("fully evaluating " + p, x[p], x[p].constructor == Array);
-				if (x[p] instanceof FLClosure)
+				if (!x[p])
+					continue;
+				else if (x[p] instanceof FLClosure)
 					x[p] = FLEval.full(x[p]);
 				else if (x[p].constructor == Array) {
 					var y = x[p];

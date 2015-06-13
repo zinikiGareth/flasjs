@@ -245,7 +245,7 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 			throw new Error("There is no service provided for " + ctr);
 		var proxy = this.proxies[svc] = new FlasckProxy(this, card.contracts[ctr]);
 		proxy.channel(this.conn.newChannel(ctr, proxy));
-		ctr._proxy = proxy;
+		card.contracts[ctr]._proxy = proxy;
 	}
 }
 
@@ -279,9 +279,9 @@ FlasckWrapper.prototype.processOne = function(msg) {
 //		console.log("channel ", channel, channel instanceof Channel);
 //		console.log("meth " + meth);
 //		console.log("invoke " + invoke);
-		console.log("method = " + meth + " args = " + msg.args);
+//		console.log("method = " + meth + " args = " + msg.args);
 		var args = FLEval.flattenList(msg.args);
-		console.log(args);
+//		console.log(args);
 		for (var p=0;p<args.length;p++) {
 			var a = args[p];
 			if (a._special) {
