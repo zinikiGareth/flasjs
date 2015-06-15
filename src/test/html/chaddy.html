@@ -21,9 +21,7 @@
 	  env.addService("org.ziniki.Timer", new FlasckService.TimerService());
 	  env.addService("org.ziniki.OnCounter", new FlasckService.OnTickService());
 
-	  var handle = env.createCard(com.helpfulsidekick.chaddy.Navbar, body, ['org.ziniki.Init']);
-	  //if (handle.hasContract('test.ziniki.Init'))
-	  handle.send('org.ziniki.Init', 'load', null);
+	  var handle = env.createCard(com.helpfulsidekick.chaddy.Main, body, ['org.ziniki.Init']);
   	</script>
   </body>
 </html>

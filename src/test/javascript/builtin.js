@@ -92,3 +92,16 @@ _Assign = function(field, value) {
 }
 
 Assign = function(field, value) { return new _Assign(field, value); }
+
+// TODO: surely this needs "value" as well?  Even if null?  How do we represent null?  How do we type it?
+_CreateCard = function(card, into, services) {
+	this._ctor = 'CreateCard';
+	this.card = card;
+	this.into = into;
+	this.services = services;
+}
+
+_CreateCard.prototype.toString = function() {
+	return "CreateCard[" + "]";
+}
+CreateCard = function(card, into, services) { return new _CreateCard(card, into, services); }

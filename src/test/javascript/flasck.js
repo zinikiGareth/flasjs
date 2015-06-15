@@ -16,7 +16,7 @@ FlasckContainer.prototype.getService = function(name) {
 	return this.services[name];
 }
 
-FlasckContainer.prototype.createCard = function(cardClz, inside, contracts) {
+FlasckContainer.prototype.createCard = function(cardClz, inside, provideServices) {
 	// put it somewhere
 	var doc = inside.ownerDocument;
 	var elt = doc.createElement("div");
@@ -30,8 +30,13 @@ FlasckContainer.prototype.createCard = function(cardClz, inside, contracts) {
 	downconn.up = upconn;
 	upconn.down = downconn;
 
+	var services = {};
+	for (var i=0;i<provideServices.length;i++) {
+		services[provideServices[i]] = upconn; // I'm not quite sure what this should be ...
+	}
+	
 	// Create a wrapper around the card which is its proto-environment to link back up to the real environment
-	var wrapper = new FlasckWrapper(upconn, actualDiv, contracts, cardClz);
+	var wrapper = new FlasckWrapper(actualDiv, services, cardClz);
 
 	// Now create the card and tell the wrapper about it
 	var myCard = new cardClz({ wrapper: wrapper });
@@ -39,6 +44,9 @@ FlasckContainer.prototype.createCard = function(cardClz, inside, contracts) {
 	
 	// this only works because we're in the same scope
 	handle._cheatAccess = { card: myCard, wrapper: wrapper };
+
+	//if (handle.hasContract('test.ziniki.Init'))
+	handle.send('org.ziniki.Init', 'load', null);
 	return handle;
 }
 
@@ -78,6 +86,12 @@ FlasckService.OnTickService = function() {
 	return this;
 }
 FlasckService.OnTickService.prototype.addClient = addClient;
+
+FlasckService.ProxyService = function() {
+	this.clients = [];
+	return this;
+}
+FlasckService.ProxyService.prototype.addClient = addClient;
 
 // Clients are the "handles" connecting to the "proxy"; exists on the "real" side
 FlasckClient = function(chan, handle, svc) {
@@ -226,11 +240,9 @@ Channel.prototype.send = function(method, args) {
 // Card Side
 
 // FlasckWrapper is the pseudo "environment" on the card side
-// It presumably gets delivered a "connection"
-FlasckWrapper = function(conn, div, serviceNames, cardClz) {
-	this.conn = conn;
+FlasckWrapper = function(div, services, cardClz) {
 	this.div = div;
-	this.serviceNames = serviceNames;
+	this.services = services;
 	this.cardClz = cardClz;
 	this.card = null; // will be filled in later
 	return this;
@@ -240,11 +252,11 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 	this.card = card;
 	this.proxies = {};
 	for (var ctr in card.contracts) {
-		var svc = this.serviceNames[ctr];
-		if (ctr == null)
+		var svc = this.services[ctr];
+		if (svc == null) // TODO: it should be possible for cards to opt to degrade in this case (& also shouldn't have been selected)
 			throw new Error("There is no service provided for " + ctr);
 		var proxy = this.proxies[svc] = new FlasckProxy(this, card.contracts[ctr]);
-		proxy.channel(this.conn.newChannel(ctr, proxy));
+		proxy.channel(svc.newChannel(ctr, proxy));
 		card.contracts[ctr]._proxy = proxy;
 	}
 }
@@ -308,6 +320,62 @@ FlasckWrapper.prototype.processOne = function(msg) {
 		throw new Error("The method message " + msg._ctor + " is not supported");
 }
 
+// This is very similar to the FlackContainer version, but the idea should be
+// to try and connect the parent provided services to the child without having us
+// as an intermediary.  This does not currently work
+FlasckWrapper.prototype.createCard = function(cardClz, inside, provideServices) {
+	// put it somewhere
+	var doc = inside.ownerDocument;
+	var elt = doc.createElement("div");
+	var actualDiv = inside.appendChild(elt);
+
+	var self = this;
+	// create the plumbing
+	var handle = new FlasckHandle({
+		proxied: {},
+		getService: function(s) {
+			if (this.proxied[s])
+				return this.proxied[s];
+			var ret = new FlasckService.ProxyService();
+			this.proxied[s] = ret;
+			return ret;
+		}
+	});
+	var downconn = new DownConnection(handle);
+	handle.conn = downconn;
+	var upconn = new UpConnection(this);
+	downconn.up = upconn;
+	upconn.down = downconn;
+
+	var services = {};
+	// TODO: we should flatten provideServices into an array & test for length 0
+	if (provideServices._ctor === 'Nil') {
+		for (var ps in this.services)
+			services[ps] = upconn;
+	} else {
+		for (var i=0;i<provideServices.length;i++) {
+			var ps = provideServices[i];
+			if (!this.services[ps])
+				throw new Error("Cannot create service " + ps + " because we don't have it ourselves");
+			services[provideServices[i]] = this.services[provideServices[i]];
+		}
+	}
+	
+	// Create a wrapper around the card which is its proto-environment to link back up to the real environment
+	var wrapper = new FlasckWrapper(actualDiv, services, cardClz);
+
+	// Now create the card and tell the wrapper about it
+	var myCard = new cardClz({ wrapper: wrapper });
+	wrapper.cardCreated(myCard);
+	
+	// this only works because we're in the same scope
+	handle._cheatAccess = { card: myCard, wrapper: wrapper };
+
+	//if (handle.hasContract('test.ziniki.Init'))
+	handle.send('org.ziniki.Init', 'load', null);
+	return handle;
+}
+
 var nextid = 1; // TODO: this might actually be the right scoping; what I want is for it global per document
 FlasckWrapper.prototype.doRender = function(msgs) {
   // TODO: should have a "cachedstate" member variable
@@ -339,10 +407,14 @@ FlasckWrapper.prototype.renderSubtree = function(into, tree) {
       }
       evh = evh.tail;
     }
+  } else if (line instanceof _CreateCard) {
+	  html = line.into.toElement(doc);
+	  var innerCard = this.createCard(line.card, html, line.services);
   } else if (tree.type == 'content') {
     html = doc.createElement("span");
     html.appendChild(doc.createTextNode(line.toString()));
-  }
+  } else
+	  throw new Error("Could not render " + line);
   // TODO: track the things we do in a cached state
   html.setAttribute('id', 'id_' + nextid++);
   if (tree.type === 'div') {
@@ -368,53 +440,6 @@ FlasckWrapper.prototype.renderSubtree = function(into, tree) {
   }
   into.appendChild(html);
 }
-
-
-
-//FlasckWrapper.prototype.renderChanges = function(msgs) {
-//	// TODO: we should be able to "disable" render, eg. server side
-//	// So check that "render" has been called on the init contract
-//	// which should also be accessible to the user
-//	// TODO: the first time through the logic is a little different,
-//	// because we need to build up a picture of the entire state
-//	// Consequently, we don't need to look at the messages but render everything
-//	while (msgs && msgs._ctor === 'Cons') {
-//		if (msgs.head._ctor == 'Assign')
-//			this.renderAssign(msgs.head);
-//		// throw away Sends
-//		// TODO: list edits/inserts etc.
-//		msgs = msgs.tail;
-//	}
-//}
-
-//FlasckWrapper.prototype.renderAssign = function(asgn) {
-//	// The logic here should be to figure out the variable that changed
-//	var changedVar = asgn.field;
-//	// TODO: We then need to track down where this is used
-//	// TODO: then we need to figure out what the associated ID and function are
-//	// TODO: We will need to get "inside" from somewhere in the "create" case, but fairly obviously it can't actually come from here ... (this structure will not exist in that case)
-//	var entryInAllegedMap = { id: this.myId, inside: this.div, command: this.card._templateNode_1 };
-//
-//	var myId = entryInAllegedMap.id;
-//	var renderFn = entryInAllegedMap.command;
-//	// make sure the element it needs is there; if replacing, clear it out
-//	var doc = this.div.ownerDocument;
-//	var elt;
-//	if (myId) {
-//		elt = doc.getElementById(myId);
-//		elt.innerHTML = '';
-//	} else {
-//		myId = idgen.next();
-//		elt = doc.createElement('span');
-//		elt.id = myId;
-//		entryInAllegedMap.inside.appendChild(elt);
-//		this.myId = myId;
-//	}
-//
-//	var tx = renderFn.call(this.card, doc, elt);
-//	elt.appendChild(doc.createTextNode(tx));
-//	console.log(this.div.innerHTML);
-//}
 
 FlasckProxy = function(wrapper, flctr) {
 	this.wrapper = wrapper;

@@ -27,12 +27,10 @@ env.addService("org.ziniki.Init", new FlasckService.InitService());
 env.addService("org.ziniki.Timer", new FlasckService.TimerService());
 env.addService("org.ziniki.OnCounter", new FlasckService.OnTickService());
 
-var handle = env.createCard(com.helpfulsidekick.chaddy.Navbar, body, ['org.ziniki.Init']);
-//if (handle.hasContract('test.ziniki.Init'))
-	handle.send('org.ziniki.Init', 'load', null);
+var handle = env.createCard(com.helpfulsidekick.chaddy.Main, body, ['org.ziniki.Init']);
 
 console.log(body.innerHTML);
-var click = doc.getElementById("id_11").onclick;
+//var click = doc.getElementById("id_11").onclick;
 //console.log(click);
-click.apply(null, ["event"]);
-console.log(body.innerHTML);
+//click.apply(null, ["event"]);
+//console.log(body.innerHTML);
