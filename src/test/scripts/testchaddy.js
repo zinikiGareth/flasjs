@@ -9,9 +9,13 @@ var FLEval = vm.runInThisContext(fs.readFileSync('../javascript/flenv.js', 'utf8
 vm.runInThisContext(fs.readFileSync('../javascript/builtin.js', 'utf8'));
 var StdLib = vm.runInThisContext(fs.readFileSync('../javascript/stdlib.js', 'utf8'));
 var DOM = vm.runInThisContext(fs.readFileSync('../javascript/dom.js', 'utf8'));
-vm.runInThisContext(fs.readFileSync('../javascript/flasck.js', 'utf8'));
+//vm.runInThisContext(fs.readFileSync('../javascript/flasck/container.js', 'utf8'));
+vm.runInThisContext(fs.readFileSync('../javascript/flasck/flasck.js', 'utf8'));
+vm.runInThisContext(fs.readFileSync('../javascript/flasck/services.js', 'utf8'));
+vm.runInThisContext(fs.readFileSync('../javascript/flasck/handle.js', 'utf8'));
+vm.runInThisContext(fs.readFileSync('../javascript/flasck/postbox.js', 'utf8'));
+vm.runInThisContext(fs.readFileSync('../javascript/flasck/wrapper.js', 'utf8'));
 vm.runInThisContext(fs.readFileSync('../../../../FLAS2/src/test/resources/cards/com.helpfulsidekick.chaddy/com.helpfulsidekick.chaddy.js', 'utf8'));
-// vm.runInThisContext(fs.readFileSync('../scripts/want-chaddy.js', 'utf8'));
 
 // Read in the minimal HTML file
 var html = fs.readFileSync('simple.html', 'utf8');
@@ -20,14 +24,14 @@ var window = doc.defaultView;
 
 // grab the body to put things in
 var body = doc.getElementsByTagName("body")[0];
+var div = doc.createElement("div");
+body.appendChild(div);
 
-// Create a new card-containing environment with services
-var env = new FlasckContainer();
-env.addService("org.ziniki.Init", new FlasckService.InitService());
-env.addService("org.ziniki.Timer", new FlasckService.TimerService());
-env.addService("org.ziniki.OnCounter", new FlasckService.OnTickService());
+var postbox = new Postbox("main");
+var services = {};
+Flasck.provideService(postbox, services, FlasckServices.TimerService);
 
-var handle = env.createCard(com.helpfulsidekick.chaddy.Main, body, ['org.ziniki.Init']);
+var handle = Flasck.createCard(postbox, div, { explicit: com.helpfulsidekick.chaddy.Main, mode: 'local' }, services);
 
 console.log(body.innerHTML);
 //var click = doc.getElementById("id_11").onclick;

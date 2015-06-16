@@ -8,7 +8,11 @@
   	<script type='text/javascript' src='../javascript/builtin.js'></script>
   	<script type='text/javascript' src='../javascript/stdlib.js'></script>
   	<script type='text/javascript' src='../javascript/dom.js'></script>
-  	<script type='text/javascript' src='../javascript/flasck.js'></script>
+  	<script type='text/javascript' src='../javascript/flasck/flasck.js'></script>
+  	<script type='text/javascript' src='../javascript/flasck/handle.js'></script>
+  	<script type='text/javascript' src='../javascript/flasck/postbox.js'></script>
+  	<script type='text/javascript' src='../javascript/flasck/services.js'></script>
+  	<script type='text/javascript' src='../javascript/flasck/wrapper.js'></script>
   	<script type='text/javascript' src='../../../../FLAS2/src/test/resources/cards/com.helpfulsidekick.chaddy/com.helpfulsidekick.chaddy.js'></script>
   </head>
   <body>
@@ -16,12 +20,14 @@
   	  var doc = document;
   	  var body = doc.getElementsByTagName("body")[0];
   	  
-	  var env = new FlasckContainer();
-	  env.addService("org.ziniki.Init", new FlasckService.InitService());
-	  env.addService("org.ziniki.Timer", new FlasckService.TimerService());
-	  env.addService("org.ziniki.OnCounter", new FlasckService.OnTickService());
+var div = doc.createElement("div");
+body.appendChild(div);
 
-	  var handle = env.createCard(com.helpfulsidekick.chaddy.Main, body, ['org.ziniki.Init']);
+var postbox = new Postbox("main");
+var services = {};
+Flasck.provideService(postbox, services, FlasckServices.TimerService);
+
+var handle = Flasck.createCard(postbox, div, { explicit: com.helpfulsidekick.chaddy.Main, mode: 'local' }, services);
   	</script>
   </body>
 </html>
