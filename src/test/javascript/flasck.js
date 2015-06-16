@@ -251,13 +251,16 @@ FlasckWrapper = function(div, services, cardClz) {
 FlasckWrapper.prototype.cardCreated = function(card) {
 	this.card = card;
 	this.proxies = {};
-	for (var ctr in card.contracts) {
+	for (var svc in card._services) {
+		this.services[svc] = card._services[svc];
+	}
+	for (var ctr in card._contracts) {
 		var svc = this.services[ctr];
 		if (svc == null) // TODO: it should be possible for cards to opt to degrade in this case (& also shouldn't have been selected)
 			throw new Error("There is no service provided for " + ctr);
-		var proxy = this.proxies[svc] = new FlasckProxy(this, card.contracts[ctr]);
+		var proxy = this.proxies[svc] = new FlasckProxy(this, card._contracts[ctr]);
 		proxy.channel(svc.newChannel(ctr, proxy));
-		card.contracts[ctr]._proxy = proxy;
+		card._contracts[ctr]._proxy = proxy;
 	}
 }
 

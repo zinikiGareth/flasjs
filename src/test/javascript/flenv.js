@@ -121,7 +121,7 @@ FLEval.curry = function() {
 
 		// If it's enough, call the method, otherwise reapply "curry" to the new set of arguments
 		if (current.length >= arity)
-			return actual.apply(undefined, current);
+			return actual.apply(this, current);
 		else
 			return FLEval.curry(
 				actual,
