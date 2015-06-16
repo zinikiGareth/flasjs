@@ -413,8 +413,10 @@ FlasckWrapper.prototype.renderSubtree = function(into, tree) {
   } else if (tree.type == 'content') {
     html = doc.createElement("span");
     html.appendChild(doc.createTextNode(line.toString()));
+  } else if (tree.type == 'switch') {
+	html = doc.createElement("div");
   } else
-	  throw new Error("Could not render " + line);
+	  throw new Error("Could not render " + tree.type + " " + line);
   // TODO: track the things we do in a cached state
   html.setAttribute('id', 'id_' + nextid++);
   if (tree.type === 'div') {
@@ -422,6 +424,18 @@ FlasckWrapper.prototype.renderSubtree = function(into, tree) {
       for (var c=0;c<tree.children.length;c++) {
         this.renderSubtree(html, tree.children[c]);
       }
+	}
+  } else if (tree.type == 'switch') {
+	for (var c=0;c<tree.children.length;c++) {
+	  var cond = tree.children[c];
+	  var cv = true;
+	  if (cond.fn)
+	    cv = FLEval.full(cond.fn.apply(this.card, [line]));
+	  if (cv) {
+		  for (var q=0;q<cond.children.length;q++)
+			this.renderSubtree(html, cond.children[q]);
+		  break;
+	  }
 	}
   }
   if (tree.class && tree.class.length > 0) {
