@@ -16,6 +16,13 @@ Flasck.createCard = function(postbox, inside, cardInfo, services) {
 	var myEnd = postbox.newAddress();
 	var myAddr = postbox.unique(myEnd);
 	var initService = {
+		process: function(message) {
+			console.log("need to process", message);
+			if (message.method === 'ready')
+				this.ready(message.from, message.args[0]);
+			else
+				throw new Error("Cannot process " + message.method);
+		},
 		ready: function(from, contracts) {
 			handle.contracts = contracts;
 			var reply = {};
@@ -45,7 +52,7 @@ Flasck.createCard = function(postbox, inside, cardInfo, services) {
 	console.log("registering " + myAddr + " for init contract");
 	for (var s in myCard._services) {
 		console.log("svc " + s);
-		Flasck.provideService(postbox, services, s, myCard._services[s]);
+		Flasck.provideService(postbox, services, s, new FlasckWrapper.Processor(myCard._services[s]));
 	}
 	console.log("These services are available:", services);
 	

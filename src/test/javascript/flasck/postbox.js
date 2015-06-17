@@ -50,9 +50,9 @@ Postbox.prototype.deliver = function(address, message) {
 	if (this.name !== pb)
 		throw new Error("I don't know how to deliver to remote postboxes yet");
 	var recip = this.recipients[addr];
-	var meth = recip[message.method];
-	if (!meth)
-		throw new Error("There is no method '" + message.method +"'");
-	message.args.splice(0, 0, message.from);
-	meth.apply(recip, message.args);
+	if (!recip)
+		throw new Error("There is no registered recipient for " + address);
+	if (!recip.process)
+		console.log("There is no process method on", recip);
+	recip.process(message);
 }

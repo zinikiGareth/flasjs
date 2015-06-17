@@ -8,17 +8,47 @@ FlasckWrapper = function(postbox, initSvc, cardClz) {
 	return this;
 }
 
+FlasckWrapper.Processor = function(wrapper, service) {
+	this.wrapper = wrapper;
+	this.service = service;
+}
+
+FlasckWrapper.Processor.prototype.process = function(message) {
+	console.log("need to process", message);
+	var meth = this.service[message.method];
+	if (!meth)
+		throw new Error("There is no method '" + message.method +"'");
+	message.args.splice(0, 0, message.from);
+	var clos = meth.apply(this.service, message.args);
+	var msgs = FLEval.full(clos);
+	this.wrapper.processMessages(msgs);
+	this.wrapper.doRender(msgs);
+}
+
 FlasckWrapper.prototype.cardCreated = function(card) {
 	var self = this;
 	this.card = card;
 	this.services = {};
 	for (var svc in card._services) {
 		var svcAddr = this.postbox.newAddress();
-		this.postbox.register(svcAddr, card._services[svc]);
+		this.postbox.register(svcAddr, new FlasckWrapper.Processor(this, card._services[svc]));
 		this.services[svc] = this.postbox.unique(svcAddr);
 	}
+	var contracts = {};
+	for (var ctr in card._contracts) {
+		contracts[ctr] = new FlasckWrapper.Processor(this, card._contracts[ctr]);
+	}
 	// THIS MAY OR MAY NOT BE A HACK
-	card._contracts['org.ziniki.Init'] = {
+	contracts['org.ziniki.Init'] = {
+		process: function(message) {
+			console.log("need to process", message);
+			if (message.method === 'services')
+				this.services(message.from, message.args[0]);
+			else if (message.method === 'state')
+				this.state(message.from, message.args[0]);
+			else
+				throw new Error("Cannot process " + message.method);
+		},
 		services: function(from, serviceMap) {
 			for (var ctr in serviceMap) {
 				self.services[ctr] = serviceMap[ctr];
@@ -27,28 +57,34 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 		},
 		state: function(from) {
 			console.log("Setting state");
-		}
+		},
+		service: {} // to store _myaddr
 	}
-	card._contracts['org.ziniki.Render'] = {
+	contracts['org.ziniki.Render'] = {
+		process: function(message) {
+			console.log("need to process", message);
+			if (message.method === 'render')
+				this.render(message.from, message.args[0]);
+			else
+				throw new Error("Cannot process " + message.method);
+		},
 		render: function(from, opts) {
 			self.div = opts.into;
 			self.doRender([]);
-		}
+		},
+		service: {} // to store _myaddr
 	}
 	// END HACK
-	for (var ctr in card._contracts) {
+	for (var ctr in contracts) {
 		var ctrAddr = this.postbox.newAddress();
-		this.postbox.register(ctrAddr, card._contracts[ctr]);
+		this.postbox.register(ctrAddr, contracts[ctr]);
 		this.ctrmap[ctr] = this.postbox.unique(ctrAddr);
-		card._contracts[ctr]._myaddr = ctrAddr;
+		contracts[ctr].service._myaddr = this.postbox.unique(ctrAddr);
 	}
 	this.postbox.deliver(this.initSvc, {from: this.ctrmap['org.ziniki.Init'], method: "ready", args:[this.ctrmap]});
 }
 
-FlasckWrapper.prototype.getService = function(s) {
-	return this.proxies[s];
-}
-
+// I don't think this is used anymore
 FlasckWrapper.prototype.deliver = function(ctr, meth) { // and arguments
 	var hdlr = this.card.contracts[ctr];
 //	console.log(hdlr);
