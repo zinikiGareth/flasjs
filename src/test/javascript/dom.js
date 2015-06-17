@@ -33,7 +33,6 @@ DOM._Element.prototype.updateAttrsIn = function(elt) {
 	for (var attr = this.attrMap;attr && attr._ctor === 'Cons'; attr = attr.tail) {
 		whatIwant[attr.head.members[0]] =  attr.head.members[1];
 	}
-	console.log(whatIwant);
 	var attrs = elt.attributes;
 	for (var i=0;i<attrs.length;i++) {
 		var a = attrs.item(i);

@@ -213,4 +213,23 @@ concat = function(l) {
 	return ret;
 }
 
+join = function(l, isep) {
+	var ret = "";
+	var sep = "";
+	while (true) {
+		l = FLEval.head(l);
+		if (l._ctor == 'Cons') {
+			var head = FLEval.full(l.head);
+			if (head) {
+				ret += sep + head;
+				sep = isep;
+			}
+			l = l.tail;
+		} else
+			break;
+	}
+	return ret;
+}
+
+
 FLEval;

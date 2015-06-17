@@ -15,10 +15,11 @@ FlasckWrapper.Processor = function(wrapper, service) {
 }
 
 FlasckWrapper.Processor.prototype.process = function(message) {
+	console.log("received message", message);
 	var meth = this.service[message.method];
 	if (!meth)
 		throw new Error("There is no method '" + message.method +"'");
-	message.args.splice(0, 0, message.from);
+//	message.args.splice(0, 0, message.from);
 	var clos = meth.apply(this.service, message.args);
 	var msgs = FLEval.full(clos);
 	this.wrapper.processMessages(msgs);
@@ -161,9 +162,15 @@ FlasckWrapper.prototype.doRender = function(msgs) {
 	// TODO: we need de-dup logic (including removing sub-nodes, which is why we use routes rather than ids)
 	for (var qr in routes) {
 		var r = routes[qr];
-		if (r.action === 'render')
-			wrapper.renderSubtree(r.elt, r.tree);
-		else if (r.action === 'attrs') {
+		if (r.action === 'render') {
+			console.log("rewriting ", r.me.id, r.elt.id);
+			r.me.innerHTML = "";
+			wrapper.renderSubtree(r.me, r.tree);
+		} else if (r.action === 'renderChildren') {
+			console.log("rewriting ", r.me.id, r.elt.id);
+			r.me.innerHTML = "";
+			wrapper.renderSubtree(r.me, r.tree, true);
+		} else if (r.action === 'attrs') {
 			var line = FLEval.full(r.tree.fn.apply(this.card));
 			var html;
 			if (line instanceof DOM._Element) {
@@ -176,7 +183,7 @@ FlasckWrapper.prototype.doRender = function(msgs) {
 	}
 }
 
-FlasckWrapper.prototype.renderSubtree = function(into, tree) {
+FlasckWrapper.prototype.renderSubtree = function(into, tree, dontRerenderMe) {
   var doc = into.ownerDocument;
   var line = FLEval.full(tree.fn.apply(this.card));
   var html;
@@ -201,13 +208,15 @@ FlasckWrapper.prototype.renderSubtree = function(into, tree) {
     html = doc.createElement("span");
     html.appendChild(doc.createTextNode(line.toString()));
   } else if (tree.type == 'switch') {
-	html = doc.createElement("div");
+	  if (!dontRerenderMe) // apologies for the double-negative, it just works with undefined ... i.e. "renderMe"
+		  html = doc.createElement("div");
   } else
 	  throw new Error("Could not render " + tree.type + " " + line);
-  html.setAttribute('id', 'id_' + nextid++);
-  if (tree.route) {
-	  console.log("at tree.route " + tree.route);
-	  this.nodeCache[tree.route] = { elt: into, tree: tree, me: html  };
+  if (html) {
+	  html.setAttribute('id', 'id_' + nextid++);
+	  if (tree.route) {
+	    this.nodeCache[tree.route] = { elt: into, tree: tree, me: html  };
+	  }
   }
   if (tree.type === 'div') {
 	if (tree.children) {
@@ -216,31 +225,22 @@ FlasckWrapper.prototype.renderSubtree = function(into, tree) {
       }
 	}
   } else if (tree.type == 'switch') {
+	  var send = html;
+	  if (dontRerenderMe)
+		  send = into;
 	for (var c=0;c<tree.children.length;c++) {
 	  var cond = tree.children[c];
 	  var cv = true;
 	  if (cond.fn)
 	    cv = FLEval.full(cond.fn.apply(this.card, [line]));
+	  console.log("c = " + c + " cv = ", cv);
 	  if (cv) {
 		  for (var q=0;q<cond.children.length;q++)
-			this.renderSubtree(html, cond.children[q]);
+			this.renderSubtree(send, cond.children[q]);
 		  break;
 	  }
 	}
   }
-  if (tree.class && tree.class.length > 0) {
-	  var clz = "";
-	  var sep = "";
-	  for (var i=0;i<tree.class.length;i++) {
-		  if (typeof tree.class[i] === 'string')
-			  clz += sep + tree.class[i];
-		  else if (typeof tree.class[i] === 'function')
-			  clz += sep + FLEval.full(tree.class[i].apply(this.card)); // the rule is it has to be a closed-over function, just needing card
-		  else
-			  clz += sep + typeof tree.class[i];
-		  sep = " ";
-	  }
-	  html.setAttribute('class', clz);
-  }
-  into.appendChild(html);
+  if (html)
+	  into.appendChild(html);
 }

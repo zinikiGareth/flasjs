@@ -34,13 +34,13 @@ Flasck.provideService(postbox, services, "org.ziniki.Timer", new FlasckServices.
 
 var handle = Flasck.createCard(postbox, div, { explicit: com.helpfulsidekick.chaddy.Main, mode: 'local' }, services);
 
-//console.log(body.innerHTML);
+console.log(body.innerHTML);
 var click = doc.getElementById("id_12").onclick;
 //console.log("clicking on " + click);
 //console.log(click);
 click.apply(null, ["event"]);
-var click = doc.getElementById("id_14").onclick;
+//var click = doc.getElementById("id_14").onclick;
 //console.log("clicking on " + click);
 //console.log(click);
-click.apply(null, ["event"]);
+//click.apply(null, ["event"]);
 console.log(body.innerHTML);
