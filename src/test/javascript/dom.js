@@ -28,6 +28,26 @@ DOM._Element.prototype.toElement = function (doc) {
 	return ret;
 }
 
+DOM._Element.prototype.updateAttrsIn = function(elt) {
+	var whatIwant = {};
+	for (var attr = this.attrMap;attr && attr._ctor === 'Cons'; attr = attr.tail) {
+		whatIwant[attr.head.members[0]] =  attr.head.members[1];
+	}
+	console.log(whatIwant);
+	var attrs = elt.attributes;
+	for (var i=0;i<attrs.length;i++) {
+		var a = attrs.item(i);
+		if (a.name === 'id')
+			continue;
+		if (whatIwant[a.name])
+			a.nodeValue = (whatIwant[a.name]);
+		else {
+			attrs.removeNamedItem(a.name);
+			i--;
+		}
+	}
+}
+
 DOM._Element.prototype.toString = function() {
 	return "Element " + this.tag + " " + this.attrMap.toString() + " " + this.contents.toString();
 }

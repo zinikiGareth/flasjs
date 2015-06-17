@@ -16,6 +16,7 @@ vm.runInThisContext(fs.readFileSync('../javascript/flasck/handle.js', 'utf8'));
 vm.runInThisContext(fs.readFileSync('../javascript/flasck/postbox.js', 'utf8'));
 vm.runInThisContext(fs.readFileSync('../javascript/flasck/wrapper.js', 'utf8'));
 vm.runInThisContext(fs.readFileSync('../../../../FLAS2/src/test/resources/cards/com.helpfulsidekick.chaddy/com.helpfulsidekick.chaddy.js', 'utf8'));
+vm.runInThisContext(fs.readFileSync('../javascript/hacks/chaddy.js', 'utf8'));
 
 // Read in the minimal HTML file
 var html = fs.readFileSync('simple.html', 'utf8');
@@ -33,9 +34,13 @@ Flasck.provideService(postbox, services, "org.ziniki.Timer", new FlasckServices.
 
 var handle = Flasck.createCard(postbox, div, { explicit: com.helpfulsidekick.chaddy.Main, mode: 'local' }, services);
 
-console.log(body.innerHTML);
+//console.log(body.innerHTML);
 var click = doc.getElementById("id_12").onclick;
-console.log("clicking on " + click);
+//console.log("clicking on " + click);
 //console.log(click);
 click.apply(null, ["event"]);
-//console.log(body.innerHTML);
+var click = doc.getElementById("id_14").onclick;
+//console.log("clicking on " + click);
+//console.log(click);
+click.apply(null, ["event"]);
+console.log(body.innerHTML);

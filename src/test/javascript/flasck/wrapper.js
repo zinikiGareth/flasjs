@@ -3,6 +3,7 @@ FlasckWrapper = function(postbox, initSvc, cardClz) {
 	this.initSvc = initSvc;
 	this.cardClz = cardClz;
 	this.ctrmap = {};
+	this.nodeCache = {};
 	this.card = null; // will be filled in later
 	this.div = null;
 	return this;
@@ -14,7 +15,6 @@ FlasckWrapper.Processor = function(wrapper, service) {
 }
 
 FlasckWrapper.Processor.prototype.process = function(message) {
-	console.log("need to process", message);
 	var meth = this.service[message.method];
 	if (!meth)
 		throw new Error("There is no method '" + message.method +"'");
@@ -22,7 +22,8 @@ FlasckWrapper.Processor.prototype.process = function(message) {
 	var clos = meth.apply(this.service, message.args);
 	var msgs = FLEval.full(clos);
 	this.wrapper.processMessages(msgs);
-	this.wrapper.doRender(msgs);
+	if (this.wrapper.div) // so render will have been called
+		this.wrapper.doRender(msgs);
 }
 
 FlasckWrapper.prototype.cardCreated = function(card) {
@@ -41,7 +42,6 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 	// THIS MAY OR MAY NOT BE A HACK
 	contracts['org.ziniki.Init'] = {
 		process: function(message) {
-			console.log("need to process", message);
 			if (message.method === 'services')
 				this.services(message.from, message.args[0]);
 			else if (message.method === 'state')
@@ -62,15 +62,13 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 	}
 	contracts['org.ziniki.Render'] = {
 		process: function(message) {
-			console.log("need to process", message);
 			if (message.method === 'render')
 				this.render(message.from, message.args[0]);
 			else
 				throw new Error("Cannot process " + message.method);
 		},
 		render: function(from, opts) {
-			self.div = opts.into;
-			self.doRender([]);
+			self.doInitialRender(opts.into);
 		},
 		service: {} // to store _myaddr
 	}
@@ -84,15 +82,10 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 	this.postbox.deliver(this.initSvc, {from: this.ctrmap['org.ziniki.Init'], method: "ready", args:[this.ctrmap]});
 }
 
-// I don't think this is used anymore
-FlasckWrapper.prototype.deliver = function(ctr, meth) { // and arguments
-	var hdlr = this.card.contracts[ctr];
-//	console.log(hdlr);
-//	console.log(hdlr[meth]);
-	var args = [];
-	for (var i=2;i<arguments.length;i++)
-		args[i-2] = arguments[i];
-	return FLEval.full(hdlr[meth].apply(hdlr, args));
+FlasckWrapper.prototype.dispatchEvent = function(ev, handler) {
+  var msgs = FLEval.full(new FLClosure(this.card, handler, [ev]));
+  this.processMessages(msgs);
+  this.doRender(msgs);
 }
 
 FlasckWrapper.prototype.processMessages = function(l) {
@@ -103,7 +96,7 @@ FlasckWrapper.prototype.processMessages = function(l) {
 }
 
 FlasckWrapper.prototype.processOne = function(msg) {
-	console.log("Message: ", msg);
+//	console.log("Message: ", msg);
 	if (msg._ctor === 'Send') {
 		var addr = msg.target._addr;
 		var meth = msg.method;
@@ -141,19 +134,46 @@ FlasckWrapper.prototype.processOne = function(msg) {
 }
 
 var nextid = 1; // TODO: this might actually be the right scoping; what I want is for it global per document
-FlasckWrapper.prototype.doRender = function(msgs) {
-  // TODO: should have a "cachedstate" member variable
-  var cached = null;
-  if (!cached) { // init case, render the whole tree
+FlasckWrapper.prototype.doInitialRender = function(div) {
+	this.div = div;
     this.div.innerHTML = "";
-	this.renderSubtree(this.div, this.cardClz.template);
-  }
+    this.renderSubtree(this.div, this.cardClz.template);
 }
 
-FlasckWrapper.prototype.dispatchEvent = function(ev, handler) {
-  var msgs = FLEval.full(new FLClosure(this.card, handler, [ev]));
-  this.processMessages(msgs);
-  this.doRender(msgs);
+FlasckWrapper.prototype.doRender = function(msgs) {
+	var l = msgs;
+	var updateTree = this.cardClz.updates;
+	var todo = {};
+	while (l && l._ctor === 'Cons') {
+		if (l.head._ctor === 'Assign')
+			todo[l.head.field] = updateTree[l.head.field];
+		l = l.tail;
+	}
+	// Gather into a single, de-duped list of elements to update
+	var routes = {};
+	var wrapper = this;
+	for (var t in todo) {
+		todo[t].forEach(function (p) {
+			var c = wrapper.nodeCache[p.route];
+			routes[p.route] = { elt: c.elt, tree: c.tree, me: c.me, action: p.action };
+		});
+	}
+	// TODO: we need de-dup logic (including removing sub-nodes, which is why we use routes rather than ids)
+	for (var qr in routes) {
+		var r = routes[qr];
+		if (r.action === 'render')
+			wrapper.renderSubtree(r.elt, r.tree);
+		else if (r.action === 'attrs') {
+			var line = FLEval.full(r.tree.fn.apply(this.card));
+			var html;
+			if (line instanceof DOM._Element) {
+//				html = line.toElement(r.me.ownerDocument);
+				line.updateAttrsIn(r.me);
+			} else
+				throw new Error("This case is not covered: " + line);
+		} else
+			throw new Error("Cannot carry out action " + r.action);
+	}
 }
 
 FlasckWrapper.prototype.renderSubtree = function(into, tree) {
@@ -184,8 +204,11 @@ FlasckWrapper.prototype.renderSubtree = function(into, tree) {
 	html = doc.createElement("div");
   } else
 	  throw new Error("Could not render " + tree.type + " " + line);
-  // TODO: track the things we do in a cached state
   html.setAttribute('id', 'id_' + nextid++);
+  if (tree.route) {
+	  console.log("at tree.route " + tree.route);
+	  this.nodeCache[tree.route] = { elt: into, tree: tree, me: html  };
+  }
   if (tree.type === 'div') {
 	if (tree.children) {
       for (var c=0;c<tree.children.length;c++) {
