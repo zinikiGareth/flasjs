@@ -11,15 +11,19 @@ FlasckWrapper = function(postbox, initSvc, cardClz) {
 FlasckWrapper.prototype.cardCreated = function(card) {
 	var self = this;
 	this.card = card;
-	this.proxies = {};
+	this.services = {};
 	for (var svc in card._services) {
 		var svcAddr = this.postbox.newAddress();
 		this.postbox.register(svcAddr, card._services[svc]);
+		this.services[svc] = this.postbox.unique(svcAddr);
 	}
 	// THIS MAY OR MAY NOT BE A HACK
 	card._contracts['org.ziniki.Init'] = {
 		services: function(from, serviceMap) {
-			self.services = serviceMap;
+			for (var ctr in serviceMap) {
+				self.services[ctr] = serviceMap[ctr];
+				card._contracts[ctr]._addr = serviceMap[ctr];
+			}
 		},
 		state: function(from) {
 			console.log("Setting state");
@@ -36,6 +40,7 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 		var ctrAddr = this.postbox.newAddress();
 		this.postbox.register(ctrAddr, card._contracts[ctr]);
 		this.ctrmap[ctr] = this.postbox.unique(ctrAddr);
+		card._contracts[ctr]._myaddr = ctrAddr;
 	}
 	this.postbox.deliver(this.initSvc, {from: this.ctrmap['org.ziniki.Init'], method: "ready", args:[this.ctrmap]});
 }
@@ -62,9 +67,9 @@ FlasckWrapper.prototype.processMessages = function(l) {
 }
 
 FlasckWrapper.prototype.processOne = function(msg) {
-//	console.log("Message: ", msg);
+	console.log("Message: ", msg);
 	if (msg._ctor === 'Send') {
-		var channel = msg.target._proxy.chan;
+		var addr = msg.target._addr;
 		var meth = msg.method;
 //		var invoke = target.request;
 //		console.log("channel ", channel, channel instanceof Channel);
@@ -89,7 +94,7 @@ FlasckWrapper.prototype.processOne = function(msg) {
 			}
 		}
 //		console.log(args);
-		channel.send(meth, args);
+		this.postbox.deliver(addr, {from: msg.target._myaddr, method: meth, args: args });
 	} else if (msg._ctor === 'Assign') {
 //		console.log("card = ", this.card);
 //		console.log("field = ", msg.field);
@@ -132,7 +137,10 @@ FlasckWrapper.prototype.renderSubtree = function(into, tree) {
     }
   } else if (line instanceof _CreateCard) {
 	  html = line.into.toElement(doc);
-	  var innerCard = Flasck.createCard(this.postbox, html, { explicit: line.card }, line.services);
+	  var svcs = line.services;
+	  if (line.services._ctor === 'Nil')
+		  svcs = this.services;
+	  var innerCard = Flasck.createCard(this.postbox, html, { explicit: line.card }, svcs);
   } else if (tree.type == 'content') {
     html = doc.createElement("span");
     html.appendChild(doc.createTextNode(line.toString()));

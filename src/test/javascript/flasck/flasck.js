@@ -2,11 +2,10 @@
 
 Flasck = {};
 
-Flasck.provideService = function(postbox, services, clz) {
+Flasck.provideService = function(postbox, services, svcName, svc) {
 	var addr = postbox.newAddress();
-	var svc = new clz();
 	postbox.register(addr, svc);
-	services['test.ziniki.Timer'] = postbox.unique(addr);
+	services[svcName] = postbox.unique(addr);
 }
 
 Flasck.createCard = function(postbox, inside, cardInfo, services) {
@@ -42,6 +41,13 @@ Flasck.createCard = function(postbox, inside, cardInfo, services) {
 
 	// Now create the card and tell the wrapper about it
 	var myCard = new cardClz({ wrapper: wrapper });
+	console.log("Creating card", myCard._ctor);
+	console.log("registering " + myAddr + " for init contract");
+	for (var s in myCard._services) {
+		console.log("svc " + s);
+		Flasck.provideService(postbox, services, s, myCard._services[s]);
+	}
+	console.log("These services are available:", services);
 	
 	wrapper.cardCreated(myCard);
 	
