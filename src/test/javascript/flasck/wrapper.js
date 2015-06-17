@@ -53,7 +53,8 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 		services: function(from, serviceMap) {
 			for (var ctr in serviceMap) {
 				self.services[ctr] = serviceMap[ctr];
-				card._contracts[ctr]._addr = serviceMap[ctr];
+				if (card._contracts[ctr])
+					card._contracts[ctr]._addr = serviceMap[ctr];
 			}
 		},
 		state: function(from) {
