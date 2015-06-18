@@ -1,5 +1,11 @@
 FlasckServices = {};
 
+// Not really a service
+FlasckServices.RenderService = function(postbox) {
+	this.postbox = postbox;
+	return this;
+}
+
 FlasckServices.TimerService = function(postbox) {
 	this.postbox = postbox;
 	return this;

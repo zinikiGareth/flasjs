@@ -1,9 +1,11 @@
 FlasckWrapper = function(postbox, initSvc, cardClz) {
+	this._ctor = 'FlasckWrapper';
 	this.postbox = postbox;
 	this.initSvc = initSvc;
 	this.cardClz = cardClz;
 	this.ctrmap = {};
 	this.nodeCache = {};
+	this.cardCache = {};
 	this.card = null; // will be filled in later
 	this.div = null;
 	return this;
@@ -212,10 +214,18 @@ FlasckWrapper.prototype.renderSubtree = function(into, tree, dontRerenderMe) {
     }
   } else if (line instanceof _CreateCard) {
 	  html = line.into.toElement(doc);
-	  var svcs = line.services;
-	  if (line.services._ctor === 'Nil')
-		  svcs = this.services;
-	  var innerCard = Flasck.createCard(this.postbox, html, { explicit: line.card }, svcs);
+      if (this.cardCache[tree.route]) {
+        console.log("have it already");
+        this.cardCache[tree.route].redrawInto(html);
+      } else {
+	  	  console.log("creating card for ", tree);
+		  var svcs = line.services;
+		  if (line.services._ctor === 'Nil')
+			  svcs = this.services;
+		  var innerCard = Flasck.createCard(this.postbox, html, { explicit: line.card }, svcs);
+		  this.cardCache[tree.route] = innerCard;
+		  console.log(this.cardCache);
+	  }
   } else if (tree.type == 'content') {
     html = doc.createElement("span");
     html.appendChild(doc.createTextNode(line.toString()));
