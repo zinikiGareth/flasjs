@@ -43,7 +43,7 @@ Postbox.prototype.register = function(address, comp) {
  * @param invocation the invocation message to deliver to the address and invoke on the target component 
  */
 Postbox.prototype.deliver = function(address, message) {
-	console.log("deliver ", message, " to ", address);
+//	console.log("deliver ", message, " to ", address);
 	var idx = address.lastIndexOf(":");
 	var pb = address.substr(0, idx);
 	var addr = address.substr(idx+1);

@@ -15,7 +15,7 @@ FlasckWrapper.Processor = function(wrapper, service) {
 }
 
 FlasckWrapper.Processor.prototype.process = function(message) {
-	console.log("received message", message);
+//	console.log("received message", message);
 	var meth = this.service[message.method];
 	if (!meth)
 		throw new Error("There is no method '" + message.method +"'");
@@ -36,9 +36,13 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 		this.postbox.register(svcAddr, new FlasckWrapper.Processor(this, card._services[svc]));
 		this.services[svc] = this.postbox.unique(svcAddr);
 	}
+	var userInit;
 	var contracts = {};
 	for (var ctr in card._contracts) {
 		contracts[ctr] = new FlasckWrapper.Processor(this, card._contracts[ctr]);
+		console.log("ctr = " + ctr);
+		if (ctr === 'org.ziniki.Init')
+			userInit = contracts[ctr];
 	}
 	// THIS MAY OR MAY NOT BE A HACK
 	contracts['org.ziniki.Init'] = {
@@ -59,6 +63,10 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 		},
 		state: function(from) {
 			console.log("Setting state");
+			// OK ... I claim it's ready now
+			if (userInit) {
+				userInit.process({from: from, method: 'onready', args: []});
+			}
 		},
 		service: {} // to store _myaddr
 	}
@@ -114,14 +122,14 @@ FlasckWrapper.prototype.processOne = function(msg) {
 			if (a._special) {
 				if (!a._onchan) {
 					if (a._special === 'handler') {
-						var proxy = new FlasckProxy(this, a);
-						var chan = channel.conn.newChannel(a._contract, proxy);
-						a._onchan = chan.chan;
-						proxy.channel(chan);
+						var proxy = new FlasckWrapper.Processor(this, a);
+						var ha = this.postbox.newAddress();
+						this.postbox.register(ha, proxy);
+						a._myaddr = this.postbox.unique(ha);
 					} else
 						throw new Error("Cannot send an object of type " + a._special);
 				}
-				args[p] = { type: a._special, chan: a._onchan };
+				args[p] = { type: a._special, chan: a._myaddr };
 			}
 		}
 //		console.log(args);
@@ -147,8 +155,10 @@ FlasckWrapper.prototype.doRender = function(msgs) {
 	var updateTree = this.cardClz.updates;
 	var todo = {};
 	while (l && l._ctor === 'Cons') {
-		if (l.head._ctor === 'Assign')
-			todo[l.head.field] = updateTree[l.head.field];
+		if (l.head._ctor === 'Assign') {
+			if (updateTree[l.head.field])
+				todo[l.head.field] = updateTree[l.head.field];
+		}
 		l = l.tail;
 	}
 	// Gather into a single, de-duped list of elements to update
@@ -164,11 +174,11 @@ FlasckWrapper.prototype.doRender = function(msgs) {
 	for (var qr in routes) {
 		var r = routes[qr];
 		if (r.action === 'render') {
-			console.log("rewriting ", r.me.id, r.elt.id);
+//			console.log("rewriting ", r.me.id, r.elt.id);
 			r.me.innerHTML = "";
 			wrapper.renderSubtree(r.me, r.tree);
 		} else if (r.action === 'renderChildren') {
-			console.log("rewriting ", r.me.id, r.elt.id);
+//			console.log("rewriting ", r.me.id, r.elt.id);
 			r.me.innerHTML = "";
 			wrapper.renderSubtree(r.me, r.tree, true);
 		} else if (r.action === 'attrs') {
@@ -215,7 +225,7 @@ FlasckWrapper.prototype.renderSubtree = function(into, tree, dontRerenderMe) {
 	  throw new Error("Could not render " + tree.type + " " + line);
   if (html) {
 	  html.setAttribute('id', 'id_' + nextid++);
-	  if (tree.route) {
+	  if (tree.route || tree.route === '') {
 	    this.nodeCache[tree.route] = { elt: into, tree: tree, me: html  };
 	  }
   }
@@ -234,7 +244,6 @@ FlasckWrapper.prototype.renderSubtree = function(into, tree, dontRerenderMe) {
 	  var cv = true;
 	  if (cond.fn)
 	    cv = FLEval.full(cond.fn.apply(this.card, [line]));
-	  console.log("c = " + c + " cv = ", cv);
 	  if (cv) {
 		  for (var q=0;q<cond.children.length;q++)
 			this.renderSubtree(send, cond.children[q]);

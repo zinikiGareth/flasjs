@@ -17,7 +17,7 @@ Flasck.createCard = function(postbox, inside, cardInfo, services) {
 	var myAddr = postbox.unique(myEnd);
 	var initService = {
 		process: function(message) {
-			console.log("need to process", message);
+//			console.log("need to process", message);
 			if (message.method === 'ready')
 				this.ready(message.from, message.args[0]);
 			else

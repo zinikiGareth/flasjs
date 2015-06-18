@@ -3,8 +3,13 @@
   	<title>A Simple Counter</title>
   	<script type='text/javascript' src='../javascript/flenv.js'></script>
   	<script type='text/javascript' src='../javascript/builtin.js'></script>
-  	<script type='text/javascript' src='../javascript/flasck.js'></script>
+  	<script type='text/javascript' src='../javascript/stdlib.js'></script>
   	<script type='text/javascript' src='../javascript/dom.js'></script>
+ 	<script type='text/javascript' src='../javascript/flasck/flasck.js'></script>
+  	<script type='text/javascript' src='../javascript/flasck/handle.js'></script>
+  	<script type='text/javascript' src='../javascript/flasck/postbox.js'></script>
+  	<script type='text/javascript' src='../javascript/flasck/services.js'></script>
+  	<script type='text/javascript' src='../javascript/flasck/wrapper.js'></script>
   	<script type='text/javascript' src='../../../../FLAS2/src/test/resources/cards/test.ziniki/test.ziniki.js'></script>
   </head>
   <body>
@@ -17,16 +22,11 @@
   	  console.log(myCounter);
 
 // Create a new card-containing environment with services
-  	  env = new FlasckContainer();
-	  env.addService("test.ziniki.Init", new FlasckService.InitService());
-	  env.addService("test.ziniki.Timer", new FlasckService.TimerService());
-	  env.addService("test.ziniki.OnCounter", new FlasckService.OnTickService());
-  	  console.log(env);
+var postbox = new Postbox("main");
+var services = {};
+Flasck.provideService(postbox, services, 'test.ziniki.Timer', new FlasckServices.TimerService(postbox));
 
-	var handle = env.createCard(test.ziniki.CounterCard, body, ['test.ziniki.Init', 'test.ziniki.Timer', 'test.ziniki.OnCounter']);
-	
-// Tell it to load the basic object, and see what it says
-      handle.send('test.ziniki.Init', 'load', myCounter);
+	var handle = Flasck.createCard(postbox, body, { explicit: test.ziniki.CounterCard, mode: 'local'}, services);
   	</script>
   </body>
 </html>
