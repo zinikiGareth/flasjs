@@ -31,8 +31,11 @@ var myCounter = new (PKG.CounterObj)({ inc: 3 });
 var postbox = new Postbox("main");
 var services = {};
 Flasck.provideService(postbox, services, 'test.ziniki.Timer', new FlasckServices.TimerService(postbox));
+Flasck.provideService(postbox, services, 'org.ziniki.KeyValue', new FlasckServices.KeyValueService(postbox));
 
 	var handle = Flasck.createCard(postbox, body, { explicit: test.ziniki.CounterCard, mode: 'local'}, services);
+//console.log("handle", handle);
+handle.send('org.ziniki.KeyValue', 'value', myCounter);
 
 //Tell it to load the basic object, and see what it says
 console.log("ready");

@@ -17,3 +17,8 @@ FlasckServices.TimerService.prototype.requestTicks = function(handler, amount) {
 		self.postbox.deliver(handler.chan, {method: 'onTick'});
 	}, 1000);
 }
+
+FlasckServices.KeyValueService = function(postbox) {
+	this.postbox = postbox;
+	return this;
+}

@@ -15,12 +15,13 @@ FlasckWrapper.Processor = function(wrapper, service) {
 }
 
 FlasckWrapper.Processor.prototype.process = function(message) {
-//	console.log("received message", message);
+	console.log("received message", message);
 	var meth = this.service[message.method];
 	if (!meth)
 		throw new Error("There is no method '" + message.method +"'");
 //	message.args.splice(0, 0, message.from);
 	var clos = meth.apply(this.service, message.args);
+console.log("clos = ", clos);
 	var msgs = FLEval.full(clos);
 	this.wrapper.processMessages(msgs);
 	if (this.wrapper.div) // so render will have been called

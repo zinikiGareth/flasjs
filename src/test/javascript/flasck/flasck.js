@@ -9,12 +9,13 @@ Flasck.provideService = function(postbox, services, svcName, svc) {
 }
 
 Flasck.createCard = function(postbox, inside, cardInfo, services) {
-	// create an object that is the creator's handle to the card
-	var handle = new FlasckHandle(this);
-
 	// this is the thing that's supposed to handle our end of the Init contract
 	var myEnd = postbox.newAddress();
 	var myAddr = postbox.unique(myEnd);
+
+	// create an object that is the creator's handle to the card
+	var handle = new FlasckHandle(postbox, myAddr);
+
 	var initService = {
 		process: function(message) {
 //			console.log("need to process", message);
@@ -24,11 +25,12 @@ Flasck.createCard = function(postbox, inside, cardInfo, services) {
 				throw new Error("Cannot process " + message.method);
 		},
 		ready: function(from, contracts) {
-			handle.contracts = contracts;
 			var reply = {};
 			for (var ctr in contracts) {
-				if (services[ctr])
+				if (services[ctr]) {
 					reply[ctr] = services[ctr];
+					handle.channels[ctr] = contracts[ctr];
+				}
 			}
 			console.log("ah ... card is ready and wants ", contracts, " and will get ", reply);
 			postbox.deliver(from, {from: myAddr, method: "services", args: [reply]});
