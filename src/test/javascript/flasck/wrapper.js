@@ -170,6 +170,10 @@ FlasckWrapper.prototype.doRender = function(msgs) {
 	for (var t in todo) {
 		todo[t].forEach(function (p) {
 			var c = wrapper.nodeCache[p.route];
+			if (c == null || c == undefined) {
+				console.log("There is nothing for route " + p.route);
+				return;
+			}
 			routes[p.route] = { elt: c.elt, tree: c.tree, me: c.me, action: p.action };
 		});
 	}
@@ -198,70 +202,91 @@ FlasckWrapper.prototype.doRender = function(msgs) {
 }
 
 FlasckWrapper.prototype.renderSubtree = function(into, tree, dontRerenderMe) {
-  var doc = into.ownerDocument;
-  var line = FLEval.full(tree.fn.apply(this.card));
-  var html;
-  if (line instanceof DOM._Element) {
-    html = line.toElement(doc);
-    var evh = line.events;
-    while (evh && evh._ctor === 'Cons') {
-      var ev = evh.head;
-      if (ev._ctor === 'Tuple' && ev.length === 2) {
-    	  var wrapper = this;
-    	  html['on'+ev.members[0]] = function(event) { wrapper.dispatchEvent(event, ev.members[1]); }
-      }
-      evh = evh.tail;
-    }
-  } else if (line instanceof _CreateCard) {
-	  html = line.into.toElement(doc);
-      if (this.cardCache[tree.route]) {
-        console.log("have it already");
-        this.cardCache[tree.route].redrawInto(html);
-      } else {
-	  	  console.log("creating card for ", tree);
-		  var svcs = line.services;
-		  if (line.services._ctor === 'Nil')
-			  svcs = this.services;
-		  var innerCard = Flasck.createCard(this.postbox, html, { explicit: line.card }, svcs);
-		  this.cardCache[tree.route] = innerCard;
-		  console.log(this.cardCache);
-	  }
-  } else if (tree.type == 'content') {
-    html = doc.createElement("span");
-    html.appendChild(doc.createTextNode(line.toString()));
-  } else if (tree.type == 'switch') {
-	  if (!dontRerenderMe) // apologies for the double-negative, it just works with undefined ... i.e. "renderMe"
-		  html = doc.createElement("div");
-  } else
-	  throw new Error("Could not render " + tree.type + " " + line);
-  if (html) {
-	  html.setAttribute('id', 'id_' + nextid++);
-	  if (tree.route || tree.route === '') {
+    var doc = into.ownerDocument;
+	if (tree.type === 'switch') {
+		var send;
+		var val = FLEval.full(tree.val.apply(this.card));
+		console.log("switching based on " + val);
+		if (dontRerenderMe)
+			send = into;
+		else
+			send = doc.createElement("div");
+		for (var c=0;c<tree.children.length;c++) {
+	  		var cond = tree.children[c];
+	  		var cv = true;
+	  		if (cond.val)
+	    		cv = FLEval.full(cond.val.apply(this.card, [val]));
+	    	console.log("GLT says", cv);
+	  		if (cv) {
+		  		for (var q=0;q<cond.children.length;q++)
+					this.renderSubtree(send, cond.children[q]);
+		  		break;
+	  		}
+		}
+		if (!dontRerenderMe)
+			into.appendChild(send);
+	} else if (tree.type == 'list') { // another special case 
+		console.log("list case");
+		var ul = FLEval.full(tree.fn.apply(this.card)).toElement(doc);
+		var val = FLEval.full(tree.val.apply(this.card));
+		console.log(val);
+		while (val && val._ctor === 'Cons') {
+			var lvar = val.head;
+			// TODO: somehow need to bind this in to the execution context ... function parameter?  general context?
+	  		for (var q=0;q<tree.children.length;q++)
+				this.renderSubtree(ul, tree.children[q]);
+    		val = val.tail;
+    	}
+		into.appendChild(ul);
+	} else {
+		// the majority of cases, grouped together
+		var line = FLEval.full(tree.fn.apply(this.card));
+		var html;
+		if (line instanceof DOM._Element) {
+			html = line.toElement(doc);
+			var evh = line.events;
+			while (evh && evh._ctor === 'Cons') {
+				var ev = evh.head;
+      			if (ev._ctor === 'Tuple' && ev.length === 2) {
+    	  			var wrapper = this;
+    	  			html['on'+ev.members[0]] = function(event) { wrapper.dispatchEvent(event, ev.members[1]); }
+      			}
+      			evh = evh.tail;
+    		}
+  		} else if (line instanceof _CreateCard) {
+	  		html = line.into.toElement(doc);
+      		if (this.cardCache[tree.route]) {
+        		console.log("have it already");
+        		this.cardCache[tree.route].redrawInto(html);
+      		} else {
+	  	  		console.log("creating card for ", tree);
+		  		var svcs = line.services;
+		  		if (line.services._ctor === 'Nil')
+			  		svcs = this.services;
+		  		var innerCard = Flasck.createCard(this.postbox, html, { explicit: line.card }, svcs);
+		  		this.cardCache[tree.route] = innerCard;
+		  		console.log(this.cardCache);
+	  		}
+  		} else if (tree.type == 'content') {
+    		html = doc.createElement("span");
+    		html.appendChild(doc.createTextNode(line.toString()));
+  		} else
+	  		throw new Error("Could not render " + tree.type + " " + line);
+		this.setIdAndCache(into, tree, html);
+  		if (tree.type === 'div') {
+			if (tree.children) {
+      			for (var c=0;c<tree.children.length;c++) {
+        			this.renderSubtree(html, tree.children[c]);
+      			}
+			}
+		}
+	  	into.appendChild(html);
+	}
+}
+
+this.FlasckWrapper.prototype.setIdAndCache = function(into, tree, html) {
+ 	html.setAttribute('id', 'id_' + nextid++);
+  	if (tree.route || tree.route === '') {
 	    this.nodeCache[tree.route] = { elt: into, tree: tree, me: html  };
-	  }
-  }
-  if (tree.type === 'div') {
-	if (tree.children) {
-      for (var c=0;c<tree.children.length;c++) {
-        this.renderSubtree(html, tree.children[c]);
-      }
-	}
-  } else if (tree.type == 'switch') {
-	  var send = html;
-	  if (dontRerenderMe)
-		  send = into;
-	for (var c=0;c<tree.children.length;c++) {
-	  var cond = tree.children[c];
-	  var cv = true;
-	  if (cond.fn)
-	    cv = FLEval.full(cond.fn.apply(this.card, [line]));
-	  if (cv) {
-		  for (var q=0;q<cond.children.length;q++)
-			this.renderSubtree(send, cond.children[q]);
-		  break;
-	  }
-	}
-  }
-  if (html)
-	  into.appendChild(html);
+  	}
 }
