@@ -206,7 +206,6 @@ FlasckWrapper.prototype.renderSubtree = function(into, tree, dontRerenderMe) {
 	if (tree.type === 'switch') {
 		var send;
 		var val = FLEval.full(tree.val.apply(this.card));
-		console.log("switching based on " + val);
 		if (dontRerenderMe)
 			send = into;
 		else
@@ -216,17 +215,16 @@ FlasckWrapper.prototype.renderSubtree = function(into, tree, dontRerenderMe) {
 	  		var cv = true;
 	  		if (cond.val)
 	    		cv = FLEval.full(cond.val.apply(this.card, [val]));
-	    	console.log("GLT says", cv);
 	  		if (cv) {
 		  		for (var q=0;q<cond.children.length;q++)
 					this.renderSubtree(send, cond.children[q]);
 		  		break;
 	  		}
 		}
+		this.setIdAndCache(into, tree, send);
 		if (!dontRerenderMe)
 			into.appendChild(send);
 	} else if (tree.type == 'list') { // another special case 
-		console.log("list case");
 		var ul = FLEval.full(tree.fn.apply(this.card)).toElement(doc);
 		var val = FLEval.full(tree.val.apply(this.card));
 		console.log(val);
@@ -238,6 +236,7 @@ FlasckWrapper.prototype.renderSubtree = function(into, tree, dontRerenderMe) {
     		val = val.tail;
     	}
 		into.appendChild(ul);
+		this.setIdAndCache(into, tree, ul);
 	} else {
 		// the majority of cases, grouped together
 		var line = FLEval.full(tree.fn.apply(this.card));
