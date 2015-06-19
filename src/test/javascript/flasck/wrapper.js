@@ -112,6 +112,10 @@ FlasckWrapper.prototype.processOne = function(msg) {
 //	console.log("Message: ", msg);
 	if (msg._ctor === 'Send') {
 		var addr = msg.target._addr;
+		if (!addr) {
+			console.log("No service was provided for " + msg.target._contract);
+			return;
+		}
 		var meth = msg.method;
 //		var invoke = target.request;
 //		console.log("channel ", channel, channel instanceof Channel);
@@ -271,7 +275,8 @@ FlasckWrapper.prototype.renderSubtree = function(into, tree, dontRerenderMe) {
 	  		}
   		} else if (tree.type == 'content') {
     		html = doc.createElement("span");
-    		html.appendChild(doc.createTextNode(line.toString()));
+    		if (line)
+    			html.appendChild(doc.createTextNode(line.toString()));
   		} else
 	  		throw new Error("Could not render " + tree.type + " " + line);
 		this.setIdAndCache(into, tree, html);

@@ -24,7 +24,7 @@ var window = doc.defaultView;
 var body = doc.getElementsByTagName("body")[0];
 
 // So this is a perfectly normal object we're creating to start the ball rolling
-var myCounter = new (PKG.CounterObj)({ inc: 3 });
+var myCounter = new (PKG.CounterObj)(3);
 //console.log("counter = ",  myCounter);
 
 // Create a new card-containing environment with services
