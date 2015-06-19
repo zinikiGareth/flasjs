@@ -150,6 +150,7 @@ var nextid = 1; // TODO: this might actually be the right scoping; what I want i
 FlasckWrapper.prototype.doInitialRender = function(div) {
 	this.div = div;
     this.div.innerHTML = "";
+    this.renderState = {};
     this.renderSubtree(this.div, this.cardClz.template);
 }
 
@@ -183,17 +184,19 @@ FlasckWrapper.prototype.doRender = function(msgs) {
 		if (r.action === 'render') {
 //			console.log("rewriting ", r.me.id, r.elt.id);
 			r.me.innerHTML = "";
+		    this.renderState = {}; // may need to bind in existing vars at this point
 			wrapper.renderSubtree(r.me, r.tree);
 		} else if (r.action === 'renderChildren') {
 //			console.log("rewriting ", r.me.id, r.elt.id);
 			r.me.innerHTML = "";
+		    this.renderState = {}; // may need to bind in existing vars at this point
 			wrapper.renderSubtree(r.me, r.tree, true);
 		} else if (r.action === 'attrs') {
 			var line = FLEval.full(r.tree.fn.apply(this.card));
 			var html;
 			if (line instanceof DOM._Element) {
 //				html = line.toElement(r.me.ownerDocument);
-				line.updateAttrsIn(r.me);
+				line.updateAttrsIn(r.me); // do we need to bind in the vars here?
 			} else
 				throw new Error("This case is not covered: " + line);
 		} else
@@ -230,7 +233,7 @@ FlasckWrapper.prototype.renderSubtree = function(into, tree, dontRerenderMe) {
 		console.log(val);
 		while (val && val._ctor === 'Cons') {
 			var lvar = val.head;
-			// TODO: somehow need to bind this in to the execution context ... function parameter?  general context?
+			this.renderState[tree.var] = lvar;
 	  		for (var q=0;q<tree.children.length;q++)
 				this.renderSubtree(ul, tree.children[q]);
     		val = val.tail;
