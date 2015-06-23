@@ -35,7 +35,7 @@ FlasckServices.QueryService = function(postbox) {
 }
 
 FlasckServices.QueryService.prototype.process = function(message) {
-	console.log("received message", message);
+//	console.log("received message", message);
 	var meth = this[message.method];
 	if (!meth)
 		throw new Error("There is no method '" + message.method +"'");
@@ -43,7 +43,7 @@ FlasckServices.QueryService.prototype.process = function(message) {
 }
 
 FlasckServices.QueryService.prototype.scan = function(index, type, handler) {
-	console.log("scan", index, type, handler);
+//	console.log("scan", index, type, handler);
 	var self = this;
 	// Hack - this should turn around and talk to Ziniki
 	setTimeout(function() {
@@ -53,7 +53,6 @@ FlasckServices.QueryService.prototype.scan = function(index, type, handler) {
 
 FlasckServices.provideAll = function(postbox, services) {
 	"use strict";
-	console.log("binding services");
 	Flasck.provideService(postbox, services, "org.ziniki.Timer", new FlasckServices.TimerService());
 	Flasck.provideService(postbox, services, "org.ziniki.Render", new FlasckServices.RenderService());
 	Flasck.provideService(postbox, services, "org.ziniki.Query", new FlasckServices.QueryService());

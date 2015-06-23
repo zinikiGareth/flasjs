@@ -43,7 +43,6 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 	var contracts = {};
 	for (var ctr in card._contracts) {
 		contracts[ctr] = new FlasckWrapper.Processor(this, card._contracts[ctr]);
-		console.log("ctr = " + ctr);
 		if (ctr === 'org.ziniki.Init')
 			userInit = contracts[ctr];
 	}
@@ -65,7 +64,7 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 			}
 		},
 		state: function(from) {
-			console.log("Setting state");
+//			console.log("Setting state");
 			// OK ... I claim it's ready now
 			if (userInit) {
 				userInit.process({from: from, method: 'onready', args: []});
@@ -216,7 +215,7 @@ FlasckWrapper.prototype.renderSubtree = function(route, into, tree, dontRerender
 	if (idx != -1)
 		ext = ext.substring(idx);
 	var newRoute = route + ext;
-    console.log("render sub", newRoute);
+//    console.log("render sub", newRoute);
 	if (tree.type === 'switch') {
 		var send;
 		var val = FLEval.full(tree.val.apply(this.card));
@@ -239,22 +238,33 @@ FlasckWrapper.prototype.renderSubtree = function(route, into, tree, dontRerender
 		if (!dontRerenderMe)
 			into.appendChild(send);
 	} else if (tree.type == 'list') { // another special case
+		var plidx = newRoute.lastIndexOf("+");
 		var ul = FLEval.full(tree.fn.apply(this.card)).toElement(doc);
 		this.setIdAndCache(route, into, tree, ul);
 		var val = FLEval.full(tree.val.apply(this.card));
-		console.log("val =", val);
-//		console.log(val);
-		var plidx = newRoute.lastIndexOf("+");
-		while (val && val._ctor === 'Cons') {
-			var lvar = val.head;
-			this.renderState[tree.var] = lvar;
-			console.log("list var = ", tree.var, "ref =", lvar);
-			newRoute = newRoute.substring(0,plidx+1) + lvar.id;
-			console.log("list route = ", newRoute);
-	  		for (var q=0;q<tree.children.length;q++)
-				this.renderSubtree(newRoute, ul, tree.children[q]);
-    		val = val.tail;
-    	}
+//		console.log("val =", val);
+		if (val && val._ctor === 'Cons') { // the value may be an FL list
+			while (val && val._ctor === 'Cons') {
+				var lvar = val.head;
+				this.renderState[tree.var] = lvar;
+//				console.log("list var = ", tree.var, "ref =", lvar);
+				newRoute = newRoute.substring(0,plidx+1) + lvar.id;
+//				console.log("list route = ", newRoute);
+		  		for (var q=0;q<tree.children.length;q++)
+					this.renderSubtree(newRoute, ul, tree.children[q]);
+	    		val = val.tail;
+	    	}
+	    } else if (val && val._ctor === 'Croset') { // or it may be a Croset
+			for (var cri=0;cri<val.members.length;cri++) {
+				var lvar = val.members[cri];
+				this.renderState[tree.var] = lvar.value;
+//				console.log("list var = ", tree.var, "ref =", lvar);
+				newRoute = newRoute.substring(0,plidx+1) + lvar.key;
+//				console.log("list route = ", newRoute);
+		  		for (var q=0;q<tree.children.length;q++)
+					this.renderSubtree(newRoute, ul, tree.children[q]);
+	    	}
+	    }
 		into.appendChild(ul);
 	} else {
 		// the majority of cases, grouped together

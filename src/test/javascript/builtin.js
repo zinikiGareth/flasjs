@@ -68,6 +68,35 @@ _Tuple.prototype.toString = function() {
 
 Tuple = function() { return new _Tuple(arguments); }
 
+// Cunning Crosets
+
+function _Croset(list) {
+	this._ctor = 'Croset'
+	this.members = [];
+	while ((list = FLEval.head(list)) && list._ctor === 'Cons') {
+		var h = list.head = FLEval.head(list.head);
+		if (h._ctor === 'Tuple' || h.length == 2) {
+			this.insert(h.members[0], h.members[1]);
+		}
+		list = list.tail;
+	}
+}
+
+_Croset.prototype.insert = function(k, v) {
+	var entry = { key: k, value: v };
+	for (var i=0;i<this.members.length;i++) {
+		var m = this.members[i];
+		if (m['key'] > k) {
+			this.members.splice(i, 0, entry);
+			return;
+		}
+	}
+	this.members.push(entry);
+}
+
+Croset = function(list) { return new _Croset(list); }
+
+
 // Message passing
 
 _Send = function(target, method, args) {

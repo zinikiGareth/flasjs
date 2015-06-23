@@ -38,7 +38,7 @@ Flasck.createCard = function(postbox, inside, cardInfo, services) {
 					reply[s] = services[s];
 			}
 			// end hack
-			console.log("ah ... card is ready and wants ", contracts, " and will get ", reply);
+//			console.log("ah ... card is ready and wants ", contracts, " and will get ", reply);
 			postbox.deliver(from, {from: myAddr, method: "services", args: [reply]});
 			postbox.deliver(from, {from: myAddr, method: "state", args: [] })
 			if (contracts['org.ziniki.Render'])
@@ -56,13 +56,12 @@ Flasck.createCard = function(postbox, inside, cardInfo, services) {
 
 	// Now create the card and tell the wrapper about it
 	var myCard = new cardClz({ wrapper: wrapper });
-	console.log("Creating card", myCard._ctor);
-	console.log("registering " + myAddr + " for init contract");
+//	console.log("Creating card", myCard._ctor);
 	for (var s in myCard._services) {
-		console.log("svc " + s);
+//		console.log("providing service " + s);
 		Flasck.provideService(postbox, services, s, new FlasckWrapper.Processor(myCard._services[s]));
 	}
-	console.log("These services are available:", services);
+//	console.log("These services are available:", services);
 	
 	wrapper.cardCreated(myCard);
 	
