@@ -28,3 +28,33 @@ FlasckServices.KeyValueService = function(postbox) {
 	this.postbox = postbox;
 	return this;
 }
+
+FlasckServices.QueryService = function(postbox) {
+	this.postbox = postbox;
+	return this;
+}
+
+FlasckServices.QueryService.prototype.process = function(message) {
+	console.log("received message", message);
+	var meth = this[message.method];
+	if (!meth)
+		throw new Error("There is no method '" + message.method +"'");
+	meth.apply(this.service, message.args);
+}
+
+FlasckServices.QueryService.prototype.scan = function(index, type, handler) {
+	console.log("scan", index, type, handler);
+	var self = this;
+	// Hack - this should turn around and talk to Ziniki
+	setTimeout(function() {
+		self.postbox.deliver(handler.chan, {method: 'entry', args: ["Q7", new com.helpfulsidekick.chaddy.Queue('Q7', 'Captured Items')]}); 
+	}, 10);
+}
+
+FlasckServices.provideAll = function(postbox, services) {
+	"use strict";
+	console.log("binding services");
+	Flasck.provideService(postbox, services, "org.ziniki.Timer", new FlasckServices.TimerService());
+	Flasck.provideService(postbox, services, "org.ziniki.Render", new FlasckServices.RenderService());
+	Flasck.provideService(postbox, services, "org.ziniki.Query", new FlasckServices.QueryService());
+}

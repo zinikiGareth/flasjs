@@ -30,8 +30,7 @@ body.appendChild(div);
 
 var postbox = new Postbox("main");
 var services = {};
-Flasck.provideService(postbox, services, "org.ziniki.Timer", new FlasckServices.TimerService());
-Flasck.provideService(postbox, services, "org.ziniki.Render", new FlasckServices.RenderService());
+FlasckServices.provideAll(postbox, services);
 
 var handle = Flasck.createCard(postbox, div, { explicit: com.helpfulsidekick.chaddy.Main, mode: 'local' }, services);
 

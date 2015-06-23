@@ -32,6 +32,12 @@ Flasck.createCard = function(postbox, inside, cardInfo, services) {
 					handle.channels[ctr] = contracts[ctr];
 				}
 			}
+			// hack ... but we need something like this for pass-through
+			for (var s in services) {
+				if (!reply[s])
+					reply[s] = services[s];
+			}
+			// end hack
 			console.log("ah ... card is ready and wants ", contracts, " and will get ", reply);
 			postbox.deliver(from, {from: myAddr, method: "services", args: [reply]});
 			postbox.deliver(from, {from: myAddr, method: "state", args: [] })

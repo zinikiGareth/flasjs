@@ -17,13 +17,13 @@ FlasckWrapper.Processor = function(wrapper, service) {
 }
 
 FlasckWrapper.Processor.prototype.process = function(message) {
-	console.log("received message", message);
+//	console.log("received message", message);
 	var meth = this.service[message.method];
 	if (!meth)
 		throw new Error("There is no method '" + message.method +"'");
 //	message.args.splice(0, 0, message.from);
 	var clos = meth.apply(this.service, message.args);
-console.log("clos = ", clos);
+//console.log("clos = ", clos);
 	var msgs = FLEval.full(clos);
 	this.wrapper.processMessages(msgs);
 	if (this.wrapper.div) // so render will have been called
@@ -155,7 +155,7 @@ FlasckWrapper.prototype.doInitialRender = function(div) {
 	this.div = div;
     this.div.innerHTML = "";
     this.renderState = {};
-    this.renderSubtree(this.div, this.cardClz.template);
+    this.renderSubtree("", this.div, this.cardClz.template);
 }
 
 FlasckWrapper.prototype.doRender = function(msgs) {
@@ -185,16 +185,17 @@ FlasckWrapper.prototype.doRender = function(msgs) {
 	// TODO: we need de-dup logic (including removing sub-nodes, which is why we use routes rather than ids)
 	for (var qr in routes) {
 		var r = routes[qr];
+//		console.log("route to render", qr, r.action);
 		if (r.action === 'render') {
 //			console.log("rewriting ", r.me.id, r.elt.id);
 			r.me.innerHTML = "";
 		    this.renderState = {}; // may need to bind in existing vars at this point
-			wrapper.renderSubtree(r.me, r.tree);
+			wrapper.renderSubtree(qr, r.me, r.tree);
 		} else if (r.action === 'renderChildren') {
 //			console.log("rewriting ", r.me.id, r.elt.id);
 			r.me.innerHTML = "";
 		    this.renderState = {}; // may need to bind in existing vars at this point
-			wrapper.renderSubtree(r.me, r.tree, true);
+			wrapper.renderSubtree(qr, r.me, r.tree, true);
 		} else if (r.action === 'attrs') {
 			var line = FLEval.full(r.tree.fn.apply(this.card));
 			var html;
@@ -208,8 +209,14 @@ FlasckWrapper.prototype.doRender = function(msgs) {
 	}
 }
 
-FlasckWrapper.prototype.renderSubtree = function(into, tree, dontRerenderMe) {
+FlasckWrapper.prototype.renderSubtree = function(route, into, tree, dontRerenderMe) {
     var doc = into.ownerDocument;
+	var idx = tree.route.lastIndexOf(".");
+	var ext = tree.route;
+	if (idx != -1)
+		ext = ext.substring(idx);
+	var newRoute = route + ext;
+    console.log("render sub", newRoute);
 	if (tree.type === 'switch') {
 		var send;
 		var val = FLEval.full(tree.val.apply(this.card));
@@ -224,30 +231,36 @@ FlasckWrapper.prototype.renderSubtree = function(into, tree, dontRerenderMe) {
 	    		cv = FLEval.full(cond.val.apply(this.card, [val]));
 	  		if (cv) {
 		  		for (var q=0;q<cond.children.length;q++)
-					this.renderSubtree(send, cond.children[q]);
+					this.renderSubtree(newRoute, send, cond.children[q]);
 		  		break;
 	  		}
 		}
-		this.setIdAndCache(into, tree, send);
+		this.setIdAndCache(route, into, tree, send);
 		if (!dontRerenderMe)
 			into.appendChild(send);
-	} else if (tree.type == 'list') { // another special case 
+	} else if (tree.type == 'list') { // another special case
 		var ul = FLEval.full(tree.fn.apply(this.card)).toElement(doc);
+		this.setIdAndCache(route, into, tree, ul);
 		var val = FLEval.full(tree.val.apply(this.card));
-		console.log(val);
+		console.log("val =", val);
+//		console.log(val);
+		var plidx = newRoute.lastIndexOf("+");
 		while (val && val._ctor === 'Cons') {
 			var lvar = val.head;
 			this.renderState[tree.var] = lvar;
+			console.log("list var = ", tree.var, "ref =", lvar);
+			newRoute = newRoute.substring(0,plidx+1) + lvar.id;
+			console.log("list route = ", newRoute);
 	  		for (var q=0;q<tree.children.length;q++)
-				this.renderSubtree(ul, tree.children[q]);
+				this.renderSubtree(newRoute, ul, tree.children[q]);
     		val = val.tail;
     	}
 		into.appendChild(ul);
-		this.setIdAndCache(into, tree, ul);
 	} else {
 		// the majority of cases, grouped together
 		var line = FLEval.full(tree.fn.apply(this.card));
 		var html;
+//		console.log("line =", line);
 		if (line instanceof DOM._Element) {
 			html = line.toElement(doc);
 			var evh = line.events;
@@ -262,28 +275,35 @@ FlasckWrapper.prototype.renderSubtree = function(into, tree, dontRerenderMe) {
   		} else if (line instanceof _CreateCard) {
 	  		html = line.into.toElement(doc);
       		if (this.cardCache[tree.route]) {
-        		console.log("have it already");
+//        		console.log("have it already");
         		this.cardCache[tree.route].redrawInto(html);
       		} else {
-	  	  		console.log("creating card for ", tree);
+//	  	  		console.log("creating card for ", tree);
 		  		var svcs = line.services;
 		  		if (line.services._ctor === 'Nil')
 			  		svcs = this.services;
 		  		var innerCard = Flasck.createCard(this.postbox, html, { explicit: line.card }, svcs);
 		  		this.cardCache[tree.route] = innerCard;
-		  		console.log(this.cardCache);
+//		  		console.log(this.cardCache);
 	  		}
   		} else if (tree.type == 'content') {
-    		html = doc.createElement("span");
-    		if (line)
+  			var cache = this.nodeCache[tree.route];
+//  			console.log("html =", cache);
+  			if (cache)
+  				html = cache.me;
+  			else
+    			html = doc.createElement("span");
+    		if (line != null)
     			html.appendChild(doc.createTextNode(line.toString()));
+    		if (cache)
+    			return;
   		} else
 	  		throw new Error("Could not render " + tree.type + " " + line);
-		this.setIdAndCache(into, tree, html);
+		this.setIdAndCache(route, into, tree, html);
   		if (tree.type === 'div') {
 			if (tree.children) {
       			for (var c=0;c<tree.children.length;c++) {
-        			this.renderSubtree(html, tree.children[c]);
+        			this.renderSubtree(newRoute, html, tree.children[c]);
       			}
 			}
 		}
@@ -291,9 +311,9 @@ FlasckWrapper.prototype.renderSubtree = function(into, tree, dontRerenderMe) {
 	}
 }
 
-this.FlasckWrapper.prototype.setIdAndCache = function(into, tree, html) {
+this.FlasckWrapper.prototype.setIdAndCache = function(route, into, tree, html) {
  	html.setAttribute('id', 'id_' + nextid++);
-  	if (tree.route || tree.route === '') {
-	    this.nodeCache[tree.route] = { elt: into, tree: tree, me: html  };
+  	if (route || route === '') {
+	    this.nodeCache[route] = { elt: into, tree: tree, me: html  };
   	}
 }
