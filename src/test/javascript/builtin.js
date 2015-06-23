@@ -71,7 +71,8 @@ Tuple = function() { return new _Tuple(arguments); }
 // Cunning Crosets
 
 function _Croset(list) {
-	this._ctor = 'Croset'
+	this._ctor = 'Croset';
+	this._special = 'object';
 	this.members = [];
 	while ((list = FLEval.head(list)) && list._ctor === 'Cons') {
 		var h = list.head = FLEval.head(list.head);

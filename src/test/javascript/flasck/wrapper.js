@@ -110,40 +110,53 @@ FlasckWrapper.prototype.processMessages = function(l) {
 FlasckWrapper.prototype.processOne = function(msg) {
 //	console.log("Message: ", msg);
 	if (msg._ctor === 'Send') {
-		var addr = msg.target._addr;
-		if (!addr) {
-			console.log("No service was provided for " + msg.target._contract);
+		if (!msg.target._special) {
+			console.log("Target for send is not 'special'", msg.target);
 			return;
 		}
 		var meth = msg.method;
-//		var invoke = target.request;
-//		console.log("channel ", channel, channel instanceof Channel);
-//		console.log("meth " + meth);
-//		console.log("invoke " + invoke);
-//		console.log("method = " + meth + " args = " + msg.args);
 		var args = FLEval.flattenList(msg.args);
-//		console.log(args);
-		for (var p=0;p<args.length;p++) {
-			var a = args[p];
-			if (a._special) {
-				if (!a._onchan) {
-					if (a._special === 'handler') {
-						var proxy = new FlasckWrapper.Processor(this, a);
-						var ha = this.postbox.newAddress();
-						this.postbox.register(ha, proxy);
-						a._myaddr = this.postbox.unique(ha);
-					} else
-						throw new Error("Cannot send an object of type " + a._special);
-				}
-				args[p] = { type: a._special, chan: a._myaddr };
+//		console.log("trying to send", meth, args);
+		if (msg.target._special === 'contract') {
+			var addr = msg.target._addr;
+			if (!addr) {
+				console.log("No service was provided for " + msg.target._contract);
+				return;
 			}
+			// convert "handlers" to local postbox addresses
+			for (var p=0;p<args.length;p++) {
+				var a = args[p];
+				if (a._special) {
+					if (!a._onchan) {
+						if (a._special === 'handler') {
+							var proxy = new FlasckWrapper.Processor(this, a);
+							var ha = this.postbox.newAddress();
+							this.postbox.register(ha, proxy);
+							a._myaddr = this.postbox.unique(ha);
+						} else
+							throw new Error("Cannot send an object of type " + a._special);
+					}
+					args[p] = { type: a._special, chan: a._myaddr };
+				}
+			}
+			this.postbox.deliver(addr, {from: msg.target._myaddr, method: meth, args: args });
+		} else if (msg.target._special === 'object') {
+			var actM = msg.target[meth];
+			if (!actM) {
+				console.log("There is no method " + m + " on ", msg.target);
+				return;
+			}
+			var newmsgs = actM.apply(msg.target, args);
+			console.log("object invocation returns closure ", newmsgs);  
+			// TODO: theoretically at least, objects can spit out more TODO items
+			// we need to collect these and put them on one big giant list
+			// and then keep calling "setTimeout(0)" at the end here to process that list after this one
+			// until we reach a stable state where no more items are generated
+		} else {
+			console.log("Cannot handle special case:", msg.target._special);
+			return;
 		}
-//		console.log(args);
-		this.postbox.deliver(addr, {from: msg.target._myaddr, method: meth, args: args });
 	} else if (msg._ctor === 'Assign') {
-//		console.log("card = ", this.card);
-//		console.log("field = ", msg.field);
-//		console.log("value = ", msg.value);
 		this.card[msg.field] = msg.value;
 	} else
 		throw new Error("The method message " + msg._ctor + " is not supported");
