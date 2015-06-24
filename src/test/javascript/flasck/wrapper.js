@@ -25,9 +25,9 @@ FlasckWrapper.Processor.prototype.process = function(message) {
 	var clos = meth.apply(this.service, message.args);
 //console.log("clos = ", clos);
 	var msgs = FLEval.full(clos);
-	this.wrapper.processMessages(msgs);
+	var todo = this.wrapper.processMessages(msgs);
 	if (this.wrapper.div) // so render will have been called
-		this.wrapper.doRender(msgs);
+		this.wrapper.doRender(todo);
 }
 
 FlasckWrapper.prototype.cardCreated = function(card) {
@@ -96,31 +96,35 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 
 FlasckWrapper.prototype.dispatchEvent = function(ev, handler) {
   var msgs = FLEval.full(new FLClosure(this.card, handler, [ev]));
-  this.processMessages(msgs);
-  this.doRender(msgs);
+  var todo = this.processMessages(msgs);
+  this.doRender(todo);
 }
 
 FlasckWrapper.prototype.processMessages = function(l) {
+	var todo = {};
 	while (l && l._ctor === 'Cons') {
-		this.processOne(l.head);
+		this.processOne(todo, l.head);
 		l = l.tail;
 	}
+	return todo;
 }
 
-FlasckWrapper.prototype.processOne = function(msg) {
+FlasckWrapper.prototype.processOne = function(todo, msg) {
+	var updateTree = this.cardClz.updates;
 //	console.log("Message: ", msg);
 	if (msg._ctor === 'Send') {
-		if (!msg.target._special) {
+		var target = FLEval.head(this.card[msg.target]);
+		if (!target._special) {
 			console.log("Target for send is not 'special'", msg.target);
 			return;
 		}
 		var meth = msg.method;
 		var args = FLEval.flattenList(msg.args);
 //		console.log("trying to send", meth, args);
-		if (msg.target._special === 'contract') {
-			var addr = msg.target._addr;
+		if (target._special === 'contract') {
+			var addr = target._addr;
 			if (!addr) {
-				console.log("No service was provided for " + msg.target._contract);
+				console.log("No service was provided for " + target._contract);
 				return;
 			}
 			// convert "handlers" to local postbox addresses
@@ -139,25 +143,29 @@ FlasckWrapper.prototype.processOne = function(msg) {
 					args[p] = { type: a._special, chan: a._myaddr };
 				}
 			}
-			this.postbox.deliver(addr, {from: msg.target._myaddr, method: meth, args: args });
-		} else if (msg.target._special === 'object') {
-			var actM = msg.target[meth];
+			this.postbox.deliver(addr, {from: target._myaddr, method: meth, args: args });
+		} else if (target._special === 'object') {
+			var actM = target[meth];
 			if (!actM) {
-				console.log("There is no method " + m + " on ", msg.target);
+				console.log("There is no method " + m + " on ", target);
 				return;
 			}
-			var newmsgs = actM.apply(msg.target, args);
+			var newmsgs = actM.apply(target, args);
 			console.log("object invocation returns closure ", newmsgs);  
+			if (updateTree[msg.target])
+				todo[msg.target] = {action: 'insert', target: target, crokey: args[0], tree: updateTree[msg.target] };
 			// TODO: theoretically at least, objects can spit out more TODO items
 			// we need to collect these and put them on one big giant list
 			// and then keep calling "setTimeout(0)" at the end here to process that list after this one
 			// until we reach a stable state where no more items are generated
 		} else {
-			console.log("Cannot handle special case:", msg.target._special);
+			console.log("Cannot handle special case:", target._special);
 			return;
 		}
 	} else if (msg._ctor === 'Assign') {
 		this.card[msg.field] = msg.value;
+		if (updateTree[msg.field])
+			todo[msg.field] = {action: 'update', tree: updateTree[msg.field] };
 	} else
 		throw new Error("The method message " + msg._ctor + " is not supported");
 }
@@ -170,29 +178,51 @@ FlasckWrapper.prototype.doInitialRender = function(div) {
     this.renderSubtree("", this.div, this.cardClz.template);
 }
 
-FlasckWrapper.prototype.doRender = function(msgs) {
-	var l = msgs;
-	var updateTree = this.cardClz.updates;
-	var todo = {};
-	while (l && l._ctor === 'Cons') {
-		if (l.head._ctor === 'Assign') {
-			if (updateTree[l.head.field])
-				todo[l.head.field] = updateTree[l.head.field];
-		}
-		l = l.tail;
-	}
+FlasckWrapper.prototype.doRender = function(todo) {
 	// Gather into a single, de-duped list of elements to update
 	var routes = {};
 	var wrapper = this;
 	for (var t in todo) {
-		todo[t].forEach(function (p) {
-			var c = wrapper.nodeCache[p.route];
-			if (c == null || c == undefined) {
-				console.log("There is nothing for route " + p.route);
-				return;
-			}
-			routes[p.route] = { elt: c.elt, tree: c.tree, me: c.me, action: p.action };
-		});
+		var a = todo[t].action;
+		console.log("action", a);
+		if (a === 'update') {
+			todo[t].tree.forEach(function (p) {
+				var c = wrapper.nodeCache[p.route];
+				if (c == null || c == undefined) {
+					console.log("There is nothing for route " + p.route);
+					return;
+				}
+				routes[p.route] = { elt: c.elt, tree: c.tree, me: c.me, action: p.action };
+			});
+		} else if (a === 'insert') {
+			console.log("todo insert", todo[t]);
+			var crokey = todo[t].crokey;
+			var self = this;
+			todo[t].tree.forEach(function(r) {
+				console.log("route", r);
+				var rt = r.route;
+				var idx = rt.indexOf("+");
+				if (idx != -1)
+					rt = rt.substring(0, idx);
+				var parent = self.nodeCache[rt].me;
+				var after = null;
+				for (var qi=0;qi<todo[t].target.members.length-1;qi++) {
+					if (todo[t].target.members[qi].key === crokey) {
+						var xid = todo[t].target.members[qi+1].key;
+						after = self.nodeCache[rt+"+"+xid].me;
+					}
+				} 
+				console.log("nc", self.nodeCache[rt], after);
+		    	this.renderState = {}; // may need to bind in existing vars at this point
+				wrapper.renderSubtree(qr, r.me, r.tree);
+				if (after) {
+					parent.insertBefore(NEWELT, after);
+				} else {
+					parent.append(NEWELT);
+				}
+			});
+		} else
+			throw new Error("Cannot handle action " + a);
 	}
 	// TODO: we need de-dup logic (including removing sub-nodes, which is why we use routes rather than ids)
 	for (var qr in routes) {
@@ -253,7 +283,7 @@ FlasckWrapper.prototype.renderSubtree = function(route, into, tree, dontRerender
 	} else if (tree.type == 'list') { // another special case
 		var plidx = newRoute.lastIndexOf("+");
 		var ul = FLEval.full(tree.fn.apply(this.card)).toElement(doc);
-		this.setIdAndCache(route, into, tree, ul);
+		this.setIdAndCache(newRoute.substring(0,plidx), into, tree, ul);
 		var val = FLEval.full(tree.val.apply(this.card));
 //		console.log("val =", val);
 		if (val && val._ctor === 'Cons') { // the value may be an FL list

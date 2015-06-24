@@ -47,7 +47,7 @@ FlasckServices.QueryService.prototype.scan = function(index, type, handler) {
 	var self = this;
 	// Hack - this should turn around and talk to Ziniki
 	setTimeout(function() {
-		self.postbox.deliver(handler.chan, {method: 'entry', args: ["Q7", new com.helpfulsidekick.chaddy.Queue('Q7', 'Captured Items')]}); 
+		self.postbox.deliver(handler.chan, {method: 'entry', args: ["45", new com.helpfulsidekick.chaddy.Queue('Q7', 'Captured Items')]}); 
 	}, 10);
 }
 
