@@ -175,7 +175,8 @@ FlasckWrapper.prototype.doInitialRender = function(div) {
 	this.div = div;
     this.div.innerHTML = "";
     this.renderState = {};
-    this.renderSubtree("", this.div, this.cardClz.template);
+    var html = this.renderSubtree("", this.div.ownerDocument, this.cardClz.template);
+    this.div.appendChild(html);
 }
 
 FlasckWrapper.prototype.doRender = function(todo) {
@@ -199,7 +200,7 @@ FlasckWrapper.prototype.doRender = function(todo) {
 			var crokey = todo[t].crokey;
 			var self = this;
 			todo[t].tree.forEach(function(r) {
-				console.log("route", r);
+				console.log("tree", r);
 				var rt = r.route;
 				var idx = rt.indexOf("+");
 				if (idx != -1)
@@ -212,15 +213,16 @@ FlasckWrapper.prototype.doRender = function(todo) {
 						after = self.nodeCache[rt+"+"+xid].me;
 					}
 				} 
-				console.log("nc", self.nodeCache[rt], after);
+				console.log("nc", parent, after);
 		    	this.renderState = {}; // may need to bind in existing vars at this point
-				wrapper.renderSubtree(qr, r.me, r.tree);
+				var child = wrapper.renderSubtree(rt+"+"+crokey, parent.ownerDocument, r.node);
 				if (after) {
-					parent.insertBefore(NEWELT, after);
+					parent.insertBefore(child, after);
 				} else {
-					parent.append(NEWELT);
+					parent.append(child);
 				}
 			});
+			return;
 		} else
 			throw new Error("Cannot handle action " + a);
 	}
@@ -251,39 +253,35 @@ FlasckWrapper.prototype.doRender = function(todo) {
 	}
 }
 
-FlasckWrapper.prototype.renderSubtree = function(route, into, tree, dontRerenderMe) {
-    var doc = into.ownerDocument;
-	var idx = tree.route.lastIndexOf(".");
-	var ext = tree.route;
-	if (idx != -1)
-		ext = ext.substring(idx);
-	var newRoute = route + ext;
-//    console.log("render sub", newRoute);
+FlasckWrapper.prototype.renderSubtree = function(route, doc, tree) {
 	if (tree.type === 'switch') {
 		var send;
 		var val = FLEval.full(tree.val.apply(this.card));
-		if (dontRerenderMe)
-			send = into;
-		else
-			send = doc.createElement("div");
+		send = doc.createElement("div");
 		for (var c=0;c<tree.children.length;c++) {
 	  		var cond = tree.children[c];
 	  		var cv = true;
 	  		if (cond.val)
 	    		cv = FLEval.full(cond.val.apply(this.card, [val]));
 	  		if (cv) {
-		  		for (var q=0;q<cond.children.length;q++)
-					this.renderSubtree(newRoute, send, cond.children[q]);
+		  		for (var q=0;q<cond.children.length;q++) {
+		  			var newRoute = this.extendRoute(route, cond.children[q]);
+					var child = this.renderSubtree(newRoute, doc, cond.children[q]);
+					this.setIdAndCache(newRoute, tree, send, child);
+					send.appendChild(child);
+				}
 		  		break;
 	  		}
 		}
-		this.setIdAndCache(route, into, tree, send);
-		if (!dontRerenderMe)
-			into.appendChild(send);
+		
+//		this.setIdAndCache(route, into, tree, send);
+//		if (!dontRerenderMe)
+//			into.appendChild(send);
+		return send;
 	} else if (tree.type == 'list') { // another special case
-		var plidx = newRoute.lastIndexOf("+");
+//		var newRoute = this.extendRoute(route, tree);
+		var plidx = route.lastIndexOf("+");
 		var ul = FLEval.full(tree.fn.apply(this.card)).toElement(doc);
-		this.setIdAndCache(newRoute.substring(0,plidx), into, tree, ul);
 		var val = FLEval.full(tree.val.apply(this.card));
 //		console.log("val =", val);
 		if (val && val._ctor === 'Cons') { // the value may be an FL list
@@ -291,24 +289,38 @@ FlasckWrapper.prototype.renderSubtree = function(route, into, tree, dontRerender
 				var lvar = val.head;
 				this.renderState[tree.var] = lvar;
 //				console.log("list var = ", tree.var, "ref =", lvar);
-				newRoute = newRoute.substring(0,plidx+1) + lvar.id;
+				var newRoute = route.substring(0,plidx+1) + lvar.id;
 //				console.log("list route = ", newRoute);
-		  		for (var q=0;q<tree.children.length;q++)
-					this.renderSubtree(newRoute, ul, tree.children[q]);
+				var ldiv = doc.createElement("div");
+				ul.appendChild(ldiv);
+				this.setIdAndCache(newRoute, tree, ul, ldiv, true);
+		  		for (var q=0;q<tree.children.length;q++) {
+		  			var extRoute = this.extendRoute(newRoute, tree.children[q]);
+					var child = this.renderSubtree(extRoute, doc, tree.children[q]);
+					this.setIdAndCache(extRoute, tree.children[q], ldiv, child);
+					ldiv.appendChild(child);
+				}
 	    		val = val.tail;
 	    	}
 	    } else if (val && val._ctor === 'Croset') { // or it may be a Croset
 			for (var cri=0;cri<val.members.length;cri++) {
 				var lvar = val.members[cri];
 				this.renderState[tree.var] = lvar.value;
-//				console.log("list var = ", tree.var, "ref =", lvar);
-				newRoute = newRoute.substring(0,plidx+1) + lvar.key;
-//				console.log("list route = ", newRoute);
-		  		for (var q=0;q<tree.children.length;q++)
-					this.renderSubtree(newRoute, ul, tree.children[q]);
+				console.log("newRoute = ", route, "list var = ", tree.var, "ref =", lvar);
+				var newRoute = route.substring(0,plidx+1) + lvar.key;
+				console.log("list route = ", newRoute);
+				var ldiv = doc.createElement("div");
+				ul.appendChild(ldiv);
+				this.setIdAndCache(newRoute, tree, ul, ldiv, true);
+		  		for (var q=0;q<tree.children.length;q++) {
+		  			var extRoute = this.extendRoute(newRoute, tree.children[q]);
+					var child = this.renderSubtree(extRoute, doc, tree.children[q]);
+					this.setIdAndCache(extRoute, tree.children[q], ldiv, child);
+					ldiv.appendChild(child);
+				}
 	    	}
 	    }
-		into.appendChild(ul);
+		return ul;
 	} else {
 		// the majority of cases, grouped together
 		var line = FLEval.full(tree.fn.apply(this.card));
@@ -332,6 +344,7 @@ FlasckWrapper.prototype.renderSubtree = function(route, into, tree, dontRerender
         		this.cardCache[tree.route].redrawInto(html);
       		} else {
 //	  	  		console.log("creating card for ", tree);
+//	  			var newRoute = this.extendRoute(route, tree);
 		  		var svcs = line.services;
 		  		if (line.services._ctor === 'Nil')
 			  		svcs = this.services;
@@ -348,25 +361,45 @@ FlasckWrapper.prototype.renderSubtree = function(route, into, tree, dontRerender
     			html = doc.createElement("span");
     		if (line != null)
     			html.appendChild(doc.createTextNode(line.toString()));
-    		if (cache)
-    			return;
+//    		if (cache)
+//    			return;
   		} else
 	  		throw new Error("Could not render " + tree.type + " " + line);
-		this.setIdAndCache(route, into, tree, html);
   		if (tree.type === 'div') {
 			if (tree.children) {
       			for (var c=0;c<tree.children.length;c++) {
-        			this.renderSubtree(newRoute, html, tree.children[c]);
+		  			var newRoute = this.extendRoute(route, tree.children[c]);
+      				var child = this.renderSubtree(newRoute, doc, tree.children[c]);
+					this.setIdAndCache(newRoute, tree.children[c], html, child);
+        			html.appendChild(child);
       			}
 			}
 		}
-	  	into.appendChild(html);
+		return html;
 	}
 }
 
-this.FlasckWrapper.prototype.setIdAndCache = function(route, into, tree, html) {
- 	html.setAttribute('id', 'id_' + nextid++);
-  	if (route || route === '') {
-	    this.nodeCache[route] = { elt: into, tree: tree, me: html  };
+FlasckWrapper.prototype.extendRoute = function(route, tree) {
+	var idx = tree.route.lastIndexOf(".");
+	var ext = tree.route;
+	if (idx != -1)
+		ext = ext.substring(idx);
+	return route + ext;
+}
+
+FlasckWrapper.prototype.setIdAndCache = function(route, tree, parent, child, useplus) {
+	var tr = route;
+	if (!useplus) {
+		var dotIdx = tr.lastIndexOf(".");
+		var plusIdx = tr.lastIndexOf("+");
+		if (plusIdx != -1 && plusIdx > dotIdx)
+			tr = tr.substring(0, plusIdx);
+	}
+	var theId = 'id_' + nextid++;
+ 	child.setAttribute('id', theId);
+ 	child.setAttribute('x-route', tr);
+  	if (tr || tr === '') {
+	    this.nodeCache[tr] = { tree: tree, parent: parent, me: child  };
   	}
+  	console.log("created", theId, "for route", tr, "with", tree.route);
 }
