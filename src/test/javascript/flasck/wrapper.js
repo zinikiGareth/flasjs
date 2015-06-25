@@ -207,14 +207,19 @@ FlasckWrapper.prototype.doRender = function(todo) {
 					rt = rt.substring(0, idx);
 				var parent = self.nodeCache[rt].me;
 				var after = null;
-				for (var qi=0;qi<todo[t].target.members.length-1;qi++) {
+				var val;
+				for (var qi=0;qi<todo[t].target.members.length;qi++) {
 					if (todo[t].target.members[qi].key === crokey) {
+						val = todo[t].target.members[qi].value;
 						var xid = todo[t].target.members[qi+1].key;
 						after = self.nodeCache[rt+"+"+xid].me;
+						break;
 					}
 				} 
 				console.log("nc", parent, after);
-		    	this.renderState = {}; // may need to bind in existing vars at this point
+		    	wrapper.renderState = {}; // may need to bind in existing vars at this point
+		    	wrapper.renderState[r.route.substring(idx+1)] = val;
+				debugger;
 				var child = wrapper.renderSubtree(rt+"+"+crokey, parent.ownerDocument, r.node);
 				if (after) {
 					parent.insertBefore(child, after);
