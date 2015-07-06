@@ -113,6 +113,7 @@ FlasckWrapper.prototype.processOne = function(todo, msg) {
 	var updateTree = this.cardClz.updates;
 //	console.log("Message: ", msg);
 	if (msg._ctor === 'Send') {
+		debugger; // this is where we're at ... see "ThingsToDo" doc
 		var target = FLEval.head(this.card[msg.target]);
 		if (!target._special) {
 			console.log("Target for send is not 'special'", msg.target);
@@ -172,6 +173,8 @@ FlasckWrapper.prototype.processOne = function(todo, msg) {
 
 var nextid = 1; // TODO: this might actually be the right scoping; what I want is for it global per document
 FlasckWrapper.prototype.doInitialRender = function(div) {
+	if (!this.cardClz.template)
+		return;
 	this.div = div;
     this.div.innerHTML = "";
     this.renderState = {};
@@ -211,20 +214,22 @@ FlasckWrapper.prototype.doRender = function(todo) {
 				for (var qi=0;qi<todo[t].target.members.length;qi++) {
 					if (todo[t].target.members[qi].key === crokey) {
 						val = todo[t].target.members[qi].value;
-						var xid = todo[t].target.members[qi+1].key;
-						after = self.nodeCache[rt+"+"+xid].me;
+						debugger;
+						if (qi+1 < todo[t].target.members.length) {
+							var xid = todo[t].target.members[qi+1].key;
+							after = self.nodeCache[rt+"+"+xid].me;
+						}
 						break;
 					}
 				} 
 				console.log("nc", parent, after);
 		    	wrapper.renderState = {}; // may need to bind in existing vars at this point
 		    	wrapper.renderState[r.route.substring(idx+1)] = val;
-				debugger;
 				var child = wrapper.renderSubtree(rt+"+"+crokey, parent.ownerDocument, r.node);
 				if (after) {
 					parent.insertBefore(child, after);
 				} else {
-					parent.append(child);
+					parent.appendChild(child);
 				}
 			});
 			return;
