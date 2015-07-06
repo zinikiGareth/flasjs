@@ -179,6 +179,7 @@ FlasckWrapper.prototype.doInitialRender = function(div) {
     this.div.innerHTML = "";
     this.renderState = {};
     var html = this.renderSubtree("", this.div.ownerDocument, this.cardClz.template);
+	this.setIdAndCache("", this.cardClz.template, this.div, html);
     this.div.appendChild(html);
 }
 
@@ -346,6 +347,28 @@ FlasckWrapper.prototype.renderSubtree = function(route, doc, tree) {
 //		  		console.log(this.cardCache);
 		}
 		return html;
+  	} else if (tree.type == 'd3') {
+  		// so I think this is where we need to find the "enter" thing and make sure we create a node
+  		// obviously if we're updating we don't do that and directly apply layout
+  		// but we're not there yet
+  		
+  		// HACK for now
+  		var actions = FLEval.full(tree.fn());
+  		console.log("actions = ", actions);
+  		// TODO: we need to be sure (somehow) that this is an Assoc
+  		var enter = actions.assoc("enter");
+  		while (enter._ctor === 'Cons') {
+  			var a = enter.head;
+  			var v = a();
+  		debugger;
+  			enter = enter.tail;
+  		}
+  		var r = doc.createElementNS('http://www.w3.org/2000/svg', "rect")
+  		r.setAttribute('width', '20');
+  		r.setAttribute('height', '40');
+  		r.setAttribute('x', '10');
+  		r.setAttribute('y', '10');
+  		return r;
 	} else if (tree.type === 'div') {
 		var line = FLEval.full(tree.fn.apply(this.card));
 //		console.log("line =", line);

@@ -6,6 +6,10 @@ function DOM() {
 DOM._Element = function(tag, attrMap, contents, events) {
 	this._ctor = 'DOM.Element';
 	// TODO: check tag and attribute (names?) for validity
+	if (tag == 'svg' || tag == 'rect') // TODO: this is some kind of hack - what kind?
+		this.ns = 'http://www.w3.org/2000/svg';
+	else
+		this.ns = null;
 	this.tag = tag;
 	this.attrMap = attrMap;
 	this.contents = contents;
@@ -14,7 +18,11 @@ DOM._Element = function(tag, attrMap, contents, events) {
 }
 
 DOM._Element.prototype.toElement = function (doc) {
-	var ret = doc.createElement(this.tag);
+	var ret;
+	if (this.ns)
+		ret = doc.createElementNS(this.ns, this.tag);
+	else
+		ret = doc.createElement(this.tag);
 	for (var attr = this.attrMap;attr && attr._ctor === 'Cons'; attr = attr.tail) {
 		ret.setAttribute(attr.head.members[0], attr.head.members[1]);
 	}

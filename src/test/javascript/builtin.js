@@ -68,6 +68,46 @@ _Tuple.prototype.toString = function() {
 
 Tuple = function() { return new _Tuple(arguments); }
 
+// Assoc Lists or Maps or Hash-equivalent
+
+_NilMap = function() {
+	"use strict"
+	this._ctor = 'NilMap';
+	return this;
+}
+
+_NilMap.prototype.assoc = function() {
+	return null;
+}
+
+_NilMap.prototype.toString = function() {
+	return 'NilMap';
+}
+
+NilMap = function() { return _NilMap(); }
+
+_Assoc = function(k,v,r) {
+	"use strict"
+	this._ctor = 'Assoc';
+	this.key = k;
+	this.value = v;
+	this.rest = r;
+	return this;
+}
+
+_Assoc.prototype.assoc = function(key) {
+	if (key === this.key)
+		return this.value;
+	else
+		return this.rest.assoc(key);
+}
+
+_Assoc.prototype.toString = function() {
+	return 'Assoc';
+}
+
+Assoc = function(k,v,r) { return new _Assoc(k,v,r); }
+
 // Cunning Crosets
 
 function _Croset(list) {
