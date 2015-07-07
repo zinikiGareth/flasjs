@@ -174,4 +174,13 @@ _CreateCard = function(card, into, services) {
 _CreateCard.prototype.toString = function() {
 	return "CreateCard[" + "]";
 }
+
 CreateCard = function(card, into, services) { return new _CreateCard(card, into, services); }
+
+_D3Action = function(action, args) {
+	this._ctor = 'D3Action';
+	this.action = action;
+	this.args = args;
+}
+
+D3Action = function(action, args) { return new _D3Action(action, args); }
