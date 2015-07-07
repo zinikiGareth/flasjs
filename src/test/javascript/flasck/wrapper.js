@@ -365,12 +365,22 @@ FlasckWrapper.prototype.renderSubtree = function(route, doc, tree) {
 	  			cmds.push({ select: v.head.args.head, insert: v.head.args.head });
 	  			enter = enter.tail;
 	  		}
+	  		var layout = actions.assoc("layout");
 	  		return function(svg) {
 	  			// To resolve this hack, we need to:
 		  		// get "data" from somewhere
-		  		// somebody somewhere needs to provide the attribute settings, but I think that's from "layout".
-	  			for (var c in cmds) {
-	  				d3.select(svg).selectAll(cmds[c].select).data([4, 10, 2]).enter().append(cmds[c].insert).attr('width', 10).attr('height', 10);
+	  			for (var c in cmds)
+	  				d3.select(svg).selectAll(cmds[c].select).data([4, 10, 2]).enter().append(cmds[c].insert);
+	  			while (layout._ctor === 'Cons') {
+					var mine = FLEval.full(layout.head());
+					var actOn = d3.select(svg).selectAll(mine.members[0]);
+					var props = mine.members[1];
+					while (props._ctor === 'Cons') {
+						var ph = props.head;
+						actOn = actOn.attr(ph.members[0], ph.members[1]);
+						props = props.tail;
+					}
+	  				layout = layout.tail;
 	  			}
 	  		}
 	} else if (tree.type === 'div') {
