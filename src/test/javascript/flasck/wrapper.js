@@ -267,10 +267,10 @@ FlasckWrapper.prototype.doRender = function(todo) {
 	}
 }
 
-function d3attrFn(flfn) {
+function d3attrFn(card, flfn) {
 	return function(d, i) {
 		var elt = { _ctor: 'D3Element', data: d, idx: i }
-		return FLEval.full(flfn(elt));
+		return FLEval.full(flfn.call(card, elt));
 	}
 }
 
@@ -361,30 +361,39 @@ FlasckWrapper.prototype.renderSubtree = function(route, doc, tree) {
 	  		// but we're not there yet
 	  		
 	  		// HACK for now
-	  		var actions = FLEval.full(tree.fn());
-	  		console.log("actions = ", actions);
-	  		// TODO: we need to be sure (somehow) that this is an Assoc of String->List<D3Action>
-	  		var enter = actions.assoc("enter");
+	  		var info = FLEval.full(tree.fn.apply(this.card));
+	  		// TODO: we need to be sure (somehow) that this is an Assoc of String->(Various Things)
+	  		var mydata = FLEval.flattenList(info.assoc("data"));
+	  		var enter = info.assoc("enter");
 	  		var cmds = [];
 	  		while (enter._ctor === 'Cons') {
 	  			var a = enter.head;
-	  			var v = FLEval.full(a());
+	  			var v = FLEval.full(a.apply(this.card));
 	  			cmds.push({ select: v.head.args.head, insert: v.head.args.head });
 	  			enter = enter.tail;
 	  		}
-	  		var layout = actions.assoc("layout");
+	  		var layout = info.assoc("layout");
 	  		return function(svg) {
-	  			// To resolve this hack, we need to:
-		  		// get "data" from somewhere
 	  			for (var c in cmds)
-	  				d3.select(svg).selectAll(cmds[c].select).data([4, 10, 2]).enter().append(cmds[c].insert);
+	  				d3.select(svg).selectAll(cmds[c].select).data(mydata).enter().append(cmds[c].insert);
 	  			while (layout._ctor === 'Cons') {
 					var mine = FLEval.full(layout.head());
 					var actOn = d3.select(svg).selectAll(mine.members[0]);
 					var props = mine.members[1];
 					while (props._ctor === 'Cons') {
 						var ph = props.head;
-						actOn = actOn.attr(ph.members[0], d3attrFn(ph.members[1]));
+						var attr = ph.members[0];
+						if (attr === 'text')
+							actOn = actOn.text(d3attrFn(this.card, ph.members[1]));
+						else {
+							if (attr === 'textAnchor')
+								attr = 'text-anchor';
+							else if (attr === 'fontFamily')
+								attr = 'font-family';
+							else if (attr === 'fontSize')
+								attr = 'font-size';
+							actOn = actOn.attr(attr, d3attrFn(this.card, ph.members[1]));
+						}
 						props = props.tail;
 					}
 	  				layout = layout.tail;
