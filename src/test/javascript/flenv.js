@@ -161,6 +161,19 @@ FLEval.minus = function(a, b) {
 		return FLEval.error("plus: case not handled");
 }
 
+FLEval.mul = function(a, b) {
+	a = FLEval.head(a);
+	if (a instanceof FLError)
+		return a;
+	b = FLEval.head(b);
+	if (b instanceof FLError)
+		return b;
+	if (typeof(a) === 'number' && typeof(b) === 'number')
+		return a*b;
+	else
+		return FLEval.error("plus: case not handled");
+}
+
 FLEval.mathNE = function(a, b) {
 	a = FLEval.head(a);
 	if (a instanceof FLError)

@@ -267,6 +267,13 @@ FlasckWrapper.prototype.doRender = function(todo) {
 	}
 }
 
+function d3attrFn(flfn) {
+	return function(d, i) {
+		var elt = { _ctor: 'D3Element', data: d, idx: i }
+		return FLEval.full(flfn(elt));
+	}
+}
+
 FlasckWrapper.prototype.renderSubtree = function(route, doc, tree) {
 	if (tree.type === 'switch') {
 		var send;
@@ -377,7 +384,7 @@ FlasckWrapper.prototype.renderSubtree = function(route, doc, tree) {
 					var props = mine.members[1];
 					while (props._ctor === 'Cons') {
 						var ph = props.head;
-						actOn = actOn.attr(ph.members[0], ph.members[1]);
+						actOn = actOn.attr(ph.members[0], d3attrFn(ph.members[1]));
 						props = props.tail;
 					}
 	  				layout = layout.tail;
