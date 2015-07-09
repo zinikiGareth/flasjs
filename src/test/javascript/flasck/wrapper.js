@@ -194,7 +194,7 @@ FlasckWrapper.prototype.doRender = function(todo) {
 			todo[t].tree.forEach(function (p) {
 				var c = wrapper.nodeCache[p.route];
 				if (c == null || c == undefined) {
-					console.log("There is nothing for route " + p.route);
+					console.log("There is nothing in the cache for route " + p.route);
 					return;
 				}
 				routes[p.route] = { elt: c.elt, tree: c.tree, me: c.me, action: p.action };
@@ -249,6 +249,11 @@ FlasckWrapper.prototype.doRender = function(todo) {
 			r.me.innerHTML = "";
 		    this.renderState = {}; // may need to bind in existing vars at this point
 			wrapper.renderSubtree(qr, r.me, r.tree);
+		} else if (r.action === 'update') {
+//			console.log("updating ", r.me.id, r.elt.id);
+		    this.renderState = {}; // may need to bind in existing vars at this point
+			var fn = wrapper.renderSubtree(qr, r.me, r.tree);
+			fn.call(null, r.me);
 		} else if (r.action === 'renderChildren') {
 //			console.log("rewriting ", r.me.id, r.elt.id);
 			r.me.innerHTML = "";
@@ -352,53 +357,52 @@ FlasckWrapper.prototype.renderSubtree = function(route, doc, tree) {
 	  		var innerCard = Flasck.createCard(this.postbox, html, { explicit: line.card }, svcs);
 	  		this.cardCache[tree.route] = innerCard;
 //		  		console.log(this.cardCache);
-<<<<<<< HEAD
 		}
 		return html;
   	} else if (tree.type == 'd3') {
-	  		// so I think this is where we need to find the "enter" thing and make sure we create a node
-	  		// obviously if we're updating we don't do that and directly apply layout
-	  		// but we're not there yet
-	  		
-	  		// HACK for now
-	  		var info = FLEval.full(tree.fn.apply(this.card));
-	  		// TODO: we need to be sure (somehow) that this is an Assoc of String->(Various Things)
-	  		var mydata = FLEval.flattenList(info.assoc("data"));
-	  		var enter = info.assoc("enter");
-	  		var cmds = [];
-	  		while (enter._ctor === 'Cons') {
-	  			var a = enter.head;
-	  			var v = FLEval.full(a.apply(this.card));
-	  			cmds.push({ select: v.head.args.head, insert: v.head.args.head });
-	  			enter = enter.tail;
-	  		}
-	  		var layout = info.assoc("layout");
-	  		return function(svg) {
-	  			for (var c in cmds)
-	  				d3.select(svg).selectAll(cmds[c].select).data(mydata).enter().append(cmds[c].insert);
-	  			while (layout._ctor === 'Cons') {
-					var mine = FLEval.full(layout.head());
-					var actOn = d3.select(svg).selectAll(mine.members[0]);
-					var props = mine.members[1];
-					while (props._ctor === 'Cons') {
-						var ph = props.head;
-						var attr = ph.members[0];
-						if (attr === 'text')
-							actOn = actOn.text(d3attrFn(this.card, ph.members[1]));
-						else {
-							if (attr === 'textAnchor')
-								attr = 'text-anchor';
-							else if (attr === 'fontFamily')
-								attr = 'font-family';
-							else if (attr === 'fontSize')
-								attr = 'font-size';
-							actOn = actOn.attr(attr, d3attrFn(this.card, ph.members[1]));
-						}
-						props = props.tail;
+  		// so I think this is where we need to find the "enter" thing and make sure we create a node
+  		// obviously if we're updating we don't do that and directly apply layout
+  		// but we're not there yet
+  		
+  		// HACK for now
+  		var info = FLEval.full(tree.fn.apply(this.card));
+  		// TODO: we need to be sure (somehow) that this is an Assoc of String->(Various Things)
+  		var mydata = FLEval.flattenList(info.assoc("data"));
+  		var enter = info.assoc("enter");
+  		var cmds = [];
+  		while (enter._ctor === 'Cons') {
+  			var a = enter.head;
+  			var v = FLEval.full(a.apply(this.card));
+  			cmds.push({ select: v.head.args.head, insert: v.head.args.head });
+  			enter = enter.tail;
+  		}
+  		var layout = info.assoc("layout");
+  		return function(svg) {
+  			for (var c in cmds)
+  				d3.select(svg).selectAll(cmds[c].select).data(mydata).enter().append(cmds[c].insert);
+  			while (layout._ctor === 'Cons') {
+				var mine = FLEval.full(layout.head());
+				var actOn = d3.select(svg).selectAll(mine.members[0]);
+				var props = mine.members[1];
+				while (props._ctor === 'Cons') {
+					var ph = props.head;
+					var attr = ph.members[0];
+					if (attr === 'text')
+						actOn = actOn.text(d3attrFn(this.card, ph.members[1]));
+					else {
+						if (attr === 'textAnchor')
+							attr = 'text-anchor';
+						else if (attr === 'fontFamily')
+							attr = 'font-family';
+						else if (attr === 'fontSize')
+							attr = 'font-size';
+						actOn = actOn.attr(attr, d3attrFn(this.card, ph.members[1]));
 					}
-	  				layout = layout.tail;
-	  			}
-	  		}
+					props = props.tail;
+				}
+  				layout = layout.tail;
+  			}
+  		}
 	} else if (tree.type === 'div') {
 		var line = FLEval.full(tree.fn.apply(this.card));
 //		console.log("line =", line);
