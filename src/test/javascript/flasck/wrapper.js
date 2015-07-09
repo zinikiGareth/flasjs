@@ -189,7 +189,6 @@ FlasckWrapper.prototype.doRender = function(todo) {
 	var wrapper = this;
 	for (var t in todo) {
 		var a = todo[t].action;
-		console.log("action", a);
 		if (a === 'update') {
 			todo[t].tree.forEach(function (p) {
 				var c = wrapper.nodeCache[p.route];
@@ -458,5 +457,5 @@ FlasckWrapper.prototype.setIdAndCache = function(route, tree, parent, child, use
   	if (tr || tr === '') {
 	    this.nodeCache[tr] = { tree: tree, parent: parent, me: child  };
   	}
-  	console.log("created", theId, "for route", tr, "with", tree.route);
+//  	console.log("created", theId, "for route", tr, "with", tree.route);
 }
