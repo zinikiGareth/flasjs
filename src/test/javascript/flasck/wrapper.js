@@ -113,8 +113,8 @@ FlasckWrapper.prototype.processOne = function(todo, msg) {
 	var updateTree = this.cardClz.updates;
 //	console.log("Message: ", msg);
 	if (msg._ctor === 'Send') {
-		debugger; // this is where we're at ... see "ThingsToDo" doc
 		var target = FLEval.head(this.card[msg.target]);
+		this.card[msg.target] = target;
 		if (!target._special) {
 			console.log("Target for send is not 'special'", msg.target);
 			return;
@@ -217,6 +217,8 @@ FlasckWrapper.prototype.doRender = function(todo) {
 						debugger;
 						if (qi+1 < todo[t].target.members.length) {
 							var xid = todo[t].target.members[qi+1].key;
+							var art = rt + "+" + xid;
+							console.log('art = ', art);
 							after = self.nodeCache[rt+"+"+xid].me;
 						}
 						break;
