@@ -333,61 +333,64 @@ FlasckWrapper.prototype.renderSubtree = function(route, doc, tree) {
 	    	}
 	    }
 		return ul;
-	} else {
-		// the majority of cases, grouped together
+	} else if (tree.type === 'content') {
 		var line = FLEval.full(tree.fn.apply(this.card));
 		var html;
-//		console.log("line =", line);
-		if (line instanceof DOM._Element) {
-			html = line.toElement(doc);
-			var evh = line.events;
-			while (evh && evh._ctor === 'Cons') {
-				var ev = evh.head;
-      			if (ev._ctor === 'Tuple' && ev.length === 2) {
-    	  			var wrapper = this;
-    	  			html['on'+ev.members[0]] = function(event) { wrapper.dispatchEvent(event, ev.members[1]); }
-      			}
-      			evh = evh.tail;
-    		}
-  		} else if (line instanceof _CreateCard) {
-	  		html = line.into.toElement(doc);
-      		if (this.cardCache[tree.route]) {
+		var cache = this.nodeCache[tree.route];
+		if (cache)
+			html = cache.me;
+		else
+			html = doc.createElement("span");
+		if (line != null)
+			html.appendChild(doc.createTextNode(line.toString()));
+		return html;
+	} else if (tree.type === 'card') {
+		var line = FLEval.full(tree.fn.apply(this.card));
+	  	var html = line.into.toElement(doc);
+   		if (this.cardCache[tree.route]) {
 //        		console.log("have it already");
-        		this.cardCache[tree.route].redrawInto(html);
-      		} else {
+       		this.cardCache[tree.route].redrawInto(html);
+   		} else {
 //	  	  		console.log("creating card for ", tree);
 //	  			var newRoute = this.extendRoute(route, tree);
-		  		var svcs = line.services;
-		  		if (line.services._ctor === 'Nil')
-			  		svcs = this.services;
-		  		var innerCard = Flasck.createCard(this.postbox, html, { explicit: line.card }, svcs);
-		  		this.cardCache[tree.route] = innerCard;
+	  		var svcs = line.services;
+	  		if (line.services._ctor === 'Nil')
+		  		svcs = this.services;
+	  		var innerCard = Flasck.createCard(this.postbox, html, { explicit: line.card }, svcs);
+	  		this.cardCache[tree.route] = innerCard;
 //		  		console.log(this.cardCache);
-	  		}
-  		} else if (tree.type == 'content') {
-  			var cache = this.nodeCache[tree.route];
-//  			console.log("html =", cache);
-  			if (cache)
-  				html = cache.me;
-  			else
-    			html = doc.createElement("span");
-    		if (line != null)
-    			html.appendChild(doc.createTextNode(line.toString()));
-//    		if (cache)
-//    			return;
-  		} else
-	  		throw new Error("Could not render " + tree.type + " " + line);
-  		if (tree.type === 'div') {
-			if (tree.children) {
-      			for (var c=0;c<tree.children.length;c++) {
-		  			var newRoute = this.extendRoute(route, tree.children[c]);
-      				var child = this.renderSubtree(newRoute, doc, tree.children[c]);
-					this.setIdAndCache(newRoute, tree.children[c], html, child);
-        			html.appendChild(child);
-      			}
-			}
 		}
 		return html;
+	} else if (tree.type === 'div') {
+		var line = FLEval.full(tree.fn.apply(this.card));
+//		console.log("line =", line);
+		if (!(line instanceof DOM._Element))
+	  		throw new Error("Could not render " + tree.type + " " + line);
+		var html = line.toElement(doc);
+		var evh = line.events;
+		while (evh && evh._ctor === 'Cons') {
+			var ev = evh.head;
+  			if (ev._ctor === 'Tuple' && ev.length === 2) {
+	  			var wrapper = this;
+	  			html['on'+ev.members[0]] = function(event) { wrapper.dispatchEvent(event, ev.members[1]); }
+  			}
+  			evh = evh.tail;
+		}
+		this.renderChildren(doc, route, html, tree.children);
+		return html;
+	} else
+  		throw new Error("Could not render " + tree.type + " " + line);
+}
+
+FlasckWrapper.prototype.renderChildren = function(doc, route, parentElt, children) {
+	if (children) {
+		for (var c=0;c<children.length;c++) {
+  			console.log("render child", c);
+  			var newRoute = this.extendRoute(route, children[c]);
+			var child = this.renderSubtree(newRoute, doc, children[c]);
+			this.setIdAndCache(newRoute, children[c], parentElt, child);
+   			parentElt.appendChild(child);
+		}
 	}
 }
 
