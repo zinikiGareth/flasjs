@@ -218,7 +218,7 @@ FlasckWrapper.prototype.doRender = function(todo) {
 						if (qi+1 < todo[t].target.members.length) {
 							var xid = todo[t].target.members[qi+1].key;
 							var art = rt + "+" + xid;
-							console.log('art = ', art);
+							console.log('art = ', art, "cache=", self.nodeCache);
 							after = self.nodeCache[rt+"+"+xid].me;
 						}
 						break;
@@ -300,18 +300,13 @@ FlasckWrapper.prototype.renderSubtree = function(route, doc, tree) {
 			while (val && val._ctor === 'Cons') {
 				var lvar = val.head;
 				this.renderState[tree.var] = lvar;
-//				console.log("list var = ", tree.var, "ref =", lvar);
 				var newRoute = route.substring(0,plidx+1) + lvar.id;
-//				console.log("list route = ", newRoute);
-				var ldiv = doc.createElement("div");
-				ul.appendChild(ldiv);
-				this.setIdAndCache(newRoute, tree, ul, ldiv, true);
-		  		for (var q=0;q<tree.children.length;q++) {
-		  			var extRoute = this.extendRoute(newRoute, tree.children[q]);
-					var child = this.renderSubtree(extRoute, doc, tree.children[q]);
-					this.setIdAndCache(extRoute, tree.children[q], ldiv, child);
-					ldiv.appendChild(child);
-				}
+//		  		for (var q=0;q<tree.children.length;q++) {
+//		  			var extRoute = this.extendRoute(newRoute, tree.children[q]);
+					var child = this.renderSubtree(extRoute, doc, tree.children[0]);
+					this.setIdAndCache(extRoute, tree.children[q], ul, child);
+					ul.appendChild(child);
+//				}
 	    		val = val.tail;
 	    	}
 	    } else if (val && val._ctor === 'Croset') { // or it may be a Croset
@@ -321,14 +316,11 @@ FlasckWrapper.prototype.renderSubtree = function(route, doc, tree) {
 				console.log("newRoute = ", route, "list var = ", tree.var, "ref =", lvar);
 				var newRoute = route.substring(0,plidx+1) + lvar.key;
 				console.log("list route = ", newRoute);
-				var ldiv = doc.createElement("div");
-				ul.appendChild(ldiv);
-				this.setIdAndCache(newRoute, tree, ul, ldiv, true);
 		  		for (var q=0;q<tree.children.length;q++) {
 		  			var extRoute = this.extendRoute(newRoute, tree.children[q]);
 					var child = this.renderSubtree(extRoute, doc, tree.children[q]);
-					this.setIdAndCache(extRoute, tree.children[q], ldiv, child);
-					ldiv.appendChild(child);
+					this.setIdAndCache(extRoute, tree.children[q], ul, child);
+					ul.appendChild(child);
 				}
 	    	}
 	    }
