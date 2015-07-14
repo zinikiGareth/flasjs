@@ -214,7 +214,6 @@ FlasckWrapper.prototype.doRender = function(todo) {
 				for (var qi=0;qi<todo[t].target.members.length;qi++) {
 					if (todo[t].target.members[qi].key === crokey) {
 						val = todo[t].target.members[qi].value;
-						debugger;
 						if (qi+1 < todo[t].target.members.length) {
 							var xid = todo[t].target.members[qi+1].key;
 							var art = rt + "+" + xid;
@@ -227,7 +226,9 @@ FlasckWrapper.prototype.doRender = function(todo) {
 				console.log("nc", parent, after);
 		    	wrapper.renderState = {}; // may need to bind in existing vars at this point
 		    	wrapper.renderState[r.route.substring(idx+1)] = val;
-				var child = wrapper.renderSubtree(rt+"+"+crokey, parent.ownerDocument, r.node);
+				var listRoute = rt+"+"+crokey;
+				var child = wrapper.renderSubtree(listRoute, parent.ownerDocument, r.node);
+				wrapper.setIdAndCache(listRoute, r.node, parent, child, true);
 				if (after) {
 					parent.insertBefore(child, after);
 				} else {
@@ -270,18 +271,18 @@ FlasckWrapper.prototype.renderSubtree = function(route, doc, tree) {
 		var send;
 		var val = FLEval.full(tree.val.apply(this.card));
 		send = doc.createElement("div");
-		for (var c=0;c<tree.children.length;c++) {
-	  		var cond = tree.children[c];
+		for (var c=0;c<tree.cases.length;c++) {
+	  		var cond = tree.cases[c];
 	  		var cv = true;
 	  		if (cond.val)
 	    		cv = FLEval.full(cond.val.apply(this.card, [val]));
 	  		if (cv) {
-		  		for (var q=0;q<cond.children.length;q++) {
-		  			var newRoute = this.extendRoute(route, cond.children[q]);
-					var child = this.renderSubtree(newRoute, doc, cond.children[q]);
+//		  		for (var q=0;q<cond.children.length;q++) {
+		  			var newRoute = this.extendRoute(route, cond.template);
+					var child = this.renderSubtree(newRoute, doc, cond.template);
 					this.setIdAndCache(newRoute, tree, send, child);
 					send.appendChild(child);
-				}
+//				}
 		  		break;
 	  		}
 		}
@@ -291,22 +292,17 @@ FlasckWrapper.prototype.renderSubtree = function(route, doc, tree) {
 //			into.appendChild(send);
 		return send;
 	} else if (tree.type == 'list') { // another special case
-//		var newRoute = this.extendRoute(route, tree);
 		var plidx = route.lastIndexOf("+");
 		var ul = FLEval.full(tree.fn.apply(this.card)).toElement(doc);
 		var val = FLEval.full(tree.val.apply(this.card));
-//		console.log("val =", val);
 		if (val && val._ctor === 'Cons') { // the value may be an FL list
 			while (val && val._ctor === 'Cons') {
 				var lvar = val.head;
 				this.renderState[tree.var] = lvar;
 				var newRoute = route.substring(0,plidx+1) + lvar.id;
-//		  		for (var q=0;q<tree.children.length;q++) {
-//		  			var extRoute = this.extendRoute(newRoute, tree.children[q]);
-					var child = this.renderSubtree(extRoute, doc, tree.children[0]);
-					this.setIdAndCache(extRoute, tree.children[q], ul, child);
-					ul.appendChild(child);
-//				}
+				var child = this.renderSubtree(newRoute, doc, tree.template);
+				this.setIdAndCache(newRoute, tree.template, ul, child, true);
+				ul.appendChild(child);
 	    		val = val.tail;
 	    	}
 	    } else if (val && val._ctor === 'Croset') { // or it may be a Croset
@@ -315,13 +311,10 @@ FlasckWrapper.prototype.renderSubtree = function(route, doc, tree) {
 				this.renderState[tree.var] = lvar.value;
 				console.log("newRoute = ", route, "list var = ", tree.var, "ref =", lvar);
 				var newRoute = route.substring(0,plidx+1) + lvar.key;
-				console.log("list route = ", newRoute);
-		  		for (var q=0;q<tree.children.length;q++) {
-		  			var extRoute = this.extendRoute(newRoute, tree.children[q]);
-					var child = this.renderSubtree(extRoute, doc, tree.children[q]);
-					this.setIdAndCache(extRoute, tree.children[q], ul, child);
-					ul.appendChild(child);
-				}
+				console.log("list route = ", newRoute, "tree", tree.template);
+				var child = this.renderSubtree(newRoute, doc, tree.template, true);
+				this.setIdAndCache(newRoute, tree, ul, child);
+				ul.appendChild(child);
 	    	}
 	    }
 		return ul;
