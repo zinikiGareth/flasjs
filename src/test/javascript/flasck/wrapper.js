@@ -247,17 +247,17 @@ FlasckWrapper.prototype.doRender = function(todo) {
 //			console.log("rewriting ", r.me.id, r.elt.id);
 			r.me.innerHTML = "";
 		    this.renderState = {}; // may need to bind in existing vars at this point
-			wrapper.renderSubtree(qr, r.me, r.tree);
+			wrapper.renderSubtree(qr, r.me.ownerDocument, r.tree);
 		} else if (r.action === 'update') {
 //			console.log("updating ", r.me.id, r.elt.id);
 		    this.renderState = {}; // may need to bind in existing vars at this point
-			var fn = wrapper.renderSubtree(qr, r.me, r.tree);
+			var fn = wrapper.renderSubtree(qr, r.me.ownerDocument, r.tree);
 			fn.call(null, r.me);
 		} else if (r.action === 'renderChildren') {
 //			console.log("rewriting ", r.me.id, r.elt.id);
 			r.me.innerHTML = "";
 		    this.renderState = {}; // may need to bind in existing vars at this point
-			wrapper.renderSubtree(qr, r.me, r.tree, true);
+			wrapper.renderSubtree(qr, r.me.ownerDocument, r.tree, true);
 		} else if (r.action === 'attrs') {
 			var line = FLEval.full(r.tree.fn.apply(this.card));
 			var html;
@@ -359,11 +359,6 @@ FlasckWrapper.prototype.renderSubtree = function(route, doc, tree) {
 		}
 		return html;
   	} else if (tree.type == 'd3') {
-  		// so I think this is where we need to find the "enter" thing and make sure we create a node
-  		// obviously if we're updating we don't do that and directly apply layout
-  		// but we're not there yet
-  		
-  		// HACK for now
   		var info = FLEval.full(tree.fn.apply(this.card));
   		// TODO: we need to be sure (somehow) that this is an Assoc of String->(Various Things)
   		var mydata = FLEval.flattenList(info.assoc("data"));
@@ -429,8 +424,14 @@ FlasckWrapper.prototype.renderChildren = function(doc, route, parentElt, childre
   			console.log("render child", c);
   			var newRoute = this.extendRoute(route, children[c]);
 			var child = this.renderSubtree(newRoute, doc, children[c]);
-			this.setIdAndCache(newRoute, children[c], parentElt, child);
-   			parentElt.appendChild(child);
+			if (child instanceof Node) {
+				this.setIdAndCache(newRoute, children[c], parentElt, child);
+	   			parentElt.appendChild(child);
+	   		} else if (child instanceof Function) {
+	   			child.call(null, parentElt);
+	   			this.nodeCache[newRoute] = {me: parentElt, tree: children[c]};
+	   		} else
+	   			throw new Error("Cannot handle " + child);
 		}
 	}
 }
