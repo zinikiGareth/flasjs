@@ -135,8 +135,18 @@ _Croset.prototype.insert = function(k, v) {
 	this.members.push(entry);
 }
 
-Croset = function(list) { return new _Croset(list); }
+_Croset.prototype.get = function(k) {
+	for (var i=0;i<this.members.length;i++) {
+		var m = this.members[i];
+		if (m.key === k)
+			return m;
+		else if (m.key > k)
+			break;
+	}
+	throw new Error("No element", k, "in", this);
+}
 
+Croset = function(list) { return new _Croset(list); }
 
 // Message passing
 

@@ -171,7 +171,7 @@ FlasckWrapper.prototype.processOne = function(todo, msg) {
 		throw new Error("The method message " + msg._ctor + " is not supported");
 }
 
-var nextid = 1; // TODO: this might actually be the right scoping; what I want is for it global per document
+var nextid = 1; // TODO: this might actually be the right scoping; what I want is for it global per document.  On the other hand, I would prefer it to be somewhere that looked logical
 FlasckWrapper.prototype.doInitialRender = function(div) {
 	if (!this.cardClz.template)
 		return;
@@ -183,6 +183,10 @@ FlasckWrapper.prototype.doInitialRender = function(div) {
     this.div.appendChild(html);
 }
 
+// TODO: this is starting to become a pile of hacks one on top of another.
+// I think the update tree (from which the todo items arise) needs to have a thing in it that more clearly designates the case.
+// In particular, we have "update" vs "insert" here as the actions, but "update" covers a bunch of things including updating a list which feels very different from updating a field
+// We may also need to update a switch or a punnet or something in an "update"
 FlasckWrapper.prototype.doRender = function(todo) {
 	// Gather into a single, de-duped list of elements to update
 	var routes = {};
@@ -191,12 +195,32 @@ FlasckWrapper.prototype.doRender = function(todo) {
 		var a = todo[t].action;
 		if (a === 'update') {
 			todo[t].tree.forEach(function (p) {
-				var c = wrapper.nodeCache[p.route];
-				if (c == null || c == undefined) {
-					console.log("There is nothing in the cache for route " + p.route);
-					return;
+				var liop = p.route.lastIndexOf("+"); // TODO: specifically, this test should come from something in "p", not from looking at the route
+				if (liop != -1) {
+					var pref = p.route.substring(0, liop);
+					var suff = p.route.substring(liop+1);
+					if (suff.indexOf(".") != -1)
+						throw new Error("this case is not yet handled");
+					for (var r in wrapper.nodeCache) {
+						if (r.length > liop && r.substring(0, liop) === pref && r.substring(liop).indexOf(".") == -1) {
+							var c = wrapper.nodeCache[r];
+							var vars = {};
+							var listThing = wrapper.card[p.list];
+							if (listThing._ctor === 'Croset')
+								vars[suff] = listThing.get(r.substring(liop+1)).value;
+							else
+								throw new Error("we haven't written that code yet");
+							routes[r] = { parent: c.parent, tree: c.tree, me: c.me, action: p.action, vars: vars };
+						}
+					}
+				} else {
+					var c = wrapper.nodeCache[p.route];
+					if (c == null || c == undefined) {
+						console.log("There is nothing in the cache for route " + p.route);
+						return;
+					}
+					routes[p.route] = { parent: c.parent, tree: c.tree, me: c.me, action: p.action, vars: null };
 				}
-				routes[p.route] = { elt: c.elt, tree: c.tree, me: c.me, action: p.action };
 			});
 		} else if (a === 'insert') {
 			console.log("todo insert", todo[t]);
@@ -243,26 +267,25 @@ FlasckWrapper.prototype.doRender = function(todo) {
 	for (var qr in routes) {
 		var r = routes[qr];
 //		console.log("route to render", qr, r.action);
+		this.renderState = {};
+		for (var qq in r.vars)
+			this.renderState[qq] = r.vars[qq];
 		if (r.action === 'render') {
 //			console.log("rewriting ", r.me.id, r.elt.id);
 			r.me.innerHTML = "";
-		    this.renderState = {}; // may need to bind in existing vars at this point
 			wrapper.renderSubtree(qr, r.me.ownerDocument, r.tree);
 		} else if (r.action === 'update') {
 //			console.log("updating ", r.me.id, r.elt.id);
-		    this.renderState = {}; // may need to bind in existing vars at this point
 			var fn = wrapper.renderSubtree(qr, r.me.ownerDocument, r.tree);
 			fn.call(null, r.me);
 		} else if (r.action === 'renderChildren') {
 //			console.log("rewriting ", r.me.id, r.elt.id);
 			r.me.innerHTML = "";
-		    this.renderState = {}; // may need to bind in existing vars at this point
 			wrapper.renderSubtree(qr, r.me.ownerDocument, r.tree, true);
 		} else if (r.action === 'attrs') {
 			var line = FLEval.full(r.tree.fn.apply(this.card));
 			var html;
 			if (line instanceof DOM._Element) {
-//				html = line.toElement(r.me.ownerDocument);
 				line.updateAttrsIn(r.me); // do we need to bind in the vars here?
 			} else
 				throw new Error("This case is not covered: " + line);
@@ -304,14 +327,13 @@ FlasckWrapper.prototype.renderSubtree = function(route, doc, tree) {
 //			into.appendChild(send);
 		return send;
 	} else if (tree.type == 'list') { // another special case
-		var plidx = route.lastIndexOf("+");
 		var ul = FLEval.full(tree.fn.apply(this.card)).toElement(doc);
 		var val = FLEval.full(tree.val.apply(this.card));
 		if (val && val._ctor === 'Cons') { // the value may be an FL list
 			while (val && val._ctor === 'Cons') {
 				var lvar = val.head;
 				this.renderState[tree.var] = lvar;
-				var newRoute = route.substring(0,plidx+1) + lvar.id;
+				var newRoute = route + "+" + lvar.id;
 				var child = this.renderSubtree(newRoute, doc, tree.template);
 				this.setIdAndCache(newRoute, tree.template, ul, child, true);
 				ul.appendChild(child);
@@ -421,7 +443,6 @@ FlasckWrapper.prototype.renderSubtree = function(route, doc, tree) {
 FlasckWrapper.prototype.renderChildren = function(doc, route, parentElt, children) {
 	if (children) {
 		for (var c=0;c<children.length;c++) {
-  			console.log("render child", c);
   			var newRoute = this.extendRoute(route, children[c]);
 			var child = this.renderSubtree(newRoute, doc, children[c]);
 			if (child instanceof Node) {
