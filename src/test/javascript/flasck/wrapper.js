@@ -12,6 +12,8 @@ FlasckWrapper = function(postbox, initSvc, cardClz) {
 }
 
 FlasckWrapper.Processor = function(wrapper, service) {
+	if (!service)
+		throw new Error("No service was defined");
 	this.wrapper = wrapper;
 	this.service = service;
 }
@@ -343,8 +345,8 @@ FlasckWrapper.prototype.renderSubtree = function(route, doc, tree) {
 			for (var cri=0;cri<val.members.length;cri++) {
 				var lvar = val.members[cri];
 				this.renderState[tree.var] = lvar.value;
-				console.log("newRoute = ", route, "list var = ", tree.var, "ref =", lvar);
-				var newRoute = route.substring(0,plidx+1) + lvar.key;
+				console.log("route = ", route, "list var = ", tree.var, "ref =", lvar);
+				var newRoute = route + lvar.key;
 				console.log("list route = ", newRoute, "tree", tree.template);
 				var child = this.renderSubtree(newRoute, doc, tree.template, true);
 				this.setIdAndCache(newRoute, tree, ul, child);

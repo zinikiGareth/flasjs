@@ -59,7 +59,10 @@ Flasck.createCard = function(postbox, inside, cardInfo, services) {
 //	console.log("Creating card", myCard._ctor);
 	for (var s in myCard._services) {
 //		console.log("providing service " + s);
-		Flasck.provideService(postbox, services, s, new FlasckWrapper.Processor(myCard._services[s]));
+		var serv = myCard._services[s]; 
+		if (!serv)
+			throw new Error("cannot provide service " + s);
+		Flasck.provideService(postbox, services, s, new FlasckWrapper.Processor(wrapper, serv));
 	}
 //	console.log("These services are available:", services);
 	
