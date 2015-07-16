@@ -29,9 +29,10 @@ DOM._Element.prototype.toElement = function (doc) {
 	for (var c = this.contents;c && c._ctor === 'Cons'; c = c.tail) {
 		if (typeof(c.head) === 'string' || typeof(c.head) === 'number') {
 			ret.appendChild(doc.createTextNode(c.head));
-		} else if (c.head instanceof DOM.Element) {
+		} else if (c.head instanceof DOM._Element) {
 			ret.appendChild(c.head.toElement(doc));
-		}
+		} else
+			throw new Error("unsupported DOM node type");
 	}
 	return ret;
 }

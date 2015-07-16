@@ -113,6 +113,7 @@ FlasckWrapper.prototype.processMessages = function(l) {
 
 FlasckWrapper.prototype.processOne = function(todo, msg) {
 	var updateTree = this.cardClz.updates;
+	var newUpdateTree = this.cardClz.onUpdate;
 //	console.log("Message: ", msg);
 	if (msg._ctor === 'Send') {
 		var target = FLEval.head(this.card[msg.target]);
@@ -154,27 +155,48 @@ FlasckWrapper.prototype.processOne = function(todo, msg) {
 				return;
 			}
 			var newmsgs = actM.apply(target, args);
-			console.log("object invocation returns closure ", newmsgs);  
-			if (updateTree[msg.target])
+			if (updateTree && updateTree[msg.target])
 				todo[msg.target] = {action: 'insert', target: target, crokey: args[0], tree: updateTree[msg.target] };
+			if (newUpdateTree && newUpdateTree[msg.target]) {
+				// TODO: I want to go back to the "old" method of collecting TODOs, but for now it's easier to just invoke from here to avoid untangling all that code
+				// todo[msg.target] = {action: 'insert', target: target, crokey: args[0], tree: updateTree[msg.target] };
+				console.log("update view for " + msg.target);
+				for (var i=0;i<newUpdateTree[msg.target]['insert'].length;i++) 
+					newUpdateTree[msg.target]["insert"][i].call(this.card, this.div.ownerDocument, this, this.div.ownerDocument.getElementById('queue-list'), args[1], null);
+				for (var i=0;i<newUpdateTree[msg.target]['update'].length;i++) 
+					newUpdateTree[msg.target]["update"][i].call(this.card, this.div.ownerDocument, this, args[1]);
+				for (var i=0;i<newUpdateTree[msg.target]['attrs'].length;i++) 
+					newUpdateTree[msg.target]["attrs"][i].call(this.card, this.div.ownerDocument, this);
+			}
 			// TODO: theoretically at least, objects can spit out more TODO items
 			// we need to collect these and put them on one big giant list
 			// and then keep calling "setTimeout(0)" at the end here to process that list after this one
 			// until we reach a stable state where no more items are generated
+			if (newmsgs)
+				console.log("object invocation returns closure ", newmsgs);  
 		} else {
 			console.log("Cannot handle special case:", target._special);
 			return;
 		}
 	} else if (msg._ctor === 'Assign') {
 		this.card[msg.field] = msg.value;
-		if (updateTree[msg.field])
+		if (updateTree && updateTree[msg.field])
 			todo[msg.field] = {action: 'update', tree: updateTree[msg.field] };
+		if (newUpdateTree && newUpdateTree[msg.field]) {
+			for (var i=0;i<newUpdateTree[msg.field]['assign'].length;i++) { 
+				newUpdateTree[msg.field]['assign'][i].call(this.card, this.div.ownerDocument, this);
+			}
+		}
 	} else
 		throw new Error("The method message " + msg._ctor + " is not supported");
 }
 
 var nextid = 1; // TODO: this might actually be the right scoping; what I want is for it global per document.  On the other hand, I would prefer it to be somewhere that looked logical
 FlasckWrapper.prototype.doInitialRender = function(div) {
+	if (this.cardClz.initialRender) {
+		this.cardClz.initialRender(this, div, this.card);
+		return;
+	}
 	if (!this.cardClz.template)
 		return;
 	this.div = div;
