@@ -160,13 +160,10 @@ FlasckWrapper.prototype.processOne = function(todo, msg) {
 			if (newUpdateTree && newUpdateTree[msg.target]) {
 				// TODO: I want to go back to the "old" method of collecting TODOs, but for now it's easier to just invoke from here to avoid untangling all that code
 				// todo[msg.target] = {action: 'insert', target: target, crokey: args[0], tree: updateTree[msg.target] };
-				console.log("update view for " + msg.target);
-				for (var i=0;i<newUpdateTree[msg.target]['insert'].length;i++) 
-					newUpdateTree[msg.target]["insert"][i].call(this.card, this.div.ownerDocument, this, this.div.ownerDocument.getElementById('queue-list'), args[1], null);
-				for (var i=0;i<newUpdateTree[msg.target]['update'].length;i++) 
-					newUpdateTree[msg.target]["update"][i].call(this.card, this.div.ownerDocument, this, args[1]);
-				for (var i=0;i<newUpdateTree[msg.target]['attrs'].length;i++) 
-					newUpdateTree[msg.target]["attrs"][i].call(this.card, this.div.ownerDocument, this);
+				for (var i=0;i<newUpdateTree[msg.target]['itemInserted'].length;i++) 
+					newUpdateTree[msg.target]["itemInserted"][i].call(this.card, this.div.ownerDocument, this, this.div.ownerDocument.getElementById('queue-list'), args[1], null);
+				for (var i=0;i<newUpdateTree[msg.target]['itemChanged'].length;i++) 
+					newUpdateTree[msg.target]["itemChanged"][i].call(this.card, this.div.ownerDocument, this, args[1]);
 			}
 			// TODO: theoretically at least, objects can spit out more TODO items
 			// we need to collect these and put them on one big giant list
@@ -194,7 +191,9 @@ FlasckWrapper.prototype.processOne = function(todo, msg) {
 var nextid = 1; // TODO: this might actually be the right scoping; what I want is for it global per document.  On the other hand, I would prefer it to be somewhere that looked logical
 FlasckWrapper.prototype.doInitialRender = function(div) {
 	if (this.cardClz.initialRender) {
-		this.cardClz.initialRender(this, div, this.card);
+		this.infoAbout = {};
+		this.div = div; // not sure if we really need this
+		this.cardClz.initialRender(div.ownerDocument, this, div, this.card);
 		return;
 	}
 	if (!this.cardClz.template)

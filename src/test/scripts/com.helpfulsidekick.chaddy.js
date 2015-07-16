@@ -248,28 +248,25 @@ com.helpfulsidekick.chaddy.Navbar.prototype.stringFor = function(v0, v1, v2) {
   return FLEval.error("com.helpfulsidekick.chaddy.Navbar.stringFor: case not handled");
 }
 
-
-com.helpfulsidekick.chaddy.Main.initialRender = function(wrapper, parent, card) {
-	var doc = parent.ownerDocument;
-	card.infoAbout = { };
+var hackid = 0;
+com.helpfulsidekick.chaddy.Main.initialRender = function(doc, wrapper, parent, card) {
 	card._struct_1(doc, wrapper, parent);
-	card._card_1(doc, wrapper, doc.getElementById('card_1'));
-	card._switch_1(doc, wrapper, doc.getElementById('switch_1'));
+	card._card_1(doc, wrapper, doc.getElementById(wrapper.infoAbout['struct_1']['sid1']));
+	card._switch_1(doc, wrapper, doc.getElementById(wrapper.infoAbout['struct_1']['sid2']));
 }
 
 com.helpfulsidekick.chaddy.Main.prototype._struct_1 = function(doc, wrapper, parent) {
-	var v0 = FLEval.tuple('id', 'card_1');
-  	var v1 = Cons(v0, Nil);
-	var cardSlot = DOM.Element('div', v1, Nil, Nil);
-	var v2 = FLEval.tuple('id', 'switch_1');
-  	var v3 = Cons(v2, Nil);
-	var switchSlot = DOM.Element('div', v3, Nil, Nil); 
-	var v4 = Cons(switchSlot, Nil);
-	var v5 = Cons(cardSlot, v4);
-	var top = DOM.Element('div', Nil, v5, Nil);
-	var html = top.toElement(doc);
+	var html = doc.createElement('div');
+	var card = doc.createElement('div');
+	var sid1 = 'sid_' + (++hackid);
+	card.setAttribute('id', sid1);
+	html.appendChild(card);
+	var sw = doc.createElement('div');
+	var sid2 = 'sid_' + (++hackid);
+	sw.setAttribute('id', sid2);
+	html.appendChild(sw);
 	parent.appendChild(html);
-//	this.infoAbout["struct_1"] = { into: parent }
+	wrapper.infoAbout["struct_1"] = { sid1: sid1, sid2: sid2 };
 }
 
 com.helpfulsidekick.chaddy.Main.prototype._card_1 = function(doc, wrapper, parent) {
@@ -284,7 +281,6 @@ com.helpfulsidekick.chaddy.Main.prototype._card_1 = function(doc, wrapper, paren
 
 com.helpfulsidekick.chaddy.Main.prototype._switch_1 = function(doc, wrapper, parent) {
 	var val = this.cardShowing;
-	console.log(val);
 	// TODO: test if it has NOT changed ... and thus do nothing
 	parent.innerHTML = null;
 	if (val === 'dashboard')
@@ -313,24 +309,9 @@ com.helpfulsidekick.chaddy.Main.prototype._card_3 = function(doc, wrapper, paren
 	}
 }
 
-com.helpfulsidekick.chaddy.MyQueues.initialRender = function(wrapper, parent, card) {
-	var doc = parent.ownerDocument;
-	wrapper.div = parent;
-	wrapper.infoAbout = { };
+com.helpfulsidekick.chaddy.MyQueues.initialRender = function(doc, wrapper, parent, card) {
 	wrapper.infoAbout['croset1'] = {};
 	card._struct_1(doc, wrapper, parent);
-	/*
-	var ql = doc.getElementById('queue-list');
-	var item1 = {id: 'Q1', title: 'hello, world' };
-	card._croset1_ins(doc, wrapper, ql, item1, null);
-	card._croset1_updItem(doc, wrapper, item1);
-	var item3 = {id: 'Q3', title: 'goodbye, world' };
-	card._croset1_ins(doc, wrapper, ql, item3, null);
-	card._croset1_updItem(doc, wrapper, item3);
-	var item2 = {id: 'Q2', title: 'freddo' };
-	card._croset1_ins(doc, wrapper, ql, item2, ql.childNodes[1]);
-	card._croset1_updItem(doc, wrapper, item2);
-	*/
 	card._croset1_updList(doc, wrapper);
 }
 
@@ -363,9 +344,7 @@ com.helpfulsidekick.chaddy.MyQueues.prototype._struct_1 = function(doc, wrapper,
 //	this.infoAbout["struct_1"] = { into: parent }
 }
 
-var hackid = 0;
-com.helpfulsidekick.chaddy.MyQueues.prototype._croset1_ins = function(doc, wrapper, parent, item, before) {
-
+com.helpfulsidekick.chaddy.MyQueues.prototype._croset1_itemInserted = function(doc, wrapper, parent, item, before) {
   var v9 = FLEval.field(item, 'id');
 // This really does need to be a closure
   var v10 = FLEval.oclosure(this, com.helpfulsidekick.chaddy.MyQueues.prototype.selectQueue, v9);
@@ -387,31 +366,34 @@ com.helpfulsidekick.chaddy.MyQueues.prototype._croset1_ins = function(doc, wrapp
 		parent.insertBefore(ins, before);
 	else
 		parent.appendChild(ins);
-	wrapper.infoAbout['croset1'][iid] = { item: item, sid1: sid1, aid1: aid1 };
+	var xq = wrapper.infoAbout['croset1'][iid] = { item: item, sid1: sid1, aid1: aid1 };
+	this._croset1_formatItem(doc, wrapper, xq);
 }
 
-com.helpfulsidekick.chaddy.MyQueues.prototype._croset1_updItem = function(doc, wrapper, item) {
+com.helpfulsidekick.chaddy.MyQueues.prototype._croset1_itemChanged = function(doc, wrapper, item) {
 	var s1 = doc.getElementById(wrapper.infoAbout['croset1'][item.id]['sid1']);
 	s1.innerHTML = '';
 	s1.appendChild(doc.createTextNode(item.title));
 }
 
+com.helpfulsidekick.chaddy.MyQueues.prototype._croset1_formatItem = function(doc, wrapper, xq) {
+  	var v0 = FLEval.field(xq.item, 'id');
+  	var v1 = FLEval.compeq(this.selectedQueue, v0);
+  	var v2 = this.styleIf('selected-queue-item', v1);
+	var v6 = join(Cons('queue-item', Cons(v2, Nil)), ' ');
+	doc.getElementById(xq.aid1).setAttribute('class', v6);
+}
+
 com.helpfulsidekick.chaddy.MyQueues.prototype._croset1_updList = function(doc, wrapper) {
 	for (var x in wrapper.infoAbout['croset1']) {
-		var xq = wrapper.infoAbout['croset1'][x];
-	  	var v0 = FLEval.field(xq.item, 'id');
-	  	var v1 = FLEval.compeq(this.selectedQueue, v0);
-	  	var v2 = this.styleIf('selected-queue-item', v1);
-		var v6 = join(Cons('queue-item', Cons(v2, Nil)), ' ');
-		doc.getElementById(xq['aid1']).setAttribute('class', v6);
+		this._croset1_formatItem(doc, wrapper, wrapper.infoAbout['croset1'][x]);
 	}
 }
 
 com.helpfulsidekick.chaddy.MyQueues.onUpdate = {
 	"queues": {
-		"insert": [ com.helpfulsidekick.chaddy.MyQueues.prototype._croset1_ins ],  // itemInserted?
-		"update": [ com.helpfulsidekick.chaddy.MyQueues.prototype._croset1_updItem ], // itemChanged?
-		"attrs": [ com.helpfulsidekick.chaddy.MyQueues.prototype._croset1_updList ]// listChanged?
+		"itemInserted": [ com.helpfulsidekick.chaddy.MyQueues.prototype._croset1_itemInserted ],
+		"itemChanged": [ com.helpfulsidekick.chaddy.MyQueues.prototype._croset1_itemChanged ]
 	},
 	"selectedQueue": {
 		"assign": [ com.helpfulsidekick.chaddy.MyQueues.prototype._croset1_updList ]

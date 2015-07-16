@@ -43,7 +43,7 @@ FlasckServices.QueryService.prototype.process = function(message) {
 }
 
 FlasckServices.QueryService.prototype.scan = function(index, type, handler) {
-	console.log("scan", index, type, handler);
+//	console.log("scan", index, type, handler);
 	var self = this;
 	// Hack - this should turn around and talk to Ziniki
 	setTimeout(function() {

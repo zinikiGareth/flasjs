@@ -104,18 +104,22 @@ test.ziniki.CounterCard.__C0.prototype.value = function(v0) {
   return FLEval.error("test.ziniki.CounterCard._C0.value: case not handled");
 }
 
-test.ziniki.CounterCard.initialRender = function(wrapper, parent, card) {
-	wrapper.div = parent;
-	var doc = parent.ownerDocument;
-	var span = doc.createElement('span');
-	span.setAttribute('id', 'myspan');
-	console.log('hello, world');
-	parent.appendChild(span);
-	card.updateCounter(doc, wrapper);
+var hackid = 0;
+test.ziniki.CounterCard.initialRender = function(doc, wrapper, parent, card) {
+	card._struct_1(doc, wrapper, parent);
+	card._content_2(doc, wrapper);
 };
 
-test.ziniki.CounterCard.prototype.updateCounter = function(doc, wrapper) {
-	var span = doc.getElementById('myspan');
+test.ziniki.CounterCard.prototype._struct_1 = function(doc, wrapper, parent) {
+	var sid1 = 'sid_' + (++hackid);
+	var span = doc.createElement('span');
+	span.setAttribute('id', sid1);
+	parent.appendChild(span);
+	wrapper.infoAbout['struct_1'] = { sid1: sid1 };
+}
+
+test.ziniki.CounterCard.prototype._content_2 = function(doc, wrapper) {
+	var span = doc.getElementById(wrapper.infoAbout['struct_1']['sid1']);
 	span.innerHTML = '';
 	var te = doc.createTextNode(this.counter);
 	span.appendChild(te);
@@ -123,7 +127,7 @@ test.ziniki.CounterCard.prototype.updateCounter = function(doc, wrapper) {
 
 test.ziniki.CounterCard.onUpdate = {
   'counter': {
-    assign: [ test.ziniki.CounterCard.prototype.updateCounter ]
+    assign: [ test.ziniki.CounterCard.prototype._content_2 ]
   }
 };
 
