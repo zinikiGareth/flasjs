@@ -226,6 +226,10 @@ concat = function(l) {
 	return ret;
 }
 
+append = function(s1, s2) {
+	return FLEval.full(s1) + FLEval.full(s2);
+}
+
 join = function(l, isep) {
 	var ret = "";
 	var sep = "";
