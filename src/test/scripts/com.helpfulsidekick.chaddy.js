@@ -77,7 +77,7 @@ com.helpfulsidekick.chaddy.MyQueues = function(v0) {
   this._wrapper = v0.wrapper;
   this._special = 'card';
   this.queues = FLEval.closure(Croset, Nil);
-  this.selectedQueue = 'Q1';
+  this.selectedQueue = undefined;
   this.items = FLEval.closure(Croset, Nil);
   this._services = {};
   this._contracts = {};
@@ -246,158 +246,6 @@ com.helpfulsidekick.chaddy.Navbar.prototype.stringFor = function(v0, v1, v2) {
     }
   }
   return FLEval.error("com.helpfulsidekick.chaddy.Navbar.stringFor: case not handled");
-}
-
-var hackid = 0;
-com.helpfulsidekick.chaddy.Main.initialRender = function(doc, wrapper, parent, card) {
-	card._struct_1(doc, wrapper, parent);
-	card._card_1(doc, wrapper, doc.getElementById(wrapper.infoAbout['struct_1']['sid1']));
-	card._switch_1(doc, wrapper, doc.getElementById(wrapper.infoAbout['struct_1']['sid2']));
-}
-
-com.helpfulsidekick.chaddy.Main.prototype._struct_1 = function(doc, wrapper, parent) {
-	var html = doc.createElement('div');
-	var card = doc.createElement('div');
-	var sid1 = 'sid_' + (++hackid);
-	card.setAttribute('id', sid1);
-	html.appendChild(card);
-	var sw = doc.createElement('div');
-	var sid2 = 'sid_' + (++hackid);
-	sw.setAttribute('id', sid2);
-	html.appendChild(sw);
-	parent.appendChild(html);
-	wrapper.infoAbout["struct_1"] = { sid1: sid1, sid2: sid2 };
-}
-
-com.helpfulsidekick.chaddy.Main.prototype._card_1 = function(doc, wrapper, parent) {
-	if (wrapper.cardCache['card_1']) {
-   		wrapper.cardCache[tree.route].redrawInto(html);
-	} else {
-  		var svcs = wrapper.services;
-  		var innerCard = Flasck.createCard(wrapper.postbox, parent, { explicit: com.helpfulsidekick.chaddy.Navbar }, svcs);
-  		wrapper.cardCache['card_1'] = innerCard;
-	}
-}
-
-com.helpfulsidekick.chaddy.Main.prototype._switch_1 = function(doc, wrapper, parent) {
-	var val = this.cardShowing;
-	// TODO: test if it has NOT changed ... and thus do nothing
-	parent.innerHTML = null;
-	if (val === 'dashboard')
-		this._card_2(doc, wrapper, parent);
-	else if (val === 'myqueues')
-		this._card_3(doc, wrapper, parent);
-}
-
-com.helpfulsidekick.chaddy.Main.prototype._card_2 = function(doc, wrapper, parent) {
-	if (wrapper.cardCache['card_2']) {
-   		wrapper.cardCache[tree.route].redrawInto(html);
-	} else {
-  		var svcs = wrapper.services;
-  		var innerCard = Flasck.createCard(wrapper.postbox, parent, { explicit: com.helpfulsidekick.chaddy.Dashboard }, svcs);
-  		wrapper.cardCache['card_2'] = innerCard;
-	}
-}
-
-com.helpfulsidekick.chaddy.Main.prototype._card_3 = function(doc, wrapper, parent) {
-	if (wrapper.cardCache['card_3']) {
-   		wrapper.cardCache[tree.route].redrawInto(html);
-	} else {
-  		var svcs = wrapper.services;
-  		var innerCard = Flasck.createCard(wrapper.postbox, parent, { explicit: com.helpfulsidekick.chaddy.MyQueues }, svcs);
-  		wrapper.cardCache['card_3'] = innerCard;
-	}
-}
-
-com.helpfulsidekick.chaddy.MyQueues.initialRender = function(doc, wrapper, parent, card) {
-	wrapper.infoAbout['croset1'] = {};
-	card._struct_1(doc, wrapper, parent);
-	card._croset1_updList(doc, wrapper);
-}
-
-com.helpfulsidekick.chaddy.MyQueues.prototype._struct_1 = function(doc, wrapper, parent) {
-// 1>2>[3>4,8>9]
-	var n4id = Cons(FLEval.tuple('id', 'queue-list'), Cons(FLEval.tuple('class', 'w-list-unstyled queue-list'), Nil));
-  var n4 = DOM.Element('ul', n4id, Nil, Nil);
-  var n4l = Cons(n4, Nil);
-  var v3a = FLEval.tuple('class', 'w-col w-col-3');
-  var v3b = Cons(v3a, Nil);
-	var v3 = DOM.Element('div', v3b, n4l, Nil);
-
-	var n9id = Cons(FLEval.tuple('id', 'task-list'), Nil);
-  var n9 = DOM.Element('ul', n9id, Nil, Nil);
-  var v8a = FLEval.tuple('class', 'w-col w-col-3');
-  var v8b = Cons(v8a, Nil);
-  var v8c = Cons(n9, Nil);
-  var v8 = DOM.Element('div', v8b, v8c, Nil);
-
-	var v17l = Cons(v3, Cons(v8, Nil));
-  var v16 = FLEval.tuple('class', 'w-row');
-  var v17 = Cons(v16, Nil);
-	var v18 = DOM.Element('div', v17, v17l, Nil);
-	var v18l = Cons(v18, Nil);
-  var v20 = FLEval.tuple('class', 'section main');
-  var v21 = Cons(v20, Nil);
-	var top = DOM.Element('div', v21, v18l, Nil);
-	var html = top.toElement(doc);
-	parent.appendChild(html);
-//	this.infoAbout["struct_1"] = { into: parent }
-}
-
-com.helpfulsidekick.chaddy.MyQueues.prototype._croset1_itemInserted = function(doc, wrapper, parent, item, before) {
-  var v9 = FLEval.field(item, 'id');
-// This really does need to be a closure
-  var v10 = FLEval.oclosure(this, com.helpfulsidekick.chaddy.MyQueues.prototype.selectQueue, v9);
-
-	// TODO: should really not have closures
-	var iid = FLEval.field(item, 'id');
-  
-  
-  var sid1 = 'hid_'+(++hackid);
-  var v13 = DOM.Element('span', Cons(FLEval.tuple('id', sid1), Nil), Nil, Nil);
-  var v14 = Cons(v13, Nil);
-  var aid1 = 'aid_'+(++hackid);
-  var v15 = Cons(FLEval.tuple('id', aid1), Nil);
-  var elt = FLEval.full(FLEval.closure(DOM.Element, 'div', v15, v14, Nil));
-
-	var ins = elt.toElement(doc);
-  	ins['onclick'] = function(event) { wrapper.dispatchEvent(event, v10); }
-	if (before)
-		parent.insertBefore(ins, before);
-	else
-		parent.appendChild(ins);
-	var xq = wrapper.infoAbout['croset1'][iid] = { item: item, sid1: sid1, aid1: aid1 };
-	this._croset1_formatItem(doc, wrapper, xq);
-}
-
-com.helpfulsidekick.chaddy.MyQueues.prototype._croset1_itemChanged = function(doc, wrapper, item) {
-	var s1 = doc.getElementById(wrapper.infoAbout['croset1'][item.id]['sid1']);
-	s1.innerHTML = '';
-	s1.appendChild(doc.createTextNode(item.title));
-}
-
-com.helpfulsidekick.chaddy.MyQueues.prototype._croset1_formatItem = function(doc, wrapper, xq) {
-  	var v0 = FLEval.field(xq.item, 'id');
-  	var v1 = FLEval.compeq(this.selectedQueue, v0);
-  	var v2 = this.styleIf('selected-queue-item', v1);
-	var v6 = join(Cons('queue-item', Cons(v2, Nil)), ' ');
-	doc.getElementById(xq.aid1).setAttribute('class', v6);
-}
-
-com.helpfulsidekick.chaddy.MyQueues.prototype._croset1_updList = function(doc, wrapper) {
-	for (var x in wrapper.infoAbout['croset1']) {
-		this._croset1_formatItem(doc, wrapper, wrapper.infoAbout['croset1'][x]);
-	}
-}
-
-com.helpfulsidekick.chaddy.MyQueues.onUpdate = {
-	"queues": {
-		"itemInserted": [ com.helpfulsidekick.chaddy.MyQueues.prototype._croset1_itemInserted ],
-		"itemChanged": [ com.helpfulsidekick.chaddy.MyQueues.prototype._croset1_itemChanged ]
-	},
-	"selectedQueue": {
-		"assign": [ com.helpfulsidekick.chaddy.MyQueues.prototype._croset1_updList ]
-	}
 }
 
 
@@ -628,6 +476,174 @@ com.helpfulsidekick.chaddy.Navbar.prototype._templateNode_13 = function() {
   var v10 = FLEval.closure(FLEval.tuple, 'click', v9);
   var v11 = FLEval.closure(Cons, v10, Nil);
   return FLEval.closure(DOM.Element, 'a', v8, Nil, v11);
+}
+
+com.helpfulsidekick.chaddy.Dashboard.initialRender = function(doc, wrapper, parent, card) {
+  "use strict";
+}
+
+com.helpfulsidekick.chaddy.Dashboard.prototype._struct_1 = function(doc, wrapper, parent) {
+  "use strict";
+  var block_2 = doc.createElement('div');
+}
+
+com.helpfulsidekick.chaddy.Dashboard.onUpdate = {
+}
+
+com.helpfulsidekick.chaddy.Main.initialRender = function(doc, wrapper, parent, card) {
+  "use strict";
+	card._struct_1(doc, wrapper, parent);
+	card._card_1(doc, wrapper, doc.getElementById(wrapper.infoAbout['struct_1']['sid1']));
+	card._switch_1(doc, wrapper, doc.getElementById(wrapper.infoAbout['struct_1']['sid2']));
+}
+
+com.helpfulsidekick.chaddy.Main.prototype._struct_1 = function(doc, wrapper, parent) {
+  "use strict";
+	wrapper.infoAbout['struct_1'] = {};
+	var block_2 = doc.createElement('div');
+	var elt2 = doc.createElement('div');
+	var sid1 = wrapper.nextSlotId();
+	elt2.setAttribute('id', sid1);
+	block_2.appendChild(elt2);
+	var sw = doc.createElement('div');
+	var sid2 = wrapper.nextSlotId();
+	sw.setAttribute('id', sid2);
+	block_2.appendChild(sw);
+	parent.appendChild(block_2);
+	wrapper.infoAbout["struct_1"] = { sid1: sid1, sid2: sid2 };
+}
+
+com.helpfulsidekick.chaddy.Main.prototype._card_1 = function(doc, wrapper, parent) {
+	if (wrapper.cardCache['card_1']) {
+   		wrapper.cardCache[tree.route].redrawInto(html);
+	} else {
+  		var svcs = wrapper.services;
+  		var innerCard = Flasck.createCard(wrapper.postbox, parent, { explicit: com.helpfulsidekick.chaddy.Navbar }, svcs);
+  		wrapper.cardCache['card_1'] = innerCard;
+	}
+}
+
+com.helpfulsidekick.chaddy.Main.prototype._switch_1 = function(doc, wrapper, parent) {
+	var val = this.cardShowing;
+	// TODO: test if it has NOT changed ... and thus do nothing
+	parent.innerHTML = null;
+	if (val === 'dashboard')
+		this._card_2(doc, wrapper, parent);
+	else if (val === 'myqueues')
+		this._card_3(doc, wrapper, parent);
+}
+
+com.helpfulsidekick.chaddy.Main.prototype._card_2 = function(doc, wrapper, parent) {
+	if (wrapper.cardCache['card_2']) {
+   		wrapper.cardCache[tree.route].redrawInto(html);
+	} else {
+  		var svcs = wrapper.services;
+  		var innerCard = Flasck.createCard(wrapper.postbox, parent, { explicit: com.helpfulsidekick.chaddy.Dashboard }, svcs);
+  		wrapper.cardCache['card_2'] = innerCard;
+	}
+}
+
+com.helpfulsidekick.chaddy.Main.prototype._card_3 = function(doc, wrapper, parent) {
+	if (wrapper.cardCache['card_3']) {
+   		wrapper.cardCache[tree.route].redrawInto(html);
+	} else {
+  		var svcs = wrapper.services;
+  		var innerCard = Flasck.createCard(wrapper.postbox, parent, { explicit: com.helpfulsidekick.chaddy.MyQueues }, svcs);
+  		wrapper.cardCache['card_3'] = innerCard;
+	}
+}
+
+com.helpfulsidekick.chaddy.MyQueues.initialRender = function(doc, wrapper, parent, card) {
+	"use strict";
+	wrapper.infoAbout['croset1'] = {};
+	card._struct_1(doc, wrapper, parent);
+	card._croset1_updList(doc, wrapper);
+}
+
+com.helpfulsidekick.chaddy.MyQueues.prototype._struct_1 = function(doc, wrapper, parent) {
+	"use strict";
+	wrapper.infoAbout['struct_1'] = {};
+	var block_2 = doc.createElement('div');
+	block_2.setAttribute('class', 'section main');
+	parent.appendChild(block_2);
+	var block_3 = doc.createElement('div');
+	block_3.setAttribute('class', 'w-row');
+	block_2.appendChild(block_3);
+	var block_4 = doc.createElement('div');
+	block_4.setAttribute('class', 'w-col w-col-3');
+	block_3.appendChild(block_4);
+	var list_5 = doc.createElement('ul');
+	var sid1 = wrapper.nextSlotId();
+	list_5.setAttribute('id', sid1);
+	wrapper.infoAbout['struct_1']['sid1'] = sid1;
+	list_5.setAttribute('class', 'w-list-unstyled queue-list');
+	block_4.appendChild(list_5);
+	var block_6 = doc.createElement('div');
+	block_6.setAttribute('class', 'w-col w-col-9');
+	block_3.appendChild(block_6);
+	var list_7 = doc.createElement('ul');
+	var sid2 = wrapper.nextSlotId();
+	list_7.setAttribute('id', sid2);
+	wrapper.infoAbout['struct_1']['sid2'] = sid2;
+	list_7.setAttribute('class', 'w-list-unstyled');
+	block_6.appendChild(list_7);
+}
+
+com.helpfulsidekick.chaddy.MyQueues.prototype._croset1_itemInserted = function(doc, wrapper, item, before) {
+var parent = doc.getElementById(wrapper.infoAbout['struct_1']['sid1']);
+  var v9 = FLEval.field(item, 'id');
+// This really does need to be a closure
+  var v10 = FLEval.oclosure(this, com.helpfulsidekick.chaddy.MyQueues.prototype.selectQueue, v9);
+
+	// TODO: should really not have closures
+	var iid = FLEval.field(item, 'id');
+  
+  
+  var sid1 = wrapper.nextSlotId();
+  var v13 = DOM.Element('span', Cons(FLEval.tuple('id', sid1), Nil), Nil, Nil);
+  var v14 = Cons(v13, Nil);
+  var aid1 = wrapper.nextSlotId();
+  var v15 = Cons(FLEval.tuple('id', aid1), Nil);
+  var elt = FLEval.full(FLEval.closure(DOM.Element, 'div', v15, v14, Nil));
+
+	var ins = elt.toElement(doc);
+  	ins['onclick'] = function(event) { wrapper.dispatchEvent(event, v10); }
+	if (before)
+		parent.insertBefore(ins, before);
+	else
+		parent.appendChild(ins);
+	var xq = wrapper.infoAbout['croset1'][iid] = { item: item, sid1: sid1, aid1: aid1 };
+	this._croset1_formatItem(doc, wrapper, xq);
+}
+
+com.helpfulsidekick.chaddy.MyQueues.prototype._croset1_itemChanged = function(doc, wrapper, item) {
+	var s1 = doc.getElementById(wrapper.infoAbout['croset1'][item.id]['sid1']);
+	s1.innerHTML = '';
+	s1.appendChild(doc.createTextNode(item.title));
+}
+
+com.helpfulsidekick.chaddy.MyQueues.prototype._croset1_formatItem = function(doc, wrapper, xq) {
+  	var v0 = FLEval.field(xq.item, 'id');
+  	var v1 = FLEval.compeq(this.selectedQueue, v0);
+  	var v2 = this.styleIf('selected-queue-item', v1);
+	var v6 = join(Cons('queue-item', Cons(v2, Nil)), ' ');
+	doc.getElementById(xq.aid1).setAttribute('class', v6);
+}
+
+com.helpfulsidekick.chaddy.MyQueues.prototype._croset1_updList = function(doc, wrapper) {
+	for (var x in wrapper.infoAbout['croset1']) {
+		this._croset1_formatItem(doc, wrapper, wrapper.infoAbout['croset1'][x]);
+	}
+}
+
+com.helpfulsidekick.chaddy.MyQueues.onUpdate = {
+	"queues": {
+		"itemInserted": [ com.helpfulsidekick.chaddy.MyQueues.prototype._croset1_itemInserted ],
+		"itemChanged": [ com.helpfulsidekick.chaddy.MyQueues.prototype._croset1_itemChanged ]
+	},
+	"selectedQueue": {
+		"assign": [ com.helpfulsidekick.chaddy.MyQueues.prototype._croset1_updList ]
+	}
 }
 
 com.helpfulsidekick.chaddy.Dashboard.template = {

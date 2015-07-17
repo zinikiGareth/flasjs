@@ -160,8 +160,9 @@ FlasckWrapper.prototype.processOne = function(todo, msg) {
 			if (newUpdateTree && newUpdateTree[msg.target]) {
 				// TODO: I want to go back to the "old" method of collecting TODOs, but for now it's easier to just invoke from here to avoid untangling all that code
 				// todo[msg.target] = {action: 'insert', target: target, crokey: args[0], tree: updateTree[msg.target] };
-				for (var i=0;i<newUpdateTree[msg.target]['itemInserted'].length;i++) 
-					newUpdateTree[msg.target]["itemInserted"][i].call(this.card, this.div.ownerDocument, this, this.div.ownerDocument.getElementById('queue-list'), args[1], null);
+				for (var i=0;i<newUpdateTree[msg.target]['itemInserted'].length;i++) {
+					newUpdateTree[msg.target]["itemInserted"][i].call(this.card, this.div.ownerDocument, this, args[1], null);
+				}
 				for (var i=0;i<newUpdateTree[msg.target]['itemChanged'].length;i++) 
 					newUpdateTree[msg.target]["itemChanged"][i].call(this.card, this.div.ownerDocument, this, args[1]);
 			}
