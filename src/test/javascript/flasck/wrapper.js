@@ -189,6 +189,10 @@ FlasckWrapper.prototype.processOne = function(todo, msg) {
 }
 
 var nextid = 1; // TODO: this might actually be the right scoping; what I want is for it global per document.  On the other hand, I would prefer it to be somewhere that looked logical
+FlasckWrapper.prototype.nextSlotId = function() {
+	return 'slot_' + nextid++;
+}
+
 FlasckWrapper.prototype.doInitialRender = function(div) {
 	if (this.cardClz.initialRender) {
 		this.infoAbout = {};

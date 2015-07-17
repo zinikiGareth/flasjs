@@ -104,31 +104,35 @@ test.ziniki.CounterCard.__C0.prototype.value = function(v0) {
   return FLEval.error("test.ziniki.CounterCard._C0.value: case not handled");
 }
 
-var hackid = 0;
 test.ziniki.CounterCard.initialRender = function(doc, wrapper, parent, card) {
+  "use strict";
 	card._struct_1(doc, wrapper, parent);
 	card._content_2(doc, wrapper);
-};
+}
 
 test.ziniki.CounterCard.prototype._struct_1 = function(doc, wrapper, parent) {
-	var sid1 = 'sid_' + (++hackid);
-	var span = doc.createElement('span');
-	span.setAttribute('id', sid1);
-	parent.appendChild(span);
-	wrapper.infoAbout['struct_1'] = { sid1: sid1 };
+  "use strict";
+	wrapper.infoAbout['struct_1'] = {};
+	var sid1 = wrapper.nextSlotId();
+	var span2 = doc.createElement('span');
+	span2.setAttribute('id', sid1);
+	parent.appendChild(span2);
+	wrapper.infoAbout['struct_1']['sid1'] = sid1;
 }
 
 test.ziniki.CounterCard.prototype._content_2 = function(doc, wrapper) {
+  "use strict";
 	var span = doc.getElementById(wrapper.infoAbout['struct_1']['sid1']);
 	span.innerHTML = '';
-	var te = doc.createTextNode(this.counter);
-	span.appendChild(te);
+	var textContent = this.counter;
+	var text = doc.createTextNode(textContent);
+	span.appendChild(text);
 }
 
 test.ziniki.CounterCard.onUpdate = {
   'counter': {
-    assign: [ test.ziniki.CounterCard.prototype._content_2 ]
+    'assign': [test.ziniki.CounterCard.prototype._content_2]
   }
-};
+}
 
 test.ziniki;
