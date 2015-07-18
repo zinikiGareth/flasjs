@@ -43,7 +43,7 @@ FlasckServices.QueryService.prototype.process = function(message) {
 }
 
 FlasckServices.QueryService.prototype.scan = function(index, type, handler) {
-//	console.log("scan", index, type, handler);
+	console.log("scan", index, type, handler);
 	var self = this;
 	// Hack - this should turn around and talk to Ziniki
 	setTimeout(function() {
@@ -54,7 +54,6 @@ FlasckServices.QueryService.prototype.scan = function(index, type, handler) {
 			self.postbox.deliver(handler.chan, {method: 'entry', args: ["55", new com.helpfulsidekick.chaddy.Queue('Q5', 'Chaddy bugs')]}); 
 			self.postbox.deliver(handler.chan, {method: 'entry', args: ["47", new com.helpfulsidekick.chaddy.Queue('Q4', 'Flasck Issues')]});
 		} else if (index.substring(index.length-3) === "/Q3") {
-			console.log("Q3");
 			self.postbox.deliver(handler.chan, {method: 'entry', args: ["17", new com.helpfulsidekick.chaddy.Task('I31', 'This Week #1')]}); 
 		}
 	}, 10);
