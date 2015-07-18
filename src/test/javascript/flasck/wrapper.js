@@ -195,10 +195,10 @@ FlasckWrapper.prototype.nextSlotId = function() {
 }
 
 FlasckWrapper.prototype.doInitialRender = function(div) {
-	if (this.cardClz.initialRender) {
+	if (this.card._initialRender) {
 		this.infoAbout = {};
 		this.div = div; // not sure if we really need this
-		this.cardClz.initialRender(div.ownerDocument, this, div, this.card);
+		this.card._initialRender.call(this.card, div.ownerDocument, this, div);
 		return;
 	}
 	if (!this.cardClz.template)
