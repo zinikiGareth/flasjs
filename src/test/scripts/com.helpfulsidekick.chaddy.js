@@ -616,12 +616,15 @@ com.helpfulsidekick.chaddy.MyQueues.prototype._block_5_itemInserted = function(d
 
 com.helpfulsidekick.chaddy.MyQueues.prototype._block_5_itemChanged = function(doc, wrapper, item) {
 	"use strict";
-	var parent = doc.getElementById(wrapper.infoAbout['block_5'][item.id]['sid8']);
-	parent.innerHTML = '';
-	parent.appendChild(doc.createTextNode(item.title));
+	var span = doc.getElementById(wrapper.infoAbout['block_5'][item.id]['sid10']);
+	span.innerHTML = '';
+	var textContent = FLEval.closure(FLEval.field, item, 'title');
+	var text = doc.createTextNode(FLEval.full(textContent));
+	span.appendChild(text);
 }
 
 com.helpfulsidekick.chaddy.MyQueues.prototype._block_5_formatItem = function(doc, wrapper, info) {
+	"use strict";
   	var v0 = FLEval.field(info.item, 'id');
   	var v1 = FLEval.compeq(this.selectedQueue, v0);
   	var v2 = this.styleIf('selected-queue-item', v1);
@@ -630,6 +633,7 @@ com.helpfulsidekick.chaddy.MyQueues.prototype._block_5_formatItem = function(doc
 }
 
 com.helpfulsidekick.chaddy.MyQueues.prototype._block_5_formatList = function(doc, wrapper) {
+	"use strict";
 	for (var x in wrapper.infoAbout['block_5']) {
 		this._block_5_formatItem(doc, wrapper, wrapper.infoAbout['block_5'][x]);
 	}
