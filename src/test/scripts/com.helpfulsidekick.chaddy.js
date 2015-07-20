@@ -625,11 +625,13 @@ com.helpfulsidekick.chaddy.MyQueues.prototype._block_5_itemChanged = function(do
 
 com.helpfulsidekick.chaddy.MyQueues.prototype._block_5_formatItem = function(doc, wrapper, info) {
 	"use strict";
-  	var v0 = FLEval.field(info.item, 'id');
-  	var v1 = FLEval.compeq(this.selectedQueue, v0);
-  	var v2 = this.styleIf('selected-queue-item', v1);
-	var v6 = join(Cons('queue-item', Cons(v2, Nil)), ' ');
-	doc.getElementById(info.sid8).setAttribute('class', v6);
+	var item = info.item;
+  	var v0 = FLEval.closure(FLEval.field, item, 'id');
+  	var v1 = FLEval.closure(FLEval.compeq, this.selectedQueue, v0);
+  	var v2 = FLEval.oclosure(this, com.helpfulsidekick.chaddy.MyQueues.prototype.styleIf, 'selected-queue-item', v1);
+  	var v3 = FLEval.closure(Cons, v2, Nil);
+	var attrs = FLEval.closure(Cons, 'queue-item', v3);
+	doc.getElementById(info['sid8']).setAttribute('class', join(FLEval.full(attrs), ' '));
 }
 
 com.helpfulsidekick.chaddy.MyQueues.prototype._block_5_formatList = function(doc, wrapper) {
