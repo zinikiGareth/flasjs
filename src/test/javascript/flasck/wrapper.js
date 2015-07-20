@@ -181,8 +181,11 @@ FlasckWrapper.prototype.processOne = function(todo, msg) {
 		if (updateTree && updateTree[msg.field])
 			todo[msg.field] = {action: 'update', tree: updateTree[msg.field] };
 		if (newUpdateTree && newUpdateTree[msg.field]) {
-			for (var i=0;i<newUpdateTree[msg.field]['assign'].length;i++) { 
-				newUpdateTree[msg.field]['assign'][i].call(this.card, this.div.ownerDocument, this);
+			var ut = newUpdateTree[msg.field];
+			if (ut && ut['assign']) {
+				for (var i=0;i<ut['assign'].length;i++) { 
+					ut['assign'][i].call(this.card, this.div.ownerDocument, this);
+				}
 			}
 		}
 	} else

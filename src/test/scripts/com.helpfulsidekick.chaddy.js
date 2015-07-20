@@ -555,75 +555,75 @@ com.helpfulsidekick.chaddy.Main.prototype._card_3 = function(doc, wrapper, paren
 
 com.helpfulsidekick.chaddy.MyQueues.prototype._initialRender = function(doc, wrapper, parent) {
 	"use strict";
+	var block_1 = doc.createElement('div');
+	block_1.setAttribute('class', 'section main');
+	parent.appendChild(block_1);
 	var block_2 = doc.createElement('div');
-	block_2.setAttribute('class', 'section main');
-	parent.appendChild(block_2);
+	block_2.setAttribute('class', 'w-row');
+	block_1.appendChild(block_2);
 	var block_3 = doc.createElement('div');
-	block_3.setAttribute('class', 'w-row');
+	block_3.setAttribute('class', 'w-col w-col-3');
 	block_2.appendChild(block_3);
-	var block_4 = doc.createElement('div');
-	block_4.setAttribute('class', 'w-col w-col-3');
+	var block_4 = doc.createElement('ul');
+	var sid5 = wrapper.nextSlotId();
+	block_4.setAttribute('id', sid5);
+	wrapper.infoAbout['sid5'] = sid5;
+	block_4.setAttribute('class', 'w-list-unstyled queue-list');
+	wrapper.infoAbout['block_4'] = {};
+	// TODO: insert any current contents of the CROSET using insertItem
+	this._block_4_formatList(doc, wrapper);
 	block_3.appendChild(block_4);
-	var block_5 = doc.createElement('ul');
-	var sid6 = wrapper.nextSlotId();
-	block_5.setAttribute('id', sid6);
-	wrapper.infoAbout['sid6'] = sid6;
-	block_5.setAttribute('class', 'w-list-unstyled queue-list');
-	wrapper.infoAbout['block_5'] = {};
+	var block_10 = doc.createElement('div');
+	block_10.setAttribute('class', 'w-col w-col-9');
+	block_2.appendChild(block_10);
+	var block_11 = doc.createElement('ul');
+	var sid12 = wrapper.nextSlotId();
+	block_11.setAttribute('id', sid12);
+	wrapper.infoAbout['sid12'] = sid12;
+	block_11.setAttribute('class', 'w-list-unstyled');
+	wrapper.infoAbout['block_11'] = {};
 	// TODO: insert any current contents of the CROSET using insertItem
-	this._block_5_formatList(doc, wrapper);
-	block_4.appendChild(block_5);
-	var block_11 = doc.createElement('div');
-	block_11.setAttribute('class', 'w-col w-col-9');
-	block_3.appendChild(block_11);
-	var block_12 = doc.createElement('ul');
-	var sid13 = wrapper.nextSlotId();
-	block_12.setAttribute('id', sid13);
-	wrapper.infoAbout['sid13'] = sid13;
-	block_12.setAttribute('class', 'w-list-unstyled');
-	wrapper.infoAbout['block_12'] = {};
-	// TODO: insert any current contents of the CROSET using insertItem
-	this._block_12_formatList(doc, wrapper);
-	block_11.appendChild(block_12);
+	this._block_11_formatList(doc, wrapper);
+	block_10.appendChild(block_11);
 }
 
-com.helpfulsidekick.chaddy.MyQueues.prototype._block_5_itemInserted = function(doc, wrapper, item, before) {
+com.helpfulsidekick.chaddy.MyQueues.prototype._block_4_itemInserted = function(doc, wrapper, item, before) {
 	"use strict";
-	var parent = doc.getElementById(wrapper.infoAbout['sid6']);
-	wrapper.infoAbout['block_5'][item.id] = { item: item };
-	var block_7 = doc.createElement('div');
-	var sid8 = wrapper.nextSlotId();
-	block_7.setAttribute('id', sid8);
-	wrapper.infoAbout['block_5'][item.id]['sid8'] = sid8;
+	var parent = doc.getElementById(wrapper.infoAbout['sid5']);
+	wrapper.infoAbout['block_4'][item.id] = { item: item };
+	var block_6 = doc.createElement('div');
+	var sid7 = wrapper.nextSlotId();
+	block_6.setAttribute('id', sid7);
+	wrapper.infoAbout['block_4'][item.id]['sid7'] = sid7;
 	if (before) {
-		parent.insertBefore(block_7, before);
+		parent.insertBefore(block_6, before);
 	}
 	else {
-		parent.appendChild(block_7);
+		parent.appendChild(block_6);
 	}
   	var v0 = FLEval.closure(FLEval.field, item, 'id');
 	var eh = FLEval.oclosure(this, com.helpfulsidekick.chaddy.MyQueues.prototype.selectQueue, v0);
-  	block_7['onclick'] = function(event) {
+  	block_6['onclick'] = function(event) {
   		wrapper.dispatchEvent(event, eh);
   	}
-	var block_9 = doc.createElement('span');
-	var sid10 = wrapper.nextSlotId();
-	block_9.setAttribute('id', sid10);
-	wrapper.infoAbout['block_5'][item.id]['sid10'] = sid10;
-	block_7.appendChild(block_9);
-	this._block_5_formatItem(doc, wrapper, wrapper.infoAbout['block_5'][item.id]);
+	var block_8 = doc.createElement('span');
+	var sid9 = wrapper.nextSlotId();
+	block_8.setAttribute('id', sid9);
+	wrapper.infoAbout['block_4'][item.id]['sid9'] = sid9;
+	block_6.appendChild(block_8);
+	this._block_4_formatItem(doc, wrapper, wrapper.infoAbout['block_4'][item.id]);
 }
 
-com.helpfulsidekick.chaddy.MyQueues.prototype._block_5_itemChanged = function(doc, wrapper, item) {
+com.helpfulsidekick.chaddy.MyQueues.prototype._block_4_itemChanged = function(doc, wrapper, item) {
 	"use strict";
-	var span = doc.getElementById(wrapper.infoAbout['block_5'][item.id]['sid10']);
+	var span = doc.getElementById(wrapper.infoAbout['block_4'][item.id]['sid9']);
 	span.innerHTML = '';
 	var textContent = FLEval.closure(FLEval.field, item, 'title');
 	var text = doc.createTextNode(FLEval.full(textContent));
 	span.appendChild(text);
 }
 
-com.helpfulsidekick.chaddy.MyQueues.prototype._block_5_formatItem = function(doc, wrapper, info) {
+com.helpfulsidekick.chaddy.MyQueues.prototype._block_4_formatItem = function(doc, wrapper, info) {
 	"use strict";
 	var item = info.item;
   	var v0 = FLEval.closure(FLEval.field, item, 'id');
@@ -631,60 +631,85 @@ com.helpfulsidekick.chaddy.MyQueues.prototype._block_5_formatItem = function(doc
   	var v2 = FLEval.oclosure(this, com.helpfulsidekick.chaddy.MyQueues.prototype.styleIf, 'selected-queue-item', v1);
   	var v3 = FLEval.closure(Cons, v2, Nil);
 	var attrs = FLEval.closure(Cons, 'queue-item', v3);
-	doc.getElementById(info['sid8']).setAttribute('class', join(FLEval.full(attrs), ' '));
+	doc.getElementById(info['sid7']).setAttribute('class', join(FLEval.full(attrs), ' '));
 }
 
-com.helpfulsidekick.chaddy.MyQueues.prototype._block_5_formatList = function(doc, wrapper) {
+com.helpfulsidekick.chaddy.MyQueues.prototype._block_4_formatList = function(doc, wrapper) {
 	"use strict";
-	for (var x in wrapper.infoAbout['block_5']) {
-		this._block_5_formatItem(doc, wrapper, wrapper.infoAbout['block_5'][x]);
+	for (var x in wrapper.infoAbout['block_4']) {
+		this._block_4_formatItem(doc, wrapper, wrapper.infoAbout['block_4'][x]);
 	}
 }
 
-com.helpfulsidekick.chaddy.MyQueues.prototype._block_12_itemInserted = function(doc, wrapper, item, before) {
+com.helpfulsidekick.chaddy.MyQueues.prototype._block_11_itemInserted = function(doc, wrapper, item, before) {
     "use strict";
-    var parent = doc.getElementById(wrapper.infoAbout['sid13']);
-    wrapper.infoAbout['block_12'][item.id] = { item: item };
-    var block_12 = doc.createElement('div');
-    block_12.setAttribute('class', 'queue-list-item');
+    var parent = doc.getElementById(wrapper.infoAbout['sid12']);
+    wrapper.infoAbout['block_11'][item.id] = { item: item };
+    var block_13 = doc.createElement('div');
+    block_13.setAttribute('class', 'queue-list-item');
     if (before) {
-        parent.insertBefore(block_12, before);
+        parent.insertBefore(block_13, before);
     }
     else {
-        parent.appendChild(block_12);
+        parent.appendChild(block_13);
     }
-    var sid6 = wrapper.nextSlotId();
-    var span7 = doc.createElement('span');
-    span7.setAttribute('id', sid6);
-    block_12.appendChild(span7);
-    wrapper.infoAbout['block_12'][item.id]['sid6'] = sid6;
-    var sid8 = wrapper.nextSlotId();
-    var span9 = doc.createElement('span');
-    span9.setAttribute('id', sid8);
-    block_12.appendChild(span9);
-    wrapper.infoAbout['block_12'][item.id]['sid8'] = sid8;
+    var block_14 = doc.createElement('span');
+    var sid15 = wrapper.nextSlotId();
+    block_14.setAttribute('id', sid15);
+    wrapper.infoAbout['block_11'][item.id]['sid15'] = sid15;
+    block_13.appendChild(block_14);
+    var block_16 = doc.createElement('span');
+    var sid17 = wrapper.nextSlotId();
+    block_16.setAttribute('id', sid17);
+    wrapper.infoAbout['block_11'][item.id]['sid17'] = sid17;
+    block_13.appendChild(block_16);
+    this._block_11_formatItem(doc, wrapper, wrapper.infoAbout['block_11'][item.id]);
 }
   
-com.helpfulsidekick.chaddy.MyQueues.prototype._block_12_itemChanged = function(doc, wrapper, item) {
+com.helpfulsidekick.chaddy.MyQueues.prototype._block_11_clear = function(doc, wrapper) {
+	"use strict";
+	var block_11 = doc.getElementById(wrapper.infoAbout['sid12']);
+	block_11.innerHTML = '';
+}
+
+com.helpfulsidekick.chaddy.MyQueues.prototype._block_11_itemChanged = function(doc, wrapper, item) {
     "use strict";
+	var span = doc.getElementById(wrapper.infoAbout['block_11'][item.id]['sid15']);
+	span.innerHTML = '';
+	var textContent = FLEval.closure(FLEval.field, item, 'id');
+	var text = doc.createTextNode(FLEval.full(textContent));
+	span.appendChild(text);
+	var span = doc.getElementById(wrapper.infoAbout['block_11'][item.id]['sid17']);
+	span.innerHTML = '';
+	var textContent = FLEval.closure(FLEval.field, item, 'desc');
+	var text = doc.createTextNode(FLEval.full(textContent));
+	span.appendChild(text);
 }
 
-com.helpfulsidekick.chaddy.MyQueues.prototype._block_12_formatItem = function(doc, wrapper, item) {
+com.helpfulsidekick.chaddy.MyQueues.prototype._block_11_formatItem = function(doc, wrapper, info) {
+	"use strict";
 }
 
-com.helpfulsidekick.chaddy.MyQueues.prototype._block_12_formatList = function(doc, wrapper) {
-	for (var x in wrapper.infoAbout['block_12']) {
-		this._block_12_formatItem(doc, wrapper, wrapper.infoAbout['block_12'][x]);
+com.helpfulsidekick.chaddy.MyQueues.prototype._block_11_formatList = function(doc, wrapper) {
+	"use strict";
+	for (var x in wrapper.infoAbout['block_11']) {
+		this._block_11_formatItem(doc, wrapper, wrapper.infoAbout['block_11'][x]);
 	}
 }
 
 com.helpfulsidekick.chaddy.MyQueues.onUpdate = {
-	"queues": {
-		"itemInserted": [ com.helpfulsidekick.chaddy.MyQueues.prototype._block_5_itemInserted ],
-		"itemChanged": [ com.helpfulsidekick.chaddy.MyQueues.prototype._block_5_itemChanged ]
+	'queues': {
+		'assign': [com.helpfulsidekick.chaddy.MyQueues.prototype._block_4_clear],
+		'itemInserted': [com.helpfulsidekick.chaddy.MyQueues.prototype._block_4_itemInserted],
+		'itemChanged': [com.helpfulsidekick.chaddy.MyQueues.prototype._block_4_itemChanged]
 	},
-	"selectedQueue": {
-		"assign": [ com.helpfulsidekick.chaddy.MyQueues.prototype._block_5_formatList ]
+	'selectedQueue': {
+		'assign': [com.helpfulsidekick.chaddy.MyQueues.prototype._block_4_formatList]
+	},
+	'items': {
+		'assign': [com.helpfulsidekick.chaddy.MyQueues.prototype._block_11_clear],
+		'itemInserted': [com.helpfulsidekick.chaddy.MyQueues.prototype._block_11_itemInserted],
+		'itemChanged': [com.helpfulsidekick.chaddy.MyQueues.prototype._block_11_itemChanged]
 	}
 }
 
