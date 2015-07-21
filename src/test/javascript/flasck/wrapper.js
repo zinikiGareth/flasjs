@@ -197,6 +197,19 @@ FlasckWrapper.prototype.nextSlotId = function() {
 	return 'slot_' + nextid++;
 }
 
+FlasckWrapper.prototype.showCard = function(slot, cardOpts) {
+	var div = doc.getElementById(this.infoAbout[slot]);
+	if (this.cardCache[slot]) {
+   		this.cardCache[slot].redrawInto(div);
+	} else {
+  		var svcs = cardOpts.services;
+  		if (!svcs || svcs._ctor === 'Nil')
+	  		svcs = this.services;
+  		var innerCard = Flasck.createCard(this.postbox, div, { explicit: cardOpts.card }, svcs);
+  		this.cardCache[slot] = innerCard;
+	}
+}
+
 FlasckWrapper.prototype.doInitialRender = function(div) {
 	if (this.card._initialRender) {
 		this.infoAbout = {};
