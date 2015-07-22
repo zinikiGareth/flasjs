@@ -50,6 +50,7 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 	// THIS MAY OR MAY NOT BE A HACK
 	contracts['org.ziniki.Init'] = {
 		process: function(message) {
+			"use strict";
 			if (message.method === 'services')
 				this.services(message.from, message.args[0]);
 			else if (message.method === 'state')
@@ -58,6 +59,7 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 				throw new Error("Cannot process " + message.method);
 		},
 		services: function(from, serviceMap) {
+			"use strict";
 			for (var ctr in serviceMap) {
 				self.services[ctr] = serviceMap[ctr];
 				if (card._contracts[ctr])
@@ -65,6 +67,7 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 			}
 		},
 		state: function(from) {
+			"use strict";
 //			console.log("Setting state");
 			// OK ... I claim it's ready now
 			if (userInit) {
@@ -75,16 +78,18 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 	}
 	contracts['org.ziniki.Render'] = {
 		process: function(message) {
+			"use strict";
 			if (message.method === 'render')
 				this.render(message.from, message.args[0]);
 			else
 				throw new Error("Cannot process " + message.method);
 		},
 		render: function(from, opts) {
+			"use strict";
 			if (self.card._initialRender) {
 				self.infoAbout = {};
-				self.div = div; // not sure if we really need this
-				self.card._initialRender.call(self.card, div.ownerDocument, self, div);
+				self.div = opts.into; // not sure if we really need this
+				self.card._initialRender.call(self.card, self.div.ownerDocument, self, self.div);
 			}
 		},
 		service: {} // to store _myaddr
@@ -115,7 +120,7 @@ FlasckWrapper.prototype.processMessages = function(l) {
 }
 
 FlasckWrapper.prototype.processOne = function(todo, msg) {
-	console.log("Message: ", msg);
+//	console.log("Message: ", msg);
 	if (msg._ctor === 'Send') {
 		var target = FLEval.head(this.card[msg.target]);
 		this.card[msg.target] = target;
@@ -234,4 +239,57 @@ FlasckWrapper.prototype.showCard = function(slot, cardOpts) {
   		var innerCard = Flasck.createCard(this.postbox, div, { explicit: cardOpts.card }, svcs);
   		this.cardCache[slot] = innerCard;
 	}
+}
+
+function d3attrFn(card, flfn) {
+    return function(d, i) {
+        var elt = { _ctor: 'D3Element', data: d, idx: i }
+        return FLEval.full(flfn.call(card, elt));
+    }
+}
+
+FlasckWrapper.prototype.updateD3 = function(slot, info) { // TODO: other args
+	info = FLEval.full(info);
+	// info is an assoc of key -> value
+	// info.data is a function returning the list of data items (of any type; that's up to the user code to sort out)
+    var mydata = FLEval.flattenList(info.assoc("data").call(this.card));
+    
+    // info.enter is a list of zero-or-more 'enter' methods on the card each of which is () -> [D3Action] 
+    var enter = info.assoc("enter");
+    var cmds = [];
+    while (enter._ctor === 'Cons') {
+        var a = enter.head;
+        var v = FLEval.full(a.apply(this.card));
+        cmds.push({ select: v.head.args.head, insert: v.head.args.head });
+        enter = enter.tail;
+    }
+    
+    // info.layout is a list of zero-or-more layouts on the card, each of which is a pair of (pattern, [prop]) where each prop is a pair (name, value-or-function)
+    var layout = info.assoc("layout");
+	var svg = doc.getElementById(slot);
+    for (var c in cmds)
+        d3.select(svg).selectAll(cmds[c].select).data(mydata).enter().append(cmds[c].insert);
+    while (layout._ctor === 'Cons') {
+        var mine = layout.head;
+        var patt = mine.members[0];
+        var props = mine.members[1];
+        var actOn = d3.select(svg).selectAll(patt);
+        while (props._ctor === 'Cons') {
+                            var ph = props.head;
+                            var attr = ph.members[0];
+                            if (attr === 'text')
+                                    actOn = actOn.text(d3attrFn(this.card, ph.members[1]));
+                            else {
+                                    if (attr === 'textAnchor')
+                                            attr = 'text-anchor';
+                                    else if (attr === 'fontFamily')
+                                            attr = 'font-family';
+                                    else if (attr === 'fontSize')
+                                            attr = 'font-size';
+                                    actOn = actOn.attr(attr, d3attrFn(this.card, ph.members[1]));
+                            }
+                            props = props.tail;
+        }
+        layout = layout.tail;
+    }
 }

@@ -84,7 +84,7 @@ _NilMap.prototype.toString = function() {
 	return 'NilMap';
 }
 
-NilMap = function() { return _NilMap(); }
+NilMap = new _NilMap();
 
 _Assoc = function(k,v,r) {
 	"use strict"
