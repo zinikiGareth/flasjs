@@ -86,7 +86,9 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 		},
 		render: function(from, opts) {
 			"use strict";
-			if (self.card._initialRender) {
+			if (!self.card._initialRender)
+				console.log("There is no method _initialRender on ", self);
+			else {
 				self.infoAbout = {};
 				self.div = opts.into; // not sure if we really need this
 				self.card._initialRender.call(self.card, self.div.ownerDocument, self, self.div);
@@ -183,7 +185,21 @@ FlasckWrapper.prototype.processOne = function(todo, msg) {
 		this.card[msg.field] = msg.value;
 		if (!todo[msg.field])
 			todo[msg.field] = {};
-		todo[msg.field]['assign'] = true; 
+		todo[msg.field]['assign'] = true;
+	} else if (msg._ctor === 'CreateCard') {
+		// If the user requests that we make a new card in response to some action, we need to know where to place it
+		// The way we fundamentally know this is to look at the "where" option
+		var where = msg.options.assoc("where");
+		if (!where)
+			throw new Error("Can't display a card nowhere");
+		else if (where === 'overlay') {
+			// HACK: because showCard automatically pulls the div#id out of infoAbout, we need to put it in.
+			// I think we should probably change that, or else have two methods
+			this.infoAbout['flasck_popover'] = 'flasck_popover';
+			this.showCard('flasck_popover', { card: msg.card });
+			this.div.ownerDocument.getElementById('flasck_popover').showModal();
+		} else
+			throw new Error("Cannot yet place a card " + where);
 	} else
 		throw new Error("The method message " + msg._ctor + " is not supported");
 }

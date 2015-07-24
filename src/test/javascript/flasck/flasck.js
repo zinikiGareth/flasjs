@@ -55,7 +55,7 @@ Flasck.createCard = function(postbox, inside, cardInfo, services) {
 	var wrapper = new FlasckWrapper(postbox, myAddr, cardClz, inside);
 
 	// Now create the card and tell the wrapper about it
-	var myCard = new cardClz({ wrapper: wrapper });
+	var myCard = cardClz({ wrapper: wrapper });
 //	console.log("Creating card", myCard._ctor);
 	for (var s in myCard._services) {
 //		console.log("providing service " + s);
