@@ -1,3 +1,4 @@
+var haveZiniki = false;
 FlasckServices = {};
 
 // Not really a service
@@ -45,18 +46,30 @@ FlasckServices.QueryService.prototype.process = function(message) {
 FlasckServices.QueryService.prototype.scan = function(index, type, handler) {
 	console.log("scan", index, type, handler);
 	var self = this;
-	// Hack - this should turn around and talk to Ziniki
-	setTimeout(function() {
-		if (index.substring(index.length-9) === "/myqueues") {
-			self.postbox.deliver(handler.chan, {method: 'entry', args: ["13", new com.helpfulsidekick.chaddy.Queue('Q3', 'This Week')]}); 
-			self.postbox.deliver(handler.chan, {method: 'entry', args: ["31", new com.helpfulsidekick.chaddy.Queue('Q1', 'Captured Items')]}); 
-			self.postbox.deliver(handler.chan, {method: 'entry', args: ["29", new com.helpfulsidekick.chaddy.Queue('Q2', 'TODO Today')]}); 
-			self.postbox.deliver(handler.chan, {method: 'entry', args: ["55", new com.helpfulsidekick.chaddy.Queue('Q5', 'Chaddy bugs')]}); 
-			self.postbox.deliver(handler.chan, {method: 'entry', args: ["47", new com.helpfulsidekick.chaddy.Queue('Q4', 'Flasck Issues')]});
-		} else if (index.substring(index.length-3) === "/Q3") {
-			self.postbox.deliver(handler.chan, {method: 'entry', args: ["17", new com.helpfulsidekick.chaddy.Task('I31', 'This Week #1')]}); 
-		}
-	}, 10);
+	var zinchandler = function(msg) {
+	    var payload = msg.payload;
+	    if (!payload || !payload[type])
+	    	return;
+	    payload[type].forEach(function (item) {
+			item._ctor = type;		    
+			self.postbox.deliver(handler.chan, {method: 'entry', args: [item.id, item]}); 
+		});
+	}
+	if (haveZiniki)
+		ZinikiConn.req.subscribe(index, zinchandler).send();
+	else {
+		setTimeout(function() {
+            if (index.substring(index.length-9) === "/myqueues") {
+                    self.postbox.deliver(handler.chan, {method: 'entry', args: ["13", new com.helpfulsidekick.chaddy.Queue('Q3', 'This Week')]}); 
+                    self.postbox.deliver(handler.chan, {method: 'entry', args: ["31", new com.helpfulsidekick.chaddy.Queue('Q1', 'Captured Items')]}); 
+                    self.postbox.deliver(handler.chan, {method: 'entry', args: ["29", new com.helpfulsidekick.chaddy.Queue('Q2', 'TODO Today')]}); 
+                    self.postbox.deliver(handler.chan, {method: 'entry', args: ["55", new com.helpfulsidekick.chaddy.Queue('Q5', 'Chaddy bugs')]}); 
+                    self.postbox.deliver(handler.chan, {method: 'entry', args: ["47", new com.helpfulsidekick.chaddy.Queue('Q4', 'Flasck Issues')]});
+            } else if (index.substring(index.length-3) === "/Q3") {
+                    self.postbox.deliver(handler.chan, {method: 'entry', args: ["17", new com.helpfulsidekick.chaddy.Task('I31', 'This Week #1')]}); 
+            }
+ 	   }, 10);
+	}
 }
 
 FlasckServices.provideAll = function(postbox, services) {

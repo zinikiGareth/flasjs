@@ -130,7 +130,7 @@ FlasckWrapper.prototype.processOne = function(todo, msg) {
 		}
 		var meth = msg.method;
 		var args = FLEval.flattenList(msg.args);
-		console.log("trying to send", meth, args);
+//		console.log("trying to send", meth, args);
 		if (target._special === 'contract') {
 			var addr = target._addr;
 			if (!addr) {
@@ -203,7 +203,7 @@ FlasckWrapper.prototype.updateDisplay = function(todo) {
 	for (var target in todo) {
 		var actions = todo[target];
 		if (actions['itemInserted']) {
-			// TODO: we need "before" somewhere, so this should probably be map value -> before
+			// TODO: we need "before" somewhere, so this should probably be map value -> before, or else map key -> value so we can find the before
 			for (var j=0;j<actions['itemInserted'].length;j++) {
 				var v = actions['itemInserted'][j];
 				for (var i=0;i<updateTree[target]['itemInserted'].length;i++)

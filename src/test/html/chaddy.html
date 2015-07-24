@@ -8,6 +8,9 @@
   	<script type='text/javascript' src='../javascript/builtin.js'></script>
   	<script type='text/javascript' src='../javascript/stdlib.js'></script>
   	<script type='text/javascript' src='../javascript/dom.js'></script>
+  	<script type='text/javascript' src='../javascript/loader.js'></script>
+  	<script type='text/javascript' src='../javascript/atmosphere.js'></script>
+  	<script type='text/javascript' src='../javascript/zinc.js'></script>
   	<script type='text/javascript' src='../javascript/flasck/flasck.js'></script>
   	<script type='text/javascript' src='../javascript/flasck/handle.js'></script>
   	<script type='text/javascript' src='../javascript/flasck/postbox.js'></script>
@@ -19,7 +22,12 @@
   	<script type='text/javascript'>
   	  var doc = document;
   	  var body = doc.getElementsByTagName("body")[0];
-  	  
+
+	if (haveZiniki) {  	  
+  	  ZinikiConn = { req: Zinc.newRequestor('http://localhost:10080/ziniki/adapter') };
+  	  ZinikiConn.req.invoke('login').setOption('login', 'gareth').setOption('password', 'powell').onConnect();
+  	  ZinikiConn.req.invoke('package/com.helpfulsidekick.chaddy').setOption('zinikiName', 'com.helpfulsidekick.omt.personal').setOption('version', 1).onConnect();
+  	}
 var div = doc.createElement("div");
 body.appendChild(div);
 
