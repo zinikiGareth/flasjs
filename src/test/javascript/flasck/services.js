@@ -30,6 +30,27 @@ FlasckServices.KeyValueService = function(postbox) {
 	return this;
 }
 
+FlasckServices.CredentialsService = function(document, postbox) {
+	this.doc = document;
+	this.postbox = postbox;
+	return this;
+}
+
+FlasckServices.CredentialsService.prototype.process = function(message) {
+//	console.log("received message", message);
+	var meth = this[message.method];
+	if (!meth)
+		throw new Error("There is no method '" + message.method +"'");
+	meth.apply(this.service, message.args);
+}
+
+FlasckServices.CredentialsService.prototype.logout = function() {
+	console.log("logout");
+	var self = this;
+	localStorage.removeItem("zintoken");
+	this.doc.getElementById("flasck_login").showModal();
+}
+
 FlasckServices.QueryService = function(postbox) {
 	this.postbox = postbox;
 	return this;
@@ -72,9 +93,10 @@ FlasckServices.QueryService.prototype.scan = function(index, type, handler) {
 	}
 }
 
-FlasckServices.provideAll = function(postbox, services) {
+FlasckServices.provideAll = function(document, postbox, services) {
 	"use strict";
-	Flasck.provideService(postbox, services, "org.ziniki.Timer", new FlasckServices.TimerService());
-	Flasck.provideService(postbox, services, "org.ziniki.Render", new FlasckServices.RenderService());
-	Flasck.provideService(postbox, services, "org.ziniki.Query", new FlasckServices.QueryService());
+	Flasck.provideService(postbox, services, "org.ziniki.Timer", new FlasckServices.TimerService(postbox));
+	Flasck.provideService(postbox, services, "org.ziniki.Render", new FlasckServices.RenderService(postbox));
+	Flasck.provideService(postbox, services, "org.ziniki.Credentials", new FlasckServices.CredentialsService(document, postbox));
+	Flasck.provideService(postbox, services, "org.ziniki.Query", new FlasckServices.QueryService(postbox));
 }

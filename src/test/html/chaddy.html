@@ -20,6 +20,73 @@
   	<script type='text/javascript' src='../../../../FLAS2/src/test/resources/cards/com.helpfulsidekick.chaddy/com.helpfulsidekick.chaddy.js'></script>
   </head>
   <body>
+    <dialog id='flasck_login'>
+<form id="loginForm" class="form-horizontal full-page-form">
+	<fieldset id="loginFields">
+		<legend>Ziniki</legend>
+		<!--
+		{{#if guardOnDuty}}
+		<div class="alert alert-info">{{guardOnDuty.label}}</div>
+		{{/if}}
+		-->
+		<div class='form-group'>
+			<label class="ziniki-control-label">Username</label>
+			<div class="ziniki-controls"><input type='text' id="username" focused=true></div>
+		</div>
+		<div class='form-group'>
+			<label class="ziniki-control-label">Password</label>
+			<div class="ziniki-controls"><input type='password' id="password"></div>
+		</div>
+		<div>
+			<div class="ziniki-unlabeled-controls"><button id="logInButton" type="button" class="btn btn-default" onclick='zinikiLogin()'>Log in</button></div>
+		</div>
+		<!--
+		{{#if loginError}}
+		<div class="form-group">
+			<div class="ziniki-unlabeled-controls has-error"><span class="help-block" id="loginError">{{loginError}}</span></div>
+		</div>
+		{{/if}}
+		-->
+		<div class="form-group-spacer-medium">
+		</div>
+		<!--
+		<div class="form-group">
+			{{view "identityProviders" label="Or sign in with" actionVerb="Log in" activityName="login"}}
+		</div>
+		-->
+		<!--
+		{{#if userApprovalOfRegistration}}
+		<div class="form-group">
+			<div class="ziniki-unlabeled-controls-wide">
+				<div class="alert alert-warning">
+					{{userApprovalOfRegistration.credentialName}} hasn't yet been registered with Ziniki.
+					{{#if registrationPromptsAreAllowed}}
+					Would you like to register it now?
+					<button id="userApprovalOfRegistrationYes" class="btn btn-warning" type="button" {{action "acceptApprovalOfRegistration"}}>Yes</button>
+					{{/if}}
+				</div>
+			</div>
+		</div>
+		{{/if}}
+		-->
+		<!--
+		{{#if registrationPromptsAreAllowed}}
+		<div class="form-group-spacer-small">
+		</div>
+		<div class="form-group">
+			<div class="ziniki-unlabeled-controls">
+				{{#if userApprovalOfRegistration}}
+				You can also {{#link-to 'register' id="register"}}register{{/link-to}} a different account, or a new username.
+				{{else}}
+				Or you can {{#link-to 'register' id="register"}}register{{/link-to}} a new account.
+				{{/if}}
+			</div>
+		</div>
+		{{/if}}
+		-->
+	</fieldset>
+</form>
+    </dialog>
   	<dialog id='flasck_popover'>
   		<div id='flasck_popover_chrome'>
   			<a style='text-decoration: none;' onclick='document.getElementById("flasck_popover").close()'>X</a>
@@ -30,20 +97,35 @@
   	<script type='text/javascript'>
   	  var doc = document;
   	  var body = doc.getElementsByTagName("body")[0];
+  	  function zinikiLogin() {
+  	  	var user = doc.getElementById('username');
+  	  	var pwd = doc.getElementById('password');
+  	  	console.log("user: ", user.value, "password:", password.value);
+	  	ZinikiConn.req.invoke('login', function(msg) { var payload = msg.payload; var token = payload['token'][0].token; localStorage.setItem('zintoken', token); doc.getElementById('flasck_login').close(); }).setOption('login', user.value).setOption('password', password.value).send();
+  	  } 
 
-	if (haveZiniki) {  	  
-  	  ZinikiConn = { req: Zinc.newRequestor('http://localhost:10080/ziniki/adapter') };
-  	  ZinikiConn.req.invoke('login').setOption('login', 'gareth').setOption('password', 'powell').onConnect();
-  	  ZinikiConn.req.invoke('package/com.helpfulsidekick.chaddy').setOption('zinikiName', 'com.helpfulsidekick.omt.personal').setOption('version', 1).onConnect();
+    var isConnected = true;
+	if (haveZiniki) {
+  	  	ZinikiConn = { req: Zinc.newRequestor('http://localhost:10080/ziniki/adapter') };
+		ZinikiConn.req.invoke('package/com.helpfulsidekick.chaddy').setOption('zinikiName', 'com.helpfulsidekick.omt.personal').setOption('version', 1).onConnect();
+		var token = localStorage.getItem('zintoken');
+		console.log("have token: ", token);
+		if (token == null) {
+			doc.getElementById('flasck_login').showModal();
+			isConnected = false;
+		} else
+	  		ZinikiConn.req.invoke('token/' + token).onConnect();
   	}
 var div = doc.createElement("div");
 body.appendChild(div);
 
 var postbox = new Postbox("main");
 var services = {};
-FlasckServices.provideAll(postbox, services);
+FlasckServices.provideAll(doc, postbox, services);
 
-var handle = Flasck.createCard(postbox, div, { explicit: com.helpfulsidekick.chaddy.Main, mode: 'local' }, services);
+	if (isConnected) {
+	    var handle = Flasck.createCard(postbox, div, { explicit: com.helpfulsidekick.chaddy.Main, mode: 'local' }, services);
+	}
   	</script>
   </body>
 </html>
