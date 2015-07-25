@@ -195,8 +195,8 @@ FlasckWrapper.prototype.processOne = function(todo, msg) {
 		else if (where === 'overlay') {
 			// HACK: because showCard automatically pulls the div#id out of infoAbout, we need to put it in.
 			// I think we should probably change that, or else have two methods
-			this.infoAbout['flasck_popover'] = 'flasck_popover';
-			this.showCard('flasck_popover', { card: msg.card });
+			this.infoAbout['flasck_popover_div'] = 'flasck_popover_div';
+			this.showCard('flasck_popover_div', { card: msg.card });
 			this.div.ownerDocument.getElementById('flasck_popover').showModal();
 		} else
 			throw new Error("Cannot yet place a card " + where);
@@ -246,6 +246,7 @@ FlasckWrapper.prototype.updateDisplay = function(todo) {
 
 FlasckWrapper.prototype.showCard = function(slot, cardOpts) {
 	var div = doc.getElementById(this.infoAbout[slot]);
+	div.innerHTML = '';
 	if (this.cardCache[slot]) {
    		this.cardCache[slot].redrawInto(div);
 	} else {

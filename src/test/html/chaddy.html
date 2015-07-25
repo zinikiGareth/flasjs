@@ -20,7 +20,13 @@
   	<script type='text/javascript' src='../../../../FLAS2/src/test/resources/cards/com.helpfulsidekick.chaddy/com.helpfulsidekick.chaddy.js'></script>
   </head>
   <body>
-  	<dialog id='flasck_popover'></dialog>
+  	<dialog id='flasck_popover'>
+  		<div id='flasck_popover_chrome'>
+  			<a style='text-decoration: none;' onclick='document.getElementById("flasck_popover").close()'>X</a>
+  		</div>
+  		<div id='flasck_popover_div'>
+  		</div>
+  	</dialog>
   	<script type='text/javascript'>
   	  var doc = document;
   	  var body = doc.getElementsByTagName("body")[0];

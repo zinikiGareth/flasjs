@@ -35,7 +35,7 @@ if [ $CHADDY = 1 ] ;then
 	sed \
 	  -e 's%\.\./images%images%' \
 	  ../FLAS2/src/test/resources/cards/com.helpfulsidekick.chaddy/com.helpfulsidekick.chaddy.js > /tmp/com.helpfulsidekick.chaddy.js
-	scp src/test/javascript/{builtin,dom,flasck/*,flenv,stdlib}.js /tmp/com.helpfulsidekick.chaddy.js gmmapowell@dh.flasck.net:dh.flasck.net/demos/chaddyDemo/javascript
+	scp src/test/javascript/{builtin,dom,flasck/*,flenv,stdlib,atmosphere,loader,zinc}.js /tmp/com.helpfulsidekick.chaddy.js gmmapowell@dh.flasck.net:dh.flasck.net/demos/chaddyDemo/javascript
 	scp src/test/javascript/flasck/*.js gmmapowell@dh.flasck.net:dh.flasck.net/demos/chaddyDemo/javascript/flasck
 	scp src/test/css/*.css gmmapowell@dh.flasck.net:dh.flasck.net/demos/chaddyDemo/css
 	scp src/test/images/* gmmapowell@dh.flasck.net:dh.flasck.net/demos/chaddyDemo/images
