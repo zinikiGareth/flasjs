@@ -95,37 +95,48 @@
   		</div>
   	</dialog>
   	<script type='text/javascript'>
-  	  var doc = document;
-  	  var body = doc.getElementsByTagName("body")[0];
-  	  function zinikiLogin() {
-  	  	var user = doc.getElementById('username');
-  	  	var pwd = doc.getElementById('password');
-  	  	console.log("user: ", user.value, "password:", password.value);
-	  	ZinikiConn.req.invoke('login', function(msg) { var payload = msg.payload; var token = payload['token'][0].token; localStorage.setItem('zintoken', token); doc.getElementById('flasck_login').close(); }).setOption('login', user.value).setOption('password', password.value).send();
-  	  } 
+  	  	var doc = document;
+  		var body = doc.getElementsByTagName("body")[0];
+		var div = doc.createElement("div");
+		body.appendChild(div);
 
-    var isConnected = true;
-	if (haveZiniki) {
-  	  	ZinikiConn = { req: Zinc.newRequestor('http://localhost:10080/ziniki/adapter') };
-		ZinikiConn.req.invoke('package/com.helpfulsidekick.chaddy').setOption('zinikiName', 'com.helpfulsidekick.omt.personal').setOption('version', 1).onConnect();
-		var token = localStorage.getItem('zintoken');
-		console.log("have token: ", token);
-		if (token == null) {
-			doc.getElementById('flasck_login').showModal();
+		var postbox = new Postbox("main");
+		var services = {};
+		FlasckServices.provideAll(doc, postbox, services);
+
+		function onOpen() {
+			div.innerHTML='';
+		    var handle = Flasck.createCard(postbox, div, { explicit: com.helpfulsidekick.chaddy.Main, mode: 'local' }, services);
+		}
+
+    	var isConnected = true;
+		if (haveZiniki) {
+	  		function zinikiLogin() {
+	  	  		var user = doc.getElementById('username');
+	  	  		var pwd = doc.getElementById('password');
+	  	  		console.log("user: ", user.value, "password:", password.value);
+		  		ZinikiConn.req.invoke('login', function(msg) { var payload = msg.payload; var token = payload['token'][0].token; localStorage.setItem('zintoken', token); doc.getElementById('flasck_login').close(); ZinikiConn.req.advanceConnectivity(); onOpen(); }).setOption('login', user.value).setOption('password', password.value).send();
+	  		} 
+
 			isConnected = false;
-		} else
-	  		ZinikiConn.req.invoke('token/' + token).onConnect();
-  	}
-var div = doc.createElement("div");
-body.appendChild(div);
-
-var postbox = new Postbox("main");
-var services = {};
-FlasckServices.provideAll(doc, postbox, services);
-
-	if (isConnected) {
-	    var handle = Flasck.createCard(postbox, div, { explicit: com.helpfulsidekick.chaddy.Main, mode: 'local' }, services);
-	}
+	  	  	ZinikiConn = { req: Zinc.newRequestor('http://localhost:10080/ziniki/adapter') };
+			ZinikiConn.req.invoke('package/com.helpfulsidekick.chaddy').setOption('zinikiName', 'com.helpfulsidekick.omt.personal').setOption('version', 1).onConnect();
+			function handleLogin(req) {
+				var token = localStorage.getItem('zintoken');
+				console.log("have token: ", token);
+				if (token == null) {
+					var lm = doc.getElementById('flasck_login');
+					if (!lm.open)
+						lm.showModal();
+				} else
+		  			req.invoke('token/' + token, function(msg) { console.log("received", msg); if (msg.error) { localStorage.removeItem('zintoken'); handleLogin(req); } else { req.advanceConnectivity(); onOpen(); } }).send();
+			}
+			ZinikiConn.req.onConnect(handleLogin, true);
+  		}
+		
+		if (isConnected) {
+			onOpen();
+		}
   	</script>
   </body>
 </html>

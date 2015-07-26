@@ -46,6 +46,7 @@ function Connection(uri) {
     console.log("saw error " + new Date());
     self.isBroken = true;
     self.sentEstablish = false;
+    self.onresponse = {}; // throw away all existing "waiting for response" handlers
     self.reconnecting = setTimeout(function() {
       if (self.isBroken) {
         console.log("attempting to restore connection");
@@ -58,6 +59,7 @@ function Connection(uri) {
   atmoreq.logLevel = 'debug';
   this.atmo = atmosphere.subscribe(atmoreq);
   this.nextId = 0;
+  this.onresponse = {};
   this.dispatch = {};
   this.heartbeatInterval = setInterval(function() {
     if (self.sentEstablish) {
@@ -93,16 +95,20 @@ Connection.prototype.nextHandler = function(handler) {
 Connection.prototype.processIncoming = function(json) {
   var msg = JSON.parse(json);
   if (msg.requestid) {
-    // TODO: handle response to one-time thing
-    if (!this.dispatch[msg.requestid])
-      return;
+    if (this.onresponse[msg.requestid]) {
+      this.onresponse[msg.requestid](msg);
+      delete this.onresponse[msg.requestid];
+    }
   } else if (msg.subscription) {
+    if (this.onresponse[msg.subscription]) {
+      this.onresponse[msg.subscription](msg);
+      delete this.onresponse[msg.subscription];
+    }
     // Handle ongoing data input
     if (!this.dispatch[msg.subscription]) {
       console.log("received message for closed handle " + msg.subscription);
       return;
     }
-    // Further TODO: I think the promise logic allowed for a "handle first time" kind of thing before the main handler got invoked.
     this.dispatch[msg.subscription](msg);
   }
 }
@@ -126,17 +132,43 @@ function Requestor(uri) {
 }
 
 Requestor.prototype.connected = function() {
+  var self = this;
   var conn = this.conn;
+  this.fullyConnected = false;
+  this.delayCount = 0;
   this.connect.forEach(function(r) {
-    conn.atmo.push(JSON.stringify(r.msg));
+    if (r.wait)
+      self.delayCount++;
+    var req = r.req;
+    if (req instanceof Function)
+      req = req(self);
+    else
+      conn.atmo.push(JSON.stringify(req.msg));
   });
+  if (this.delayCount === 0)
+    this.resubscribe();
+}
+
+Requestor.prototype.delayConnectivity = function() {
+  this.delayCount++;
+}
+
+Requestor.prototype.advanceConnectivity = function() {
+  this.delayCount--;
+  if (this.delayCount === 0)
+    this.resubscribe();
+}
+
+Requestor.prototype.resubscribe = function() {
+  var conn = this.conn;
   this.subscriptions.forEach(function(s) {
     conn.atmo.push(JSON.stringify(s.msg));
   });
   this.pending.forEach(function(p) {
-    if (conn.sentEstablish)
-      conn.atmo.push(JSON.stringify(p.msg));
+    conn.atmo.push(JSON.stringify(p.msg));
   });
+  if (this.conn.sentEstablish)
+    this.fullyConnected = true;
 }
 
 Requestor.prototype.subscribe = function(resource, handler) {
@@ -194,15 +226,18 @@ Requestor.prototype.sendJson = function(request, id, json) {
 // TODO: for the general case, we want to consider that "request" can also be a function.
 // In this case, we process request and hold off on doing ANYTHING else until request is completed without any descendants.
 // It's not clear what is meant by descendant here.
-Requestor.prototype.onConnect = function(request) {
-  this.connect.push(request);
-  if (this.conn.sentEstablish)
+Requestor.prototype.onConnect = function(request, waitForCompletion) {
+  this.connect.push({req: request, wait: waitForCompletion});
+  if (this.conn.sentEstablish) {
+    if (request instanceof Function)
+      request = request(this);
     this.conn.atmo.push(JSON.stringify(request.msg));
+  }
 }
 
 Requestor.prototype.beginSubscribing = function(request) {
   this.subscriptions.push(request);
-  if (this.conn.sentEstablish)
+  if (this.fullyConnected)
     this.conn.atmo.push(JSON.stringify(request.msg));
 }
 
@@ -219,7 +254,7 @@ function MakeRequest(requestor, method, handler) {
   this.handler = handler;
   this.req = {"method": method};
   this.msg = {"request": this.req};
-  if (handler)
+  if (method === 'subscribe')
     this.msg.subscription = this.requestor.conn.nextHandler(handler);
   this.method = method;
 }
@@ -249,6 +284,8 @@ MakeRequest.prototype.send = function() {
     this.requestor.beginSubscribing(this);
   } else {
     this.msg.requestid = ++this.requestor.conn.nextId;
+    if (this.handler)
+      this.requestor.conn.onresponse[this.msg.requestid] = this.handler;
     this.requestor.sendJson(this, this.msg.requestid, this.msg);
   }
 }
@@ -257,6 +294,8 @@ MakeRequest.prototype.onConnect = function() {
   if (this.msg.subscription)
     throw new Error("Subscriptions are automatically reconnected");
   this.msg.requestid = ++this.requestor.conn.nextId;
+    if (this.handler)
+      this.requestor.conn.onresponse[this.msg.requestid] = this.handler;
   this.requestor.onConnect(this);
 }
 

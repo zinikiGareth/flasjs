@@ -1,4 +1,4 @@
-var haveZiniki = false;
+var haveZiniki = true;
 FlasckServices = {};
 
 // Not really a service
