@@ -4,11 +4,14 @@
  * @param name the name of this postbox, to be used in generating unique names
  * @returns a new postbox
  */
-Postbox = function(name) {
+Postbox = function(name, window) {
+	"use strict";
+	var self = this;
 	this.name = name;
 	this.recip = 0;
 	this.postboxes = {};
 	this.recipients = {};
+	window.addEventListener("message", function(msg) { "use strict"; self.receiveMessage(msg) }, false);
 	return this;
 }
 
@@ -22,12 +25,44 @@ Postbox.prototype.unique = function(addr) {
 	return this.name + ":" + addr;
 }
 
+/** Declare a remote postbox
+ * @param name the name of the remote postbox
+ * @param onConnect a function to call when the postbox connects
+ */
+Postbox.prototype.remote = function(name, onConnect) {
+	if (this.postboxes[name] && this.postboxes[name].window) {
+		setTimeout(function() { onConnect(name) }, 0);
+	} else {
+		this.postboxes[name] = { onConnect: onConnect };
+	}
+}
+
 /** Connect a remote postbox
  * @param name the name of the remote postbox
  * @param pbox a window handle for the remote postbox
  */
-Postbox.prototype.connect = function(name, pbox) {
-	this.postboxes[name] = pbox;
+Postbox.prototype.connect = function(name, atWindow) {
+	this.postboxes[name] = { window: atWindow };	
+	atWindow.postMessage({action:'connect',from:this.name}, "*");
+}
+
+Postbox.prototype.receiveMessage = function(msg) {
+	console.log("received", msg.data);
+	if (!msg.data.action)
+		throw new Error("Message did not have an action");
+	if (msg.data.action === "connect") {
+		var name = msg.data.from;
+		if (this.postboxes[name] && this.postboxes[name].onConnect) {
+			this.postboxes[name].window = msg.source;
+			this.postboxes[name].onConnect(name);
+			delete this.postboxes[name].onConnect;
+		} else {
+			this.postboxes[name] = { window: msg.source };
+		}
+
+		// It's this that I deny
+//		msg.source.postMessage({action:"accepted",from:this.name}, "*");
+	}
 }
 
 /** Register a local component
