@@ -29,6 +29,14 @@ _Cons.prototype.toString = function() {
 
 Cons = function(a,b) { return new _Cons(a,b); }
 
+map = function(f,l) {
+	"use strict"
+	var l = FLEval.head(l);
+	if (l._ctor !== 'Cons')
+		return Nil;
+	return Cons(FLEval.closure(f, l.head), FLEval.closure(map, f, l.tail));
+}
+
 // List comprehension for integers starting at n (and going to infinity)
 intsFrom = function(n) {
 	return FLEval.closure(Cons, n, FLEval.closure(intsFrom, FLEval.closure(FLEval.plus, n, 1)));
@@ -110,24 +118,62 @@ Assoc = function(k,v,r) { return new _Assoc(k,v,r); }
 
 // Cunning Crosets
 
+/* This may seem like overkill - why not just use a list for the ordering?
+ * The answer is that on the server, you can't be guaranteed that you are seeing "the entire list"
+ * and operations such as "insert" into a list of a million rows can be expensive.
+ * Moreover, server-side operations can run into "collisions" where multiple people do updates and it
+ * is unclear which should win.  Truth to tell, this can happen client-side too.  So, a CROSET with
+ * a dedicated CROKEY which can be resolved is a better bet.
+ */
+ 
+/* TODO: refactor out the CROKEY.  It should be an array of "bytes" generated to the same algorithm as
+ * server side if possible.  This should generate a javascript array like [0xe3, 0x87, 0x40] where each
+ * byte is 0-255
+ */ 
 function _Croset(list) {
 	this._ctor = 'Croset';
 	this._special = 'object';
 	this.members = [];
-	while ((list = FLEval.head(list)) && list._ctor === 'Cons') {
-		var h = list.head = FLEval.head(list.head);
-		if (h._ctor === 'Tuple' || h.length == 2) {
-			this.insert(h.members[0], h.members[1]);
-		}
-		list = list.tail;
+	this.hash = {};
+	this.mergeAppend(list);
+}
+
+_Croset.prototype.insert = function(k, obj) {
+	if (!obj.id)
+		return;
+	if (!this._hasId(obj.id))
+		this._insert(k, obj.id);
+	if (obj._ctor)
+		this.hash[obj.id] = obj;
+}
+
+_Croset.prototype._append = function(id) {
+	if (this.members.length === 0) {
+		// the initial case
+		this.members.push({ key: [100], id: id });
+	} else {
+		// go 10 past the final list entry
+		this.members.push({ key: [this.members[this.members.length-1].key[0]+10], id: id });
 	}
 }
 
-_Croset.prototype.insert = function(k, v) {
-	var entry = { key: k, value: v };
+// return 1 if k2 is AFTER k1, -1 if k2 is BEFORE k1 and 0 if they are the same key
+_Croset.prototype._keycomp = function(k1, k2) {
+	for (var i=0;i<k1.length;i++) {
+		if (k1[i] > k2[i]) return 1;
+		if (k1[i] < k2[i]) return -1;
+	}
+	if (k1.length == k2.length) return 0; // they are the same key
+	if (k1.length > k2.length) return 1; // k1 is a subkey of k2 and thus after it
+	if (k1.length < k2.length) return -1; // k1 is a prefix of k2 and thus before it
+	throw new Error("You should never get here");
+}
+
+_Croset.prototype._insert = function(k, id) {
+	var entry = { key: k, id: id };
 	for (var i=0;i<this.members.length;i++) {
 		var m = this.members[i];
-		if (m['key'] > k) {
+		if (this._keycomp(m['key'], k) === 1) {
 			this.members.splice(i, 0, entry);
 			return;
 		}
@@ -144,6 +190,58 @@ _Croset.prototype.get = function(k) {
 			break;
 	}
 	throw new Error("No element", k, "in", this);
+}
+
+_Croset.prototype.range = function(from, to) {
+	var ret = Nil;
+	for (var k=to-1;k>=from;k--) {
+		if (k<this.members.length) {
+			var v = this.members[k].id;
+			if (this.hash[v])
+				ret = Cons(this.hash[v], ret);
+		}
+	}
+	return ret;
+}
+
+_Croset.prototype.mergeAppend = function(l) {
+	var l = FLEval.full(FLEval.inflate(l));
+	while (l._ctor === 'Cons') {
+		console.log("handle", l.head);
+		if (l.head.id) {
+			if (!this._hasId(l.head.id)) { // only append if it's not in the list
+				this._append(l.head.id);
+			}
+			if (l.head._ctor)
+				this.hash[l.head.id] = l.head;
+		}
+		l = l.tail;
+	}
+}
+
+_Croset.prototype.put = function(obj) {
+	obj = FLEval.head(obj);
+	if (!obj.id) {
+		debugger;
+		throw new Error(obj + " does not have field 'id'");
+	}
+	if (!obj._ctor) {
+		debugger;
+		throw new Error(obj + " does not have _ctor");
+	}
+	obj.id = FLEval.full(obj.id);
+	if (!this._hasId(obj.id))
+		this._append(obj.id);
+	if (obj._ctor)
+		this.hash[obj.id] = obj;
+}
+
+_Croset.prototype._hasId = function(id) {
+	for (var i=0;i<this.members.length;i++) {
+		if (this.members[i].id === id)
+			return true;
+	}
+	return false;
 }
 
 Croset = function(list) { return new _Croset(list); }
