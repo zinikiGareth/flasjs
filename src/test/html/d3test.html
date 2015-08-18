@@ -25,7 +25,7 @@
   	  var body = doc.getElementsByTagName("body")[0];
 
 // Create a new card-containing environment with services
-var postbox = new Postbox("main");
+var postbox = new Postbox("main", window);
 var services = {};
 //Flasck.provideService(postbox, services, 'test.ziniki.Timer', new FlasckServices.TimerService(postbox));
 //Flasck.provideService(postbox, services, 'org.ziniki.KeyValue', new FlasckServices.KeyValueService(postbox));

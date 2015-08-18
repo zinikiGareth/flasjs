@@ -103,7 +103,7 @@
 		var div = doc.createElement("div");
 		body.appendChild(div);
 
-		var postbox = new Postbox("main");
+		var postbox = new Postbox("main", window);
 		var services = {};
 		FlasckServices.provideAll(doc, postbox, services);
 

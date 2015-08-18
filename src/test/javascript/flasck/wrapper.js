@@ -301,6 +301,7 @@ FlasckWrapper.prototype.updateDisplay = function(todo) {
 }
 
 FlasckWrapper.prototype.showCard = function(slot, cardOpts) {
+	var mode = cardOpts.mode || 'local';
 	var div = doc.getElementById(this.infoAbout[slot]);
 	div.innerHTML = '';
 	if (this.cardCache[slot]) {
@@ -309,7 +310,7 @@ FlasckWrapper.prototype.showCard = function(slot, cardOpts) {
   		var svcs = cardOpts.services;
   		if (!svcs || svcs._ctor === 'Nil')
 	  		svcs = this.services;
-  		var innerCard = Flasck.createCard(this.postbox, div, { explicit: cardOpts.card }, svcs);
+  		var innerCard = Flasck.createCard(this.postbox, div, { mode: mode, explicit: cardOpts.card }, svcs);
   		this.cardCache[slot] = innerCard;
 	}
 }
