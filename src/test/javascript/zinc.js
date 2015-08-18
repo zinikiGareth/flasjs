@@ -36,7 +36,7 @@ function Connection(uri) {
     self.connect();
   };
   atmoreq.onMessage = function(msg) {
-  	console.log("onMessage " + msg.status + ": " + msg.responseBody);
+//  	console.log("onMessage " + msg.status + ": " + msg.responseBody);
     if (!msg || !msg.status || msg.status != 200 || !msg.responseBody)
       console.log("invalid message received", msg);
     self.processIncoming(msg.responseBody);

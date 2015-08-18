@@ -27,7 +27,53 @@ FlasckServices.TimerService.prototype.requestTicks = function(handler, amount) {
 
 FlasckServices.KeyValueService = function(postbox) {
 	this.postbox = postbox;
+	this.store = {};
 	return this;
+}
+
+FlasckServices.KeyValueService.prototype.process = function(message) {
+//	console.log("received message", message);
+	"use strict";
+	var meth = this[message.method];
+	if (!meth)
+		throw new Error("There is no method '" + message.method +"'");
+	meth.apply(this, message.args);
+}
+
+FlasckServices.KeyValueService.prototype.subscribe = function(resource, handler) {
+	"use strict";
+	var self = this;
+	console.log("self =", self, "subscribe to", resource);
+	if (self.store.hasOwnProperty(resource)) {
+		self.postbox.deliver(handler.chan, {method: 'update', args:[self.store[resource]]});
+		return;
+	}
+	var zinchandler = function (msg) {
+		console.log("kv received", msg, "from Ziniki");
+		var main = msg.payload._main;
+		for (var k in msg.payload) {
+			if (k[0] !== '_' && msg.payload.hasOwnProperty(k)) {
+				if (!main)
+					main = k;
+				var l = msg.payload[k];
+				if (l instanceof Array) {
+					for (var i=0;i<l.length;i++) {
+						var it = l[i];
+						self.store[it.id] = it;
+					}
+				}
+			}
+		}
+		self.postbox.deliver(handler.chan, {method: 'update', args:[main, msg.payload[main][0]]});
+	};
+	if (haveZiniki) {
+		// we can either subscribe to a resource or to a specific object by ID
+		// we need to distinguish between these cases
+		// for now we are putting the burden on the person asking for the object
+		ZinikiConn.req.subscribe(resource, zinchandler).send();
+	} else {
+		self.postbox.deliver(handler.chan, {method: 'update', args:['hello, world']});
+	}
 }
 
 FlasckServices.CredentialsService = function(document, postbox) {
@@ -77,7 +123,7 @@ FlasckServices.QueryService.prototype.scan = function(index, type, handler) {
 		});
 	}
 	if (haveZiniki)
-		ZinikiConn.req.subscribe(index, zinchandler).send();
+		ZinikiConn.req.subscribe(index, zinchandler).setOption("type", "wikipedia").send();
 	else {
 		setTimeout(function() {
             if (index.substring(index.length-9) === "/myqueues") {
@@ -98,5 +144,6 @@ FlasckServices.provideAll = function(document, postbox, services) {
 	Flasck.provideService(postbox, services, "org.ziniki.Timer", new FlasckServices.TimerService(postbox));
 	Flasck.provideService(postbox, services, "org.ziniki.Render", new FlasckServices.RenderService(postbox));
 	Flasck.provideService(postbox, services, "org.ziniki.Credentials", new FlasckServices.CredentialsService(document, postbox));
+	Flasck.provideService(postbox, services, "org.ziniki.KeyValue", new FlasckServices.KeyValueService(postbox));
 	Flasck.provideService(postbox, services, "org.ziniki.Query", new FlasckServices.QueryService(postbox));
 }

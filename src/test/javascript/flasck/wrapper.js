@@ -1,4 +1,4 @@
-FlasckWrapper = function(postbox, initSvc, cardClz) {
+FlasckWrapper = function(postbox, initSvc, cardClz, inside) {
 	this._ctor = 'FlasckWrapper';
 	this.postbox = postbox;
 	this.initSvc = initSvc;
@@ -7,7 +7,7 @@ FlasckWrapper = function(postbox, initSvc, cardClz) {
 	this.nodeCache = {};
 	this.cardCache = {};
 	this.card = null; // will be filled in later
-	this.div = null;
+	this.div = inside;
 	return this;
 }
 
@@ -15,20 +15,34 @@ FlasckWrapper.Processor = function(wrapper, service) {
 	if (!service)
 		throw new Error("No service was defined");
 	this.wrapper = wrapper;
+	if (service._ctor === "net.ziniki.perspocpoc.EditProfile.BlockHandler") {
+		var hack = {
+			update: function(type, obj) {
+				return service.update.apply(service, [FLEval.inflateType(type, obj)]);
+			}
+		}
+		this.service = hack;
+		return;
+	}
 	this.service = service;
 }
 
 FlasckWrapper.Processor.prototype.process = function(message) {
-//	console.log("received message", message);
+	console.log("received message", message);
 	var meth = this.service[message.method];
 	if (!meth)
 		throw new Error("There is no method '" + message.method +"'");
-//	message.args.splice(0, 0, message.from);
+//	var args = [];
+//	for (var k=0;k<message.args.length;k++) {
+//		args[k] = FLEval.inflate(message.args[k]);
+//	}
 	var clos = meth.apply(this.service, message.args);
+	if (clos) {
 //console.log("clos = ", clos);
-	var msgs = FLEval.full(clos);
-	var todo = this.wrapper.processMessages(msgs);
-	this.wrapper.updateDisplay(todo);
+		var msgs = FLEval.full(clos);
+		var todo = this.wrapper.processMessages(msgs);
+		this.wrapper.updateDisplay(todo);
+	}
 }
 
 FlasckWrapper.prototype.cardCreated = function(card) {
@@ -41,11 +55,14 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 		this.services[svc] = this.postbox.unique(svcAddr);
 	}
 	var userInit;
+	var kvupdate;
 	var contracts = {};
 	for (var ctr in card._contracts) {
 		contracts[ctr] = new FlasckWrapper.Processor(this, card._contracts[ctr]);
 		if (ctr === 'org.ziniki.Init')
 			userInit = contracts[ctr];
+		else if (ctr === 'net.ziniki.perspocpoc.KVUpdate')
+			kvupdate = contracts[ctr];
 	}
 	// THIS MAY OR MAY NOT BE A HACK
 	contracts['org.ziniki.Init'] = {
@@ -55,6 +72,8 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 				this.services(message.from, message.args[0]);
 			else if (message.method === 'state')
 				this.state(message.from, message.args[0]);
+			else if (message.method === 'loadId')
+				this.loadId(message.from, message.args[0]);
 			else
 				throw new Error("Cannot process " + message.method);
 		},
@@ -70,10 +89,28 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 			"use strict";
 //			console.log("Setting state");
 			// OK ... I claim it's ready now
-			if (userInit) {
+			if (userInit && userInit.service.onready) {
 				userInit.process({from: from, method: 'onready', args: []});
 			}
 		},
+		loadId: function(from, id) {
+			var uf = function(type, obj) {
+				if (userInit && userInit.service.update)
+					userInit.process({from: from, method: 'update', args: [FLEval.inflateType(type, obj)]});
+				else
+					console.log("there is no update method to handle", id, type, obj);
+			};
+			if (self.services['org.ziniki.KeyValue']) {
+				var proxy = new FlasckWrapper.Processor(self, { update: uf });
+				var ha = self.postbox.newAddress();
+				self.postbox.register(ha, proxy);
+				var handler = { type: 'handler', chan: self.postbox.unique(ha) };
+				self.postbox.deliver(self.services['org.ziniki.KeyValue'], {from: self.ctrmap['org.ziniki.Init'], method: 'subscribe', args:[id, handler] });
+			}
+		},
+		service: {} // to store _myaddr
+	}
+	contracts['net.ziniki.perspocpoc.KVUpdate'] = {
 		service: {} // to store _myaddr
 	}
 	contracts['org.ziniki.Render'] = {
@@ -87,10 +124,11 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 		render: function(from, opts) {
 			"use strict";
 			if (!self.card._initialRender)
-				console.log("There is no method _initialRender on ", self);
+				console.log("There is no method _initialRender on ", self.card);
 			else {
 				self.infoAbout = {};
-				self.div = opts.into; // not sure if we really need this
+				if (opts.into)
+					self.div = opts.into;
 				self.card._initialRender.call(self.card, self.div.ownerDocument, self, self.div);
 			}
 		},
@@ -103,7 +141,7 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 		this.ctrmap[ctr] = this.postbox.unique(ctrAddr);
 		contracts[ctr].service._myaddr = this.postbox.unique(ctrAddr);
 	}
-	this.postbox.deliver(this.initSvc, {from: this.ctrmap['org.ziniki.Init'], method: "ready", args:[this.ctrmap]});
+	this.postbox.deliver(this.initSvc, {from: this.ctrmap['org.ziniki.Init'], method: 'ready', args:[this.ctrmap]});
 }
 
 FlasckWrapper.prototype.dispatchEvent = function(ev, handler) {
@@ -115,7 +153,13 @@ FlasckWrapper.prototype.dispatchEvent = function(ev, handler) {
 FlasckWrapper.prototype.processMessages = function(l) {
 	var todo = {};
 	while (l && l._ctor === 'Cons') {
-		this.processOne(todo, l.head);
+		console.log(l.head);
+		if (l.head._ctor === 'Nil')
+			;
+		else if (l.head._ctor === 'Cons')
+			this.processMessages(l.head);
+		else
+			this.processOne(todo, l.head);
 		l = l.tail;
 	}
 	return todo;
@@ -124,8 +168,11 @@ FlasckWrapper.prototype.processMessages = function(l) {
 FlasckWrapper.prototype.processOne = function(todo, msg) {
 //	console.log("Message: ", msg);
 	if (msg._ctor === 'Send') {
-		var target = FLEval.head(this.card[msg.target]);
-		this.card[msg.target] = target;
+		var target = msg.target;
+		if (typeof target === 'string') {
+			target = FLEval.head(this.card[msg.target]);
+			// this.card[msg.target] = target; // this was here, but why?
+		}
 		if (!target._special) {
 			console.log("Target for send is not 'special'", msg.target);
 			return;
@@ -159,10 +206,18 @@ FlasckWrapper.prototype.processOne = function(todo, msg) {
 		} else if (target._special === 'object') {
 			var actM = target[meth];
 			if (!actM) {
-				console.log("There is no method " + m + " on ", target);
+				debugger;
+				console.log("There is no method " + meth + " on ", target);
 				return;
 			}
 			var newmsgs = actM.apply(target, args);
+			
+			// This is admittedly a hack; we need to consider all the cases, really.  I don't quite know how.
+			if (!todo[msg.target])
+				todo[msg.target] = {};
+			todo[msg.target]['assign'] = true;
+			
+			/* This was a previous hack ...
 			if (!todo[msg.target])
 				todo[msg.target] = {};
 			if (!todo[msg.target]['itemInserted'])
@@ -177,6 +232,7 @@ FlasckWrapper.prototype.processOne = function(todo, msg) {
 			// until we reach a stable state where no more items are generated
 			if (newmsgs)
 				console.log("object invocation returns closure ", newmsgs);
+			*/
 		} else {
 			console.log("Cannot handle special case:", target._special);
 			return;
@@ -237,7 +293,7 @@ FlasckWrapper.prototype.updateDisplay = function(todo) {
 			var ut = updateTree[target];
 			if (ut && ut['assign']) {
 				for (var i=0;i<ut['assign'].length;i++) { 
-					ut['assign'][i].call(this.card, this.div.ownerDocument, this);
+					ut['assign'][i].call(this.card, doc, this);
 				}
 			}
 		}

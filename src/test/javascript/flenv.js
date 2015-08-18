@@ -88,8 +88,15 @@ FLEval.tuple = function() { // need to use arguments because it's varargs
 	return new _Tuple(arguments); // defined in builtin
 }
 
+FLEval.structs = {};
+FLEval.registerStruct = function(name, main, copy) {
+	FLEval.structs[name] = { name: name, main: main, copy: copy };
+}
+
 FLEval.flattenList = function(list) {
 	list = FLEval.full(list);
+	if (list instanceof Array)
+		return list;
 	var ret = [];
 	while (list && list._ctor == 'Cons') {
 		ret.push(list.head);
@@ -98,12 +105,67 @@ FLEval.flattenList = function(list) {
 	return ret;
 }
 
+FLEval.inflateType = function (type, obj) {
+	if (obj instanceof Array) {
+		console.log("array", obj);
+		var ret = Nil;
+		for (var k=obj.length-1;k>=0;k--)
+			ret = Cons(FLEval.inflateType(type, obj[k]), ret);
+		console.log(ret);
+		return ret;
+	} else if (obj instanceof Object) {
+		var sc = FLEval.structs[type];
+		if (sc) {
+			var other = {}
+			var tc = sc.copy;
+			for (var x in obj) {
+				if (obj.hasOwnProperty(x)) {
+					other[x] = FLEval.inflate(obj[x]);
+				}
+			}
+			return new tc(other);
+		} else
+			return obj;
+	} else {
+		console.log("just returning", obj);
+		return obj;
+	}
+}
+
+FLEval.inflate = function(list) {
+	if (list instanceof Array) {
+		console.log("array", list);
+		var ret = Nil;
+		for (var k=list.length-1;k>=0;k--)
+			ret = Cons(FLEval.inflate(list[k]), ret);
+		console.log(ret);
+		return ret;
+	} else if (list instanceof Object) {
+		console.log("may want to inflate obj if it has some identifying marks", list);
+		return list;
+	} else {
+		console.log("just returning", list);
+		return list;
+	}
+}
+
+/* I don't actually think this is necessary - use oclosure with FLEval.curry ...
+FLEval.ocurry = function(obj) {
+	var args = [];
+	for (var i=1;i<arguments.length;i++)
+		args[i-1] = arguments[i];
+	FLEval.curry.apply(obj, args);
+}
+*/
+
 // curry a function (which can include a previous curried function)
 // args are:
 //   the function - a javascript function
 //   arity - the expected number of arguments (needs type checking)
 //   args - the remaining (insufficient) arguments
 FLEval.curry = function() {
+	"use strict";
+	var self = this;
 	var actual = arguments[0];
 	var arity = arguments[1];
 	var have = [];
@@ -121,9 +183,10 @@ FLEval.curry = function() {
 
 		// If it's enough, call the method, otherwise reapply "curry" to the new set of arguments
 		if (current.length >= arity)
-			return actual.apply(this, current);
+			return actual.apply(self, current);
 		else
-			return FLEval.curry(
+			return FLEval.curry.call(
+				self,
 				actual,
 				arity,
 				current

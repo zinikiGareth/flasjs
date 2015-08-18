@@ -48,21 +48,26 @@ Postbox.prototype.connect = function(name, atWindow) {
 
 Postbox.prototype.receiveMessage = function(msg) {
 	console.log("received", msg.data);
+	if (!msg.data.from)
+		throw new Error("Message did not have a from address");
 	if (!msg.data.action)
 		throw new Error("Message did not have an action");
+	var from = msg.data.from;
 	if (msg.data.action === "connect") {
-		var name = msg.data.from;
-		if (this.postboxes[name] && this.postboxes[name].onConnect) {
-			this.postboxes[name].window = msg.source;
-			this.postboxes[name].onConnect(name);
-			delete this.postboxes[name].onConnect;
+		if (this.postboxes[from] && this.postboxes[from].onConnect) {
+			this.postboxes[from].window = msg.source;
+			this.postboxes[from].onConnect(from);
+			delete this.postboxes[from].onConnect;
 		} else {
-			this.postboxes[name] = { window: msg.source };
+			this.postboxes[from] = { window: msg.source };
 		}
-
-		// It's this that I deny
-//		msg.source.postMessage({action:"accepted",from:this.name}, "*");
-	}
+	} else if (msg.data.action === "data") {
+		if (!this.postboxes[from] || !this.postboxes[from].window)
+			throw new Error("Received data message before connect, should queue");
+		console.log(this.name, "needs to process data message", msg.data.message, "at", msg.data.to);
+		this.deliver(msg.data.to, msg.data.message);
+	} else
+		throw new Error("Cannot handle action " + msg.data.action);
 }
 
 /** Register a local component
@@ -78,16 +83,22 @@ Postbox.prototype.register = function(address, comp) {
  * @param invocation the invocation message to deliver to the address and invoke on the target component 
  */
 Postbox.prototype.deliver = function(address, message) {
-//	console.log("deliver ", message, " to ", address);
+	console.log("deliver ", message, " to ", address);
 	var idx = address.lastIndexOf(":");
 	var pb = address.substr(0, idx);
 	var addr = address.substr(idx+1);
-	if (this.name !== pb)
-		throw new Error("I don't know how to deliver to remote postboxes yet");
+	if (this.name !== pb) {
+		var rpb = this.postboxes[pb];
+		console.log("dest = ", rpb);
+		if (!rpb || !rpb.window)
+			throw new Error("I think this should now put things in a queue"); 
+		rpb.window.postMessage({action:'data', from: this.name, to: address, message: message}, "*");
+		return;
+	}
 	var recip = this.recipients[addr];
 	if (!recip)
 		throw new Error("There is no registered recipient for " + address);
 	if (!recip.process)
-		console.log("There is no process method on", recip);
+		throw new Error("There is no process method on" + recip);
 	recip.process(message);
 }
