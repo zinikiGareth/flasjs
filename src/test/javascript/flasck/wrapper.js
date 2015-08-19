@@ -45,6 +45,42 @@ FlasckWrapper.Processor.prototype.process = function(message) {
 	}
 }
 
+FlasckWrapper.prototype.toggleFieldEditing = function(ev, elt, rules) {
+	var self = this;
+	var doc = elt.ownerDocument;
+	if (elt.flasckEditMode) {
+		var input = elt.children[0].value;
+		elt.innerHTML = '';
+		// TODO: may need to do final validity checking
+		var text = doc.createTextNode(input);
+		elt.appendChild(text);
+		elt.onclick = function(ev) { self.toggleFieldEditing(ev, elt, rules); } // note: we could pass rules at the same time
+		// TODO: save new value to model according to rules
+		elt.flasckEditMode = false;
+	} else {
+		var ct = elt.childNodes[0].wholeText; // should just be text, I think ...
+		elt.innerHTML = '';
+		var input = doc.createElement("input");
+		input.setAttribute("type", "text");
+		input.value = ct;
+		input.select();
+		input.onblur = function(ev) { self.toggleFieldEditing(ev, elt, rules); }
+		input.onkeyup = function(ev) { if (ev.keyCode == 13) self.toggleFieldEditing(ev, elt, rules); }
+		elt.appendChild(input); 
+		input.focus(); 
+		elt.flasckEditMode = true;
+		elt.onclick = null;
+	}
+}
+
+FlasckWrapper.prototype.editField = function(elt, rules) {
+	var self = this;
+	console.log("registering field", elt.id, "as subject to editing");
+	elt.className += " flasck-editable";
+	elt.flasckEditMode = false; 
+	elt.onclick = function(ev) { self.toggleFieldEditing(ev, elt, rules); }
+}
+
 FlasckWrapper.prototype.cardCreated = function(card) {
 	var self = this;
 	this.card = card;
