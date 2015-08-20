@@ -45,40 +45,60 @@ FlasckWrapper.Processor.prototype.process = function(message) {
 	}
 }
 
-FlasckWrapper.prototype.toggleFieldEditing = function(ev, elt, rules) {
+FlasckWrapper.prototype.editField = function(ev, elt, rules, inside) {
 	var self = this;
 	var doc = elt.ownerDocument;
-	if (elt.flasckEditMode) {
-		var input = elt.children[0].value;
-		elt.innerHTML = '';
-		// TODO: may need to do final validity checking
-		var text = doc.createTextNode(input);
-		elt.appendChild(text);
-		elt.onclick = function(ev) { self.toggleFieldEditing(ev, elt, rules); } // note: we could pass rules at the same time
-		// TODO: save new value to model according to rules
-		elt.flasckEditMode = false;
-	} else {
-		var ct = elt.childNodes[0].wholeText; // should just be text, I think ...
-		elt.innerHTML = '';
-		var input = doc.createElement("input");
-		input.setAttribute("type", "text");
-		input.value = ct;
-		input.select();
-		input.onblur = function(ev) { self.toggleFieldEditing(ev, elt, rules); }
-		input.onkeyup = function(ev) { if (ev.keyCode == 13) self.toggleFieldEditing(ev, elt, rules); }
-		elt.appendChild(input); 
-		input.focus(); 
-		elt.flasckEditMode = true;
-		elt.onclick = null;
-	}
+	var ct = elt.childNodes[0].wholeText; // should just be text, I think ...
+	elt.innerHTML = '';
+	var input = doc.createElement("input");
+	input.setAttribute("type", "text");
+	input.value = ct;
+	input.select();
+	input.onblur = function(ev) { self.saveField(ev, elt, rules, null, inside); }
+	input.onkeyup = function(ev) { if (ev.keyCode == 13) { input.blur(); /* self.saveField(ev, elt, rules, null, inside); */ return false;} }
+	input.onkeydown = function(ev) { if (ev.keyCode == 27) { self.saveField(ev, elt, rules, ct, inside); return false; } }
+	elt.appendChild(input); 
+	input.focus(); 
+	elt.onclick = null;
 }
 
-FlasckWrapper.prototype.editField = function(elt, rules) {
+FlasckWrapper.prototype.saveField = function(ev, elt, rules, revertTo, inside) {
 	var self = this;
-	console.log("registering field", elt.id, "as subject to editing");
+	var doc = elt.ownerDocument;
+	var input = revertTo || elt.children[0].value;
+	if (revertTo == null) {
+		console.log("rules =", rules);
+		// TODO: may need to do final validity checking
+		// if (!rules.validate(input)) { ... }
+		rules.save.call(this.card, this, inside, input);
+	}
+	elt.innerHTML = '';
+	var text = doc.createTextNode(input);
+	elt.appendChild(text);
+	elt.onclick = function(ev) { self.editField(ev, elt, rules, inside); }
+}
+
+FlasckWrapper.prototype.editableField = function(elt, rules, inside) {
+	var self = this;
+//	console.log("registering field", elt.id, "as subject to editing");
 	elt.className += " flasck-editable";
 	elt.flasckEditMode = false; 
-	elt.onclick = function(ev) { self.toggleFieldEditing(ev, elt, rules); }
+	elt.onclick = function(ev) { self.editField(ev, elt, rules, inside); }
+}
+
+// TODO: may also need "saveState", or could add another condition in here
+FlasckWrapper.prototype.saveObject = function(obj) {
+	if (obj === this.card) {
+		console.log("is this an attempt to save state?");
+		return;
+	}
+	if (!obj.id) {
+		console.log("cannot save object without an id");
+		return;
+	}
+	var foo = this.contractInfo['org.ziniki.KeyValue'].service;
+	console.log(foo._addr, foo._myaddr);
+	this.postbox.deliver(foo._addr, {from: foo._myaddr, method: "save", args: [obj] });
 }
 
 FlasckWrapper.prototype.cardCreated = function(card) {
@@ -177,6 +197,7 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 		this.ctrmap[ctr] = this.postbox.unique(ctrAddr);
 		contracts[ctr].service._myaddr = this.postbox.unique(ctrAddr);
 	}
+	this.contractInfo = contracts;
 	this.postbox.deliver(this.initSvc, {from: this.ctrmap['org.ziniki.Init'], method: 'ready', args:[this.ctrmap]});
 }
 
@@ -206,8 +227,11 @@ FlasckWrapper.prototype.processOne = function(todo, msg) {
 	if (msg._ctor === 'Send') {
 		var target = msg.target;
 		if (typeof target === 'string') {
-			target = FLEval.head(this.card[msg.target]);
-			// this.card[msg.target] = target; // this was here, but why?
+			target = this.card[msg.target];
+			if (target instanceof FLClosure) {
+				target = FLEval.full(this.card[msg.target]);
+				this.card[msg.target] = target; // if _we_ had to evaluate it, store the output so we don't repeat the evaluation
+			}
 		}
 		if (!target._special) {
 			console.log("Target for send is not 'special'", msg.target);

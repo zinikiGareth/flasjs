@@ -76,6 +76,24 @@ FlasckServices.KeyValueService.prototype.subscribe = function(resource, handler)
 	}
 }
 
+FlasckServices.KeyValueService.prototype.save = function(obj) {
+	"use strict";
+	var self = this;
+	if (haveZiniki) {
+		var payload = {};
+		var arr = payload['net.ziniki.perspocpoc.Block'] = [];
+		var cvobj = {};
+		for (var x in obj) {
+			if (obj.hasOwnProperty(x) && obj[0] != '_' && !(obj[x] instanceof Array))
+				cvobj[x] = obj[x];
+		}
+		arr.push(cvobj);
+		console.log("saving payload", payload);
+		ZinikiConn.req.invoke("update/net.ziniki.perspocpoc.Block/" + obj.id).setPayload(payload).send();
+	} else {
+		console.log("no Ziniki; but request to save object", obj);
+	}
+}
 FlasckServices.CredentialsService = function(document, postbox) {
 	this.doc = document;
 	this.postbox = postbox;
