@@ -64,7 +64,7 @@ var login_html =
 
 var popover_html =
 "	<div id='flasck_popover_chrome'>\n" +
-"		<a style='text-decoration: none;' onclick='document.getElementById(\"flasck_popover\").close()'>X</a>\n" +
+"		<a style='text-decoration: none;' onclick='FlasckComponents.closePopover()'>X</a>\n" +
 "	</div>\n" +
 "	<div id='flasck_popover_div'>\n" +
 "	</div>\n" +
@@ -91,6 +91,22 @@ FlasckComponents.providePopover = function(div) {
 	dialog.id = 'flasck_popover';
 	dialog.innerHTML = popover_html;
 	div.appendChild(dialog);
+}
+
+FlasckComponents.currentCard = null;
+
+FlasckComponents.popoverCard = function(postbox, services, card) {
+	var popover = doc.getElementById('flasck_popover_div');
+	popover.innerHTML = '';
+	var card = Flasck.createCard(postbox, popover, { mode: 'overlay', explicit: card }, services);
+	FlasckComponents.currentCard = card
+	doc.getElementById('flasck_popover').showModal();
+	return card;
+}
+
+FlasckComponents.closePopover = function() {
+	document.getElementById("flasck_popover").close();
+	FlasckComponents.currentCard.dispose();
 }
 
 FlasckComponents.provideToolbar = function(div) {

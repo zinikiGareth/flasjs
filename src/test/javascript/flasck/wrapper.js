@@ -7,6 +7,7 @@ FlasckWrapper = function(postbox, initSvc, cardClz, inside) {
 	this.nodeCache = {};
 	this.cardCache = {};
 	this.card = null; // will be filled in later
+	this.ports = [];
 	this.div = inside;
 	return this;
 }
@@ -124,6 +125,8 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 				this.state(message.from, message.args[0]);
 			else if (message.method === 'loadId')
 				this.loadId(message.from, message.args[0]);
+			else if (message.method == 'dispose')
+				this.dispose(message.from);
 			else
 				throw new Error("Cannot process " + message.method);
 		},
@@ -154,8 +157,19 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 				var proxy = new FlasckWrapper.Processor(self, { update: uf });
 				var ha = self.postbox.newAddress();
 				self.postbox.register(ha, proxy);
-				var handler = { type: 'handler', chan: self.postbox.unique(ha) };
+				var uq = self.postbox.unique(ha);
+				self.ports.push(uq);
+				var handler = { type: 'handler', chan: uq };
 				self.postbox.deliver(self.services['org.ziniki.KeyValue'], {from: self.ctrmap['org.ziniki.Init'], method: 'subscribe', args:[id, handler] });
+			}
+		},
+		dispose: function(from) {
+		console.log("ports =", self.ports);
+			// This stops the bleeding; I think there is more we need to do, probably more we need to do *automatically*, e.g. canceling subscriptions to ZiNC
+			for (var c in self.ports) {
+				var port = self.ports[c];
+				if (port)
+					postbox.remove(port);
 			}
 		},
 		service: {} // to store _myaddr
@@ -188,8 +202,10 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 	for (var ctr in contracts) {
 		var ctrAddr = this.postbox.newAddress();
 		this.postbox.register(ctrAddr, contracts[ctr]);
-		this.ctrmap[ctr] = this.postbox.unique(ctrAddr);
-		contracts[ctr].service._myaddr = this.postbox.unique(ctrAddr);
+		var uq = this.postbox.unique(ctrAddr);
+		this.ports.push(uq);
+		this.ctrmap[ctr] = uq;
+		contracts[ctr].service._myaddr = uq;
 	}
 	this.contractInfo = contracts;
 	this.postbox.deliver(this.initSvc, {from: this.ctrmap['org.ziniki.Init'], method: 'ready', args:[this.ctrmap]});
@@ -266,6 +282,7 @@ FlasckWrapper.prototype.processOne = function(msg, todo) {
 							var ha = this.postbox.newAddress();
 							this.postbox.register(ha, proxy);
 							a._myaddr = this.postbox.unique(ha);
+							this.ports.push(a._myaddr);
 						} else
 							throw new Error("Cannot send an object of type " + a._special);
 					}
@@ -323,11 +340,11 @@ FlasckWrapper.prototype.processOne = function(msg, todo) {
 			throw new Error("Can't display a card nowhere");
 		else if (where === 'overlay') {
 			// HACK: because showCard automatically pulls the div#id out of infoAbout, we need to put it in.
-			// I think we should probably change that, or else have two methods
-			this.infoAbout['flasck_popover_div'] = 'flasck_popover_div';
-			this.showCard('flasck_popover_div', { card: msg.card });
-			this.div.ownerDocument.getElementById('flasck_popover').showModal();
-		} else
+            // I think we should probably change that, or else have two methods
+            this.infoAbout['flasck_popover_div'] = 'flasck_popover_div';
+            this.showCard('flasck_popover_div', { card: msg.card });
+            this.div.ownerDocument.getElementById('flasck_popover').showModal();
+   		} else
 			throw new Error("Cannot yet place a card " + where);
 	} else
 		throw new Error("The method message " + msg._ctor + " is not supported");
@@ -377,14 +394,16 @@ FlasckWrapper.prototype.showCard = function(slot, cardOpts) {
 	var mode = cardOpts.mode || 'local';
 	var div = doc.getElementById(this.infoAbout[slot]);
 	div.innerHTML = '';
-	if (this.cardCache[slot]) {
+	if (this.cardCache[slot] && !this.cardCache[slot]._isDisposed) {
    		this.cardCache[slot].redrawInto(div);
+   		return this.cardCache[slot];
 	} else {
   		var svcs = cardOpts.services;
   		if (!svcs || svcs._ctor === 'Nil')
 	  		svcs = this.services;
   		var innerCard = Flasck.createCard(this.postbox, div, { mode: mode, explicit: cardOpts.card }, svcs);
   		this.cardCache[slot] = innerCard;
+  		return innerCard;
 	}
 }
 

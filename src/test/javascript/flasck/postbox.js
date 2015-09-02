@@ -75,7 +75,18 @@ Postbox.prototype.receiveMessage = function(msg) {
  * @param comp the physical component to deliver to (service, impl or handler)
  */
 Postbox.prototype.register = function(address, comp) {
+if (address == 15)
+debugger;
 	this.recipients[address] = comp;
+}
+
+/** Remove a local component
+ */
+Postbox.prototype.remove = function(address) {
+	var idx = address.lastIndexOf(":");
+	var pb = address.substr(0, idx);
+	var addr = address.substr(idx+1);
+	delete this.recipients[addr];
 }
 
 /** Deliver a message to an address
@@ -96,8 +107,10 @@ Postbox.prototype.deliver = function(address, message) {
 		return;
 	}
 	var recip = this.recipients[addr];
-	if (!recip)
-		throw new Error("There is no registered recipient for " + address);
+	if (!recip) {
+		console.log("There is no registered recipient for ", address);
+		return;
+	}
 	if (!recip.process)
 		throw new Error("There is no process method on" + recip);
 	recip.process(message);
