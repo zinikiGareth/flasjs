@@ -10,6 +10,7 @@ _Nil = function() {
 }
 
 _Nil.prototype.toString = function() {
+	"use strict"
 	return 'Nil';
 }
 
@@ -17,6 +18,7 @@ Nil = new _Nil();
 
 // Define a cons node by providing (possible closures for) head and tail and setting "_ctor" to "cons"
 _Cons = function(a, l) {
+	"use strict"
 	this._ctor = 'Cons';
 	this.head = a;
 	this.tail = l;
@@ -24,6 +26,7 @@ _Cons = function(a, l) {
 }
 
 _Cons.prototype.toString = function() {
+	"use strict"
 	return 'Cons';
 }
 
@@ -39,6 +42,7 @@ map = function(f,l) {
 
 // List comprehension for integers starting at n (and going to infinity)
 intsFrom = function(n) {
+	"use strict"
 	return FLEval.closure(Cons, n, FLEval.closure(intsFrom, FLEval.closure(FLEval.plus, n, 1)));
 }
 
@@ -65,6 +69,7 @@ function _Tuple(members) {
 }
 
 _Tuple.prototype.toString = function() {
+	"use strict"
 	var ret = "(";
 	var sep = "";
 	for (var i=0;i<this.length;i++) {
@@ -85,10 +90,12 @@ _NilMap = function() {
 }
 
 _NilMap.prototype.assoc = function() {
+	"use strict"
 	return null;
 }
 
 _NilMap.prototype.toString = function() {
+	"use strict"
 	return 'NilMap';
 }
 
@@ -104,6 +111,7 @@ _Assoc = function(k,v,r) {
 }
 
 _Assoc.prototype.assoc = function(key) {
+	"use strict"
 	if (key === this.key)
 		return this.value;
 	else
@@ -111,6 +119,7 @@ _Assoc.prototype.assoc = function(key) {
 }
 
 _Assoc.prototype.toString = function() {
+	"use strict"
 	return 'Assoc';
 }
 
@@ -131,6 +140,7 @@ Assoc = function(k,v,r) { return new _Assoc(k,v,r); }
  * byte is 0-255
  */ 
 function _Croset(list) {
+	"use strict"
 	this._ctor = 'Croset';
 	this._special = 'object';
 	this.members = [];
@@ -139,6 +149,7 @@ function _Croset(list) {
 }
 
 _Croset.prototype.insert = function(k, obj) {
+	"use strict"
 	if (!obj.id)
 		return;
 	if (!this._hasId(obj.id))
@@ -148,6 +159,7 @@ _Croset.prototype.insert = function(k, obj) {
 }
 
 _Croset.prototype._append = function(id) {
+	"use strict"
 	if (this.members.length === 0) {
 		// the initial case
 		this.members.push({ key: [100], id: id });
@@ -159,6 +171,7 @@ _Croset.prototype._append = function(id) {
 
 // return 1 if k2 is AFTER k1, -1 if k2 is BEFORE k1 and 0 if they are the same key
 _Croset.prototype._keycomp = function(k1, k2) {
+	"use strict"
 	for (var i=0;i<k1.length;i++) {
 		if (k1[i] > k2[i]) return 1;
 		if (k1[i] < k2[i]) return -1;
@@ -170,6 +183,7 @@ _Croset.prototype._keycomp = function(k1, k2) {
 }
 
 _Croset.prototype._insert = function(k, id) {
+	"use strict"
 	var entry = { key: k, id: id };
 	for (var i=0;i<this.members.length;i++) {
 		var m = this.members[i];
@@ -182,6 +196,7 @@ _Croset.prototype._insert = function(k, id) {
 }
 
 _Croset.prototype.get = function(k) {
+	"use strict"
 	for (var i=0;i<this.members.length;i++) {
 		var m = this.members[i];
 		if (m.key === k)
@@ -193,6 +208,7 @@ _Croset.prototype.get = function(k) {
 }
 
 _Croset.prototype.range = function(from, to) {
+	"use strict"
 	var ret = Nil;
 	for (var k=to-1;k>=from;k--) {
 		if (k<this.members.length) {
@@ -205,9 +221,10 @@ _Croset.prototype.range = function(from, to) {
 }
 
 _Croset.prototype.mergeAppend = function(l) {
+	"use strict"
 	var l = FLEval.full(FLEval.inflate(l));
 	while (l._ctor === 'Cons') {
-		console.log("handle", l.head);
+//		console.log("handle", l.head);
 		if (l.head.id) {
 			if (!this._hasId(l.head.id)) { // only append if it's not in the list
 				this._append(l.head.id);
@@ -220,6 +237,7 @@ _Croset.prototype.mergeAppend = function(l) {
 }
 
 _Croset.prototype.put = function(obj) {
+	"use strict"
 	obj = FLEval.head(obj);
 	if (!obj.id) {
 		debugger;
@@ -237,6 +255,7 @@ _Croset.prototype.put = function(obj) {
 }
 
 _Croset.prototype._hasId = function(id) {
+	"use strict"
 	for (var i=0;i<this.members.length;i++) {
 		if (this.members[i].id === id)
 			return true;
@@ -244,12 +263,12 @@ _Croset.prototype._hasId = function(id) {
 	return false;
 }
 
-Croset = function(list) { return new _Croset(list); }
+Croset = function(list) { "use strict"; return new _Croset(list); }
 
 // Message passing
 
 _Send = function(target, method, args) {
-	'use strict';
+	"use strict"
 //	console.log("creating Send object, this = " + this);
 	if (!this)
 		throw "must be called with new";
@@ -262,16 +281,18 @@ _Send = function(target, method, args) {
 
 Send = function(t, m, a) { return new _Send(t, m, a); }
 
-_Assign = function(field, value) {
+_Assign = function(target, field, value) {
 	"use strict";
 	this._ctor = 'Assign';
+	this.target = target;
 	this.field = field;
 	this.value = value;
 }
 
-Assign = function(field, value) { return new _Assign(field, value); }
+Assign = function(target, field, value) { return new _Assign(target, field, value); }
 
 _CreateCard = function(card, value, options, services) {
+	"use strict"
 	this._ctor = 'CreateCard';
 	this.card = card;
 	this.value = value;
@@ -280,12 +301,14 @@ _CreateCard = function(card, value, options, services) {
 }
 
 _CreateCard.prototype.toString = function() {
+	"use strict"
 	return "CreateCard[" + "]";
 }
 
 CreateCard = function(card, value, options, services) { return new _CreateCard(card, value, options, services); }
 
 _D3Action = function(action, args) {
+	"use strict"
 	this._ctor = 'D3Action';
 	this.action = action;
 	this.args = args;

@@ -43,13 +43,13 @@ FlasckServices.KeyValueService.prototype.process = function(message) {
 FlasckServices.KeyValueService.prototype.subscribe = function(resource, handler) {
 	"use strict";
 	var self = this;
-	console.log("self =", self, "subscribe to", resource);
+//	console.log("self =", self, "subscribe to", resource);
 	if (self.store.hasOwnProperty(resource)) {
 		self.postbox.deliver(handler.chan, {method: 'update', args:[self.store[resource]]});
 		return;
 	}
 	var zinchandler = function (msg) {
-		console.log("kv received", msg, "from Ziniki");
+//		console.log("kv received", msg, "from Ziniki");
 		var main = msg.payload._main;
 		for (var k in msg.payload) {
 			if (k[0] !== '_' && msg.payload.hasOwnProperty(k)) {

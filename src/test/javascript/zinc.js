@@ -63,7 +63,7 @@ function Connection(uri) {
   this.dispatch = {};
   this.heartbeatInterval = setInterval(function() {
     if (self.sentEstablish) {
-      console.log("sending heartbeat");
+//      console.log("sending heartbeat");
       self.atmo.push(JSON.stringify({"request":{"method":"heartbeat"}}));
     } else
       console.log("timer fired with nothing to do");
@@ -72,7 +72,7 @@ function Connection(uri) {
 
 Connection.prototype.connect = function() {
   var self = this;
-  console.log("sending establish");
+//  console.log("sending establish");
   var msg = {"request":{"method":"establish"}};
   self.atmo.push(JSON.stringify(msg));
   self.sentEstablish = true;

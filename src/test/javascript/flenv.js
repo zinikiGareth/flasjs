@@ -107,11 +107,9 @@ FLEval.flattenList = function(list) {
 
 FLEval.inflateType = function (type, obj) {
 	if (obj instanceof Array) {
-		console.log("array", obj);
 		var ret = Nil;
 		for (var k=obj.length-1;k>=0;k--)
 			ret = Cons(FLEval.inflateType(type, obj[k]), ret);
-		console.log(ret);
 		return ret;
 	} else if (obj instanceof Object) {
 		var sc = FLEval.structs[type];
@@ -127,24 +125,26 @@ FLEval.inflateType = function (type, obj) {
 		} else
 			return obj;
 	} else {
-		console.log("just returning", obj);
+//		console.log("just returning", obj);
 		return obj;
 	}
 }
 
 FLEval.inflate = function(list) {
 	if (list instanceof Array) {
-		console.log("array", list);
 		var ret = Nil;
 		for (var k=list.length-1;k>=0;k--)
 			ret = Cons(FLEval.inflate(list[k]), ret);
-		console.log(ret);
 		return ret;
 	} else if (list instanceof Object) {
-		console.log("may want to inflate obj if it has some identifying marks", list);
+		if (!list._ctor && list.id) {
+			// TODO: really only if it JUST has "id"
+			return { _ctor: 'org.ziniki.ID', id: list.id };
+		}
+//		console.log("may want to inflate obj if it has some identifying marks", list);
 		return list;
 	} else {
-		console.log("just returning", list);
+//		console.log("just returning", list);
 		return list;
 	}
 }

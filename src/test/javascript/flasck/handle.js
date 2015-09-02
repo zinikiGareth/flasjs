@@ -10,7 +10,7 @@ FlasckHandle.prototype.send = function(ctr, method /* args */) {
 	if (!this.channels[ctr])
 		throw new Error("There is no channel for contract " + ctr);
 	var chan = this.channels[ctr];
-	console.log("sending to " + chan);
+//	console.log("sending to", chan);
 	var args = [];
 	for (var i=2;i<arguments.length;i++)
 		args[i-2] = arguments[i];

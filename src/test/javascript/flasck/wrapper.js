@@ -28,20 +28,14 @@ FlasckWrapper.Processor = function(wrapper, service) {
 }
 
 FlasckWrapper.Processor.prototype.process = function(message) {
-	console.log("received message", message);
+	"use strict"
+//	console.log("received message", message);
 	var meth = this.service[message.method];
 	if (!meth)
 		throw new Error("There is no method '" + message.method +"'");
-//	var args = [];
-//	for (var k=0;k<message.args.length;k++) {
-//		args[k] = FLEval.inflate(message.args[k]);
-//	}
 	var clos = meth.apply(this.service, message.args);
 	if (clos) {
-//console.log("clos = ", clos);
-		var msgs = FLEval.full(clos);
-		var todo = this.wrapper.processMessages(msgs);
-		this.wrapper.updateDisplay(todo);
+		this.wrapper.messageEventLoop(FLEval.full(clos));
 	}
 }
 
@@ -97,7 +91,7 @@ FlasckWrapper.prototype.saveObject = function(obj) {
 		return;
 	}
 	var foo = this.contractInfo['org.ziniki.KeyValue'].service;
-	console.log(foo._addr, foo._myaddr);
+//	console.log(foo._addr, foo._myaddr);
 	this.postbox.deliver(foo._addr, {from: foo._myaddr, method: "save", args: [obj] });
 }
 
@@ -202,27 +196,42 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 }
 
 FlasckWrapper.prototype.dispatchEvent = function(ev, handler) {
-  var msgs = FLEval.full(new FLClosure(this.card, handler, [ev]));
-  var todo = this.processMessages(msgs);
-  this.updateDisplay(todo);
+	var msgs = FLEval.full(new FLClosure(this.card, handler, [ev]));
+	this.messageEventLoop(msgs);
 }
 
-FlasckWrapper.prototype.processMessages = function(l) {
+FlasckWrapper.prototype.messageEventLoop = function(flfull) {
+	var msgs = FLEval.flattenList(flfull);
 	var todo = {};
-	while (l && l._ctor === 'Cons') {
-		console.log(l.head);
-		if (l.head._ctor === 'Nil')
-			;
-		else if (l.head._ctor === 'Cons')
-			this.processMessages(l.head);
-		else
-			this.processOne(todo, l.head);
-		l = l.tail;
+	while (msgs && msgs.length > 0) {
+		msgs = FLEval.flattenList(this.processMessages(msgs, todo));
+		console.log("mo msgs =", msgs);
 	}
-	return todo;
+	this.updateDisplay(todo);
 }
 
-FlasckWrapper.prototype.processOne = function(todo, msg) {
+FlasckWrapper.prototype.processMessages = function(msgs, todo) {
+	console.log("processing messages", msgs);
+	if (!todo)
+		todo = {};
+	var momsgs = [];
+	for (var i=0;i<msgs.length;i++) {
+		var hd = msgs[i];
+		var mo = null;
+		console.log("Processing message", hd);
+		if (hd._ctor === 'Nil')
+			;
+		else if (hd._ctor === 'Cons')
+			mo = this.processMessages(FLEval.flattenList(hd), todo);
+		else
+			mo = this.processOne(hd, todo);
+		if (mo)
+			momsgs = concat(momsgs, FLEval.flattenList(mo));
+	}
+	return momsgs;
+}
+
+FlasckWrapper.prototype.processOne = function(msg, todo) {
 //	console.log("Message: ", msg);
 	if (msg._ctor === 'Send') {
 		var target = msg.target;
@@ -273,10 +282,12 @@ FlasckWrapper.prototype.processOne = function(todo, msg) {
 			var newmsgs = actM.apply(target, args);
 			
 			// This is admittedly a hack; we need to consider all the cases, really.  I don't quite know how.
-			if (!todo[msg.target])
-				todo[msg.target] = {};
-			todo[msg.target]['assign'] = true;
+			var target = 'blocks';
+			if (!todo[target])
+				todo[target] = {};
+			todo[target]['assign'] = true;
 			
+			return newmsgs;
 			/* This was a previous hack ...
 			if (!todo[msg.target])
 				todo[msg.target] = {};
@@ -298,7 +309,8 @@ FlasckWrapper.prototype.processOne = function(todo, msg) {
 			return;
 		}
 	} else if (msg._ctor === 'Assign') {
-		this.card[msg.field] = msg.value;
+		msg.target[msg.field] = msg.value;
+		// TODO: this is more complex than it looks, because we cannot easily tell which fields have been assigned right now ...
 		if (!todo[msg.field])
 			todo[msg.field] = {};
 		todo[msg.field]['assign'] = true;
