@@ -183,7 +183,7 @@ FLEval.curry = function() {
 
 		// If it's enough, call the method, otherwise reapply "curry" to the new set of arguments
 		if (current.length >= arity)
-			return actual.apply(self, current);
+			return FLEval.full(actual).apply(self, current);
 		else
 			return FLEval.curry.call(
 				self,
@@ -273,6 +273,26 @@ FLEval.error = function(s) {
 	return new FLError(s);
 }
 
+FLEval.makeEvent = function(ev) {
+	switch (ev.type) {
+	case "change": {
+		switch (ev.target.type) {
+		case "select-one":
+			var opt = ev.target.selectedOptions[0];
+			return new org.flasck.ChangeEvent(ev.target.selectedIndex, opt.id, opt.value);
+		default: {
+			console.log("cannot handle", ev.type, "for", ev.target.type);
+			break;
+		}
+		}
+	}
+	default:
+		console.log("cannot convert event", ev.type);
+		break;
+	}
+	return null;
+}
+
 // should this be in Stdlib?
 
 concat = function(l) {
@@ -310,6 +330,5 @@ join = function(l, isep) {
 	}
 	return ret;
 }
-
 
 FLEval;

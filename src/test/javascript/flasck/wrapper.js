@@ -195,8 +195,9 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 	this.postbox.deliver(this.initSvc, {from: this.ctrmap['org.ziniki.Init'], method: 'ready', args:[this.ctrmap]});
 }
 
-FlasckWrapper.prototype.dispatchEvent = function(ev, handler) {
-	var msgs = FLEval.full(new FLClosure(this.card, handler, [ev]));
+FlasckWrapper.prototype.dispatchEvent = function(handler, ev) {
+	console.log("dispatching event of type", ev.type);
+	var msgs = FLEval.full(new FLClosure(this.card, handler, [FLEval.makeEvent(ev)]));
 	this.messageEventLoop(msgs);
 }
 
