@@ -75,8 +75,6 @@ Postbox.prototype.receiveMessage = function(msg) {
  * @param comp the physical component to deliver to (service, impl or handler)
  */
 Postbox.prototype.register = function(address, comp) {
-if (address == 15)
-debugger;
 	this.recipients[address] = comp;
 }
 

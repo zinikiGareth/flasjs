@@ -309,6 +309,11 @@ concat = function(l) {
 	return ret;
 }
 
+asString = function(any) {
+	if (!any) return "";
+	return any.toString();
+}
+
 append = function(s1, s2) {
 	return FLEval.full(s1) + FLEval.full(s2);
 }

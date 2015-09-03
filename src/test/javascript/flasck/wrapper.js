@@ -327,7 +327,10 @@ FlasckWrapper.prototype.processOne = function(msg, todo) {
 			return;
 		}
 	} else if (msg._ctor === 'Assign') {
-		msg.target[msg.field] = msg.value;
+		var into = msg.target;
+		if (!into)
+			into = this.card;
+		into[msg.field] = msg.value;
 		// TODO: this is more complex than it looks, because we cannot easily tell which fields have been assigned right now ...
 		if (!todo[msg.field])
 			todo[msg.field] = {};

@@ -134,11 +134,41 @@ Assoc = function(k,v,r) { return new _Assoc(k,v,r); }
  * is unclear which should win.  Truth to tell, this can happen client-side too.  So, a CROSET with
  * a dedicated CROKEY which can be resolved is a better bet.
  */
- 
+
 /* TODO: refactor out the CROKEY.  It should be an array of "bytes" generated to the same algorithm as
  * server side if possible.  This should generate a javascript array like [0xe3, 0x87, 0x40] where each
  * byte is 0-255
  */ 
+var onlyKey = function() {
+	return [100];
+}
+
+var firstKey = function(before) {
+	if (before[0] == 0)
+		throw new Error("We need to handle the very-very-very-beginning difficult case");
+	return [before[0]/2];
+}
+
+var lastKey = function(after) {
+	return [after[0]+10];
+}
+
+var midKey = function(after, before) {
+	var me = [];
+	for (var i=0;i<after.length;i++) {
+		// TODO: I think we're missing out the case where "before" expires before after
+		if (after[i]+1<before[i]) {
+			me.push((after[i]+before[i])/2);
+			return me;
+		}
+		me.push(after[i]);
+	}
+	// if we get to the end with them seeming identical ...
+	// this may or may not be the right thing to do
+	me.push(128);
+	return me;
+}
+
 function _Croset(list) {
 	"use strict"
 	this._ctor = 'Croset';
@@ -193,6 +223,26 @@ _Croset.prototype._insert = function(k, id) {
 		}
 	}
 	this.members.push(entry);
+}
+
+// The goal here is that after this operation, this[pos] === id
+_Croset.prototype._insertAt = function(pos, id) {
+	"use strict"
+	if (pos < 0 || pos > this.members.length)
+		throw new Error("Cannot insert into croset at position" + pos);
+	var k;
+	if (pos == 0) {
+		if (this.members.length == 0)
+			k = onlyKey();
+		else
+			k = firstKey(this.members[0].key);
+	} else if (pos == this.members.length) {
+		k = lastKey(this.members[this.members.length-1].key);
+	} else
+		k = midKey(this.members[pos-1], this.members[pos]);
+	
+	var entry = { key: k, id: id };
+	this.members.splice(pos, 0, entry);
 }
 
 _Croset.prototype.get = function(k) {
@@ -261,6 +311,86 @@ _Croset.prototype._hasId = function(id) {
 			return true;
 	}
 	return false;
+}
+
+_Croset.prototype.findLocation = function(id) {
+	"use strict"
+	for (var i=0;i<this.members.length;i++) {
+		if (this.members[i].id === id)
+			return i;
+	}
+	return -1;
+}
+
+_Croset.prototype.moveBefore = function(toMove, placeBefore) {
+	console.log(toMove + " has moved before " + placeBefore);
+	var moverLoc = this.findLocation(toMove);
+	this.members.splice(moverLoc, 1); // remove the item at moverLoc
+	if (!placeBefore) { // moving to the end is the simplest case
+		this._append(toMove);
+		console.log("moved to end:", this);
+		return []; // need update messages
+	}
+	// This location is the location AFTER removing the element we're going to move
+	var beforeLoc = this.findLocation(placeBefore); 
+	this._insertAt(beforeLoc, toMove);
+	console.log("moved to", beforeLoc, ":", this);
+	return []; // need update messages
+}
+
+// Native drag-n-drop support
+
+var findContainer = function(ev, id) {
+	var t = ev.target;
+	while (t) {
+		if (t.id === id && t.croset)
+    		return t;
+    	t = t.parentElement;
+    }
+    return null;
+}
+
+_Croset.listDrag = function(ev) {
+    ev.dataTransfer.setData("application/json", JSON.stringify({id: ev.target.id, item: ev.target.item_id, y: ev.y}));
+}
+
+_Croset.listDragOver = function(ev, into) {
+	var c = findContainer(ev, into);
+	if (c)
+   		ev.preventDefault();
+}
+
+_Croset.listDrop = function(ev, into) {
+	var c = findContainer(ev, into);
+	if (c) {
+		console.log("container croset has id", c.croset);
+	    ev.preventDefault();
+	    var data = JSON.parse(ev.dataTransfer.getData("application/json"));
+	    var elt = document.getElementById(data.id);
+	    var moved = ev.y-data.y;
+	    var newY = elt.offsetTop-c.offsetTop+moved;
+	    var prev;
+	    for (var idx=0;idx<c.children.length;idx++) {
+	    	var child = c.children[idx];
+	    	var chtop = child.offsetTop - c.offsetTop;
+	    	if (newY < chtop) {
+	    		if (child.id !== data.id && (prev == null || prev.id != data.id)) {
+				    // console.log(data.item + " has moved before " + child.item_id);
+	    			var msgs = c.croset.moveBefore(data.item, child.item_id);
+	    			// and now we need a context to process these ...
+	    			// c.insertBefore(elt, child);
+	    		}
+	    		// else not moved in fact
+	    		return;
+	    	}
+	    	prev = child;
+	    }
+	    // if it's not above anything, put it at the end
+	    // c.appendChild(elt);
+//	    console.log(data.item + " has moved to the end");
+		var msgs = c.croset.moveBefore(data.item, null);
+		// and now we need a context to process these ...
+	}
 }
 
 Croset = function(list) { "use strict"; return new _Croset(list); }
