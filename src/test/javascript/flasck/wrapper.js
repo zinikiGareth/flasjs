@@ -9,6 +9,7 @@ FlasckWrapper = function(postbox, initSvc, cardClz, inside) {
 	this.card = null; // will be filled in later
 	this.ports = [];
 	this.div = inside;
+	this.updateAreas = [];
 	return this;
 }
 
@@ -219,7 +220,7 @@ FlasckWrapper.prototype.dispatchEvent = function(handler, ev) {
 
 FlasckWrapper.prototype.messageEventLoop = function(flfull) {
 	var msgs = FLEval.flattenList(flfull);
-	var todo = {};
+	var todo = [];
 	while (msgs && msgs.length > 0) {
 		msgs = FLEval.flattenList(this.processMessages(msgs, todo));
 		console.log("mo msgs =", msgs);
@@ -243,7 +244,7 @@ FlasckWrapper.prototype.processMessages = function(msgs, todo) {
 		else
 			mo = this.processOne(hd, todo);
 		if (mo)
-			momsgs = concat(momsgs, FLEval.flattenList(mo));
+			momsgs = momsgs.concat(FLEval.flattenList(mo));
 	}
 	return momsgs;
 }
@@ -297,31 +298,7 @@ FlasckWrapper.prototype.processOne = function(msg, todo) {
 				console.log("There is no method " + meth + " on ", target);
 				return;
 			}
-			var newmsgs = actM.apply(target, args);
-			
-			// This is admittedly a hack; we need to consider all the cases, really.  I don't quite know how.
-			var target = 'blocks';
-			if (!todo[target])
-				todo[target] = {};
-			todo[target]['assign'] = true;
-			
-			return newmsgs;
-			/* This was a previous hack ...
-			if (!todo[msg.target])
-				todo[msg.target] = {};
-			if (!todo[msg.target]['itemInserted'])
-				todo[msg.target]['itemInserted'] = [];
-			todo[msg.target]['itemInserted'].push(args[1]);
-			if (!todo[msg.target]['itemChanged'])
-				todo[msg.target]['itemChanged'] = [];
-			todo[msg.target]['itemChanged'].push(args[1]);
-			// TODO: theoretically at least, objects can spit out more TODO items
-			// we need to collect these and put them on one big giant list
-			// and then keep calling "setTimeout(0)" at the end here to process that list after this one
-			// until we reach a stable state where no more items are generated
-			if (newmsgs)
-				console.log("object invocation returns closure ", newmsgs);
-			*/
+			return actM.apply(target, args);
 		} else {
 			console.log("Cannot handle special case:", target._special);
 			return;
@@ -331,10 +308,9 @@ FlasckWrapper.prototype.processOne = function(msg, todo) {
 		if (!into)
 			into = this.card;
 		into[msg.field] = msg.value;
-		// TODO: this is more complex than it looks, because we cannot easily tell which fields have been assigned right now ...
-		if (!todo[msg.field])
-			todo[msg.field] = {};
-		todo[msg.field]['assign'] = true;
+		todo.push(msg);
+	} else if (msg._ctor === 'CrosetInsert') {
+		todo.push(msg);		
 	} else if (msg._ctor === 'CreateCard') {
 		// If the user requests that we make a new card in response to some action, we need to know where to place it
 		// The way we fundamentally know this is to look at the "where" option
@@ -358,38 +334,57 @@ FlasckWrapper.prototype.nextSlotId = function() {
 	return 'slot_' + nextid++;
 }
 
+FlasckWrapper.prototype.onUpdate = function(op, obj, field, area) {
+	console.log("on update type", op);
+	this.updateAreas.push({op: op, obj: obj, field: field, area: area});
+}
+
+FlasckWrapper.prototype.removeActions = function(area) {
+	console.log("remove all actions that have area", area);
+	for (var i=0;i<this.updateAreas.length;) {
+		var ua = this.updateAreas[i];
+		if (ua.area === area)
+			this.updateAreas.splice(i, 1);
+		else
+			i++;
+	}
+}
+
 FlasckWrapper.prototype.updateDisplay = function(todo) {
 	if (!this.div)
 		return; // need to set up render contract first
 	var updateTree = this.cardClz.onUpdate;
 	if (!updateTree)
 		return;
+	if (todo.length == 0)
+		return;
+		
+	// TODO: there is a "premature" optimization step here where we try and avoid duplication
 	var doc = this.div.ownerDocument;
-	for (var target in todo) {
-		var actions = todo[target];
-		if (actions['itemInserted']) {
-			// TODO: we need "before" somewhere, so this should probably be map value -> before, or else map key -> value so we can find the before
-			for (var j=0;j<actions['itemInserted'].length;j++) {
-				var v = actions['itemInserted'][j];
-				for (var i=0;i<updateTree[target]['itemInserted'].length;i++)
-					updateTree[target]['itemInserted'][i].call(this.card, doc, this, v, null);
+	for (var t=0;t<todo.length;t++) {
+		var item = todo[t];
+		if (item instanceof _Assign) {
+			console.log("Assign");
+			for (var i=0;i<this.updateAreas.length;i++) {
+				var ua = this.updateAreas[i];
+				if (ua.op != 'assign')
+					continue;
+				ua.area._assignTo(item.target[item.field]);
 			}
-		}
-		if (actions['itemChanged']) {
-			for (var j=0;j<actions['itemChanged'].length;j++) {
-				var v = actions['itemInserted'][j];
-				for (var i=0;i<updateTree[target]['itemChanged'].length;i++)
-					updateTree[target]['itemChanged'][i].call(this.card, doc, this, v);
+		} else if (item instanceof _CrosetInsert) {
+			console.log("Croset Insert");
+			for (var i=0;i<this.updateAreas.length;i++) {
+				var ua = this.updateAreas[i];
+				if (ua.op != 'croins')
+					continue;
+				var child = ua.area._newChild();
+				child._crokey = item.key;
+				ua.area._insertItem(child);
+				child._assignTo(item.target.get(item.key));
+				child._formatItem();
 			}
-		}
-		if (actions['assign']) {
-			var ut = updateTree[target];
-			if (ut && ut['assign']) {
-				for (var i=0;i<ut['assign'].length;i++) { 
-					ut['assign'][i].call(this.card, doc, this);
-				}
-			}
-		}
+		} else
+			throw new Error("Cannot handle item " + item);
 	}
 }
 

@@ -178,6 +178,10 @@ function _Croset(list) {
 	this.mergeAppend(list);
 }
 
+_Croset.prototype.length = function() {
+	return this.members.length;
+}
+
 _Croset.prototype.insert = function(k, obj) {
 	"use strict"
 	if (!obj.id)
@@ -190,13 +194,16 @@ _Croset.prototype.insert = function(k, obj) {
 
 _Croset.prototype._append = function(id) {
 	"use strict"
+	var key;
 	if (this.members.length === 0) {
 		// the initial case
-		this.members.push({ key: [100], id: id });
+		key = onlyKey();
 	} else {
-		// go 10 past the final list entry
-		this.members.push({ key: [this.members[this.members.length-1].key[0]+10], id: id });
+		// at end
+		key = lastKey(this.members[this.members.length-1].key);
 	}
+	this.members.push({ key: key, id: id });
+	return key;
 }
 
 // return 1 if k2 is AFTER k1, -1 if k2 is BEFORE k1 and 0 if they are the same key
@@ -254,7 +261,14 @@ _Croset.prototype.get = function(k) {
 		else if (m.key > k)
 			break;
 	}
-	throw new Error("No element", k, "in", this);
+	throw new Error("No key" + k + "in" + this);
+}
+
+_Croset.prototype.index = function(idx) {
+	"use strict"
+	if (idx >= 0 && idx < this.members.length)
+		return this.members[idx];
+	throw new Error("No index" + idx + "in" + this);
 }
 
 _Croset.prototype.range = function(from, to) {
@@ -273,17 +287,20 @@ _Croset.prototype.range = function(from, to) {
 _Croset.prototype.mergeAppend = function(l) {
 	"use strict"
 	var l = FLEval.full(FLEval.inflate(l));
+	var msgs = [];
 	while (l._ctor === 'Cons') {
 //		console.log("handle", l.head);
 		if (l.head.id) {
 			if (!this._hasId(l.head.id)) { // only append if it's not in the list
-				this._append(l.head.id);
+				var key = this._append(l.head.id);
+				msgs.push(new CrosetInsert(this, key));
 			}
 			if (l.head._ctor)
 				this.hash[l.head.id] = l.head;
 		}
 		l = l.tail;
 	}
+	return msgs;
 }
 
 _Croset.prototype.put = function(obj) {
@@ -445,3 +462,11 @@ _D3Action = function(action, args) {
 }
 
 D3Action = function(action, args) { return new _D3Action(action, args); }
+
+_CrosetInsert = function(target, key) {
+	"use strict"
+	this._ctor = "CrosetInsert";
+	this.target = target;
+	this.key = key;
+}
+CrosetInsert = function(target, key) { return new _CrosetInsert(target, key); }

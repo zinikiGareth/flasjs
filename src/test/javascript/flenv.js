@@ -295,7 +295,8 @@ FLEval.makeEvent = function(ev) {
 
 // should this be in Stdlib?
 
-concat = function(l) {
+StdLib = {}
+StdLib.concat = function(l) {
 	var ret = "";
 	while (true) {
 		l = FLEval.head(l);
