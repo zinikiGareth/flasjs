@@ -253,6 +253,10 @@ FlasckWrapper.prototype.processOne = function(msg, todo) {
 //	console.log("Message: ", msg);
 	if (msg._ctor === 'Send') {
 		var target = msg.target;
+		if (target === null || target === undefined) {
+			console.log("cannot have undefined target");
+			return;
+		}
 		if (typeof target === 'string') {
 			target = this.card[msg.target];
 			if (target instanceof FLClosure) {
@@ -294,8 +298,8 @@ FlasckWrapper.prototype.processOne = function(msg, todo) {
 		} else if (target._special === 'object') {
 			var actM = target[meth];
 			if (!actM) {
-				debugger;
 				console.log("There is no method " + meth + " on ", target);
+				debugger;
 				return;
 			}
 			return actM.apply(target, args);
@@ -309,7 +313,7 @@ FlasckWrapper.prototype.processOne = function(msg, todo) {
 			into = this.card;
 		into[msg.field] = msg.value;
 		todo.push(msg);
-	} else if (msg._ctor === 'CrosetInsert') {
+	} else if (msg._ctor === 'CrosetInsert' || msg._ctor === 'CrosetReplace' || msg._ctor === 'CrosetRemove') {
 		todo.push(msg);		
 	} else if (msg._ctor === 'CreateCard') {
 		// If the user requests that we make a new card in response to some action, we need to know where to place it
@@ -334,9 +338,21 @@ FlasckWrapper.prototype.nextSlotId = function() {
 	return 'slot_' + nextid++;
 }
 
-FlasckWrapper.prototype.onUpdate = function(op, obj, field, area) {
+FlasckWrapper.prototype.onUpdate = function(op, obj, field, area, fn) {
 	console.log("on update type", op);
-	this.updateAreas.push({op: op, obj: obj, field: field, area: area});
+	if (op === 'assign' && !fn)
+		throw new Error("Must provide fn for assign");
+	this.updateAreas.push({op: op, obj: obj, field: field, area: area, fn: fn});
+}
+
+FlasckWrapper.prototype.removeOnUpdate = function(op, obj, field, area) {
+	for (var i=0;i<this.updateAreas.length;) {
+		var ua = this.updateAreas[i];
+		if (ua.op == op && ua.area === area && ua.obj == obj && ua.field == field)
+			this.updateAreas.splice(i, 1);
+		else
+			i++;
+	}
 }
 
 FlasckWrapper.prototype.removeActions = function(area) {
@@ -351,13 +367,8 @@ FlasckWrapper.prototype.removeActions = function(area) {
 }
 
 FlasckWrapper.prototype.updateDisplay = function(todo) {
-	if (!this.div)
+	if (!this.div || todo.length == 0)
 		return; // need to set up render contract first
-	var updateTree = this.cardClz.onUpdate;
-	if (!updateTree)
-		return;
-	if (todo.length == 0)
-		return;
 		
 	// TODO: there is a "premature" optimization step here where we try and avoid duplication
 	var doc = this.div.ownerDocument;
@@ -367,21 +378,39 @@ FlasckWrapper.prototype.updateDisplay = function(todo) {
 			console.log("Assign");
 			for (var i=0;i<this.updateAreas.length;i++) {
 				var ua = this.updateAreas[i];
-				if (ua.op != 'assign')
+				if (ua.op != 'assign' || ua.field != item.field || ua.obj != item.target)
 					continue;
-				ua.area._assignTo(item.target[item.field]);
+				ua.fn.call(ua.area, item.target[item.field]);
 			}
 		} else if (item instanceof _CrosetInsert) {
 			console.log("Croset Insert");
 			for (var i=0;i<this.updateAreas.length;i++) {
 				var ua = this.updateAreas[i];
-				if (ua.op != 'croins')
+				if (ua.op != 'croins' || ua.obj != item.target)
 					continue;
 				var child = ua.area._newChild();
 				child._crokey = item.key;
 				ua.area._insertItem(child);
-				child._assignTo(item.target.get(item.key));
-				child._formatItem();
+				child._assignToVar(item.target.get(item.key));
+			}
+		} else if (item instanceof _CrosetReplace) {
+			console.log("Croset Replace");
+			var obj = item.target.get(item.key);
+			for (var i=0;i<this.updateAreas.length;i++) {
+				var ua = this.updateAreas[i];
+				if (ua.op != 'crorepl') continue;
+				if (ua.field != obj.id || ua.obj != item.target)
+					continue;
+				ua.area._assignToVar(obj);
+			}
+		} else if (item instanceof _CrosetRemove) {
+			console.log("Croset Remove");
+			for (var i=0;i<this.updateAreas.length;i++) {
+				var ua = this.updateAreas[i];
+				if (ua.op != 'crodel') continue;
+				if (ua.obj != item.target)
+					continue;
+				ua.area._deleteItem(item.key);
 			}
 		} else
 			throw new Error("Cannot handle item " + item);

@@ -257,7 +257,7 @@ _Croset.prototype.get = function(k) {
 	for (var i=0;i<this.members.length;i++) {
 		var m = this.members[i];
 		if (m.key === k)
-			return m;
+			return this.hash[m.id];
 		else if (m.key > k)
 			break;
 	}
@@ -315,19 +315,40 @@ _Croset.prototype.put = function(obj) {
 		throw new Error(obj + " does not have _ctor");
 	}
 	obj.id = FLEval.full(obj.id);
-	if (!this._hasId(obj.id))
-		this._append(obj.id);
+	var msgs;
+	var item = this._hasId(obj.id);
+	if (!item) {
+		var key = this._append(obj.id);
+		msgs = [new CrosetInsert(this, key)];
+	} else
+		msgs = [new CrosetReplace(this, item.key)];
 	if (obj._ctor)
 		this.hash[obj.id] = obj;
+	return msgs;
 }
 
+_Croset.prototype.delete = function(id) {
+	"use strict"
+	delete this.hash[id];
+	var msgs = [];
+	for (var i=0;i<this.members.length;) {
+		if (this.members[i].id === id) {
+			msgs.push(new CrosetRemove(this, this.members[i].key));
+			this.members.splice(i, 1);
+		} else
+			i++;
+	}
+	return msgs;
+}
+
+// Can't we just ask if it's in the hash?
 _Croset.prototype._hasId = function(id) {
 	"use strict"
 	for (var i=0;i<this.members.length;i++) {
 		if (this.members[i].id === id)
-			return true;
+			return this.members[i];
 	}
-	return false;
+	return undefined;
 }
 
 _Croset.prototype.findLocation = function(id) {
@@ -470,3 +491,19 @@ _CrosetInsert = function(target, key) {
 	this.key = key;
 }
 CrosetInsert = function(target, key) { return new _CrosetInsert(target, key); }
+
+_CrosetReplace = function(target, key) {
+	"use strict"
+	this._ctor = "CrosetReplace";
+	this.target = target;
+	this.key = key;
+}
+CrosetReplace = function(target, key) { return new _CrosetReplace(target, key); }
+
+_CrosetRemove = function(target, key) {
+	"use strict"
+	this._ctor = "CrosetRemove";
+	this.target = target;
+	this.key = key;
+}
+CrosetRemove = function(target, key) { return new _CrosetRemove(target, key); }

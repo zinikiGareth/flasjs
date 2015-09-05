@@ -7,6 +7,8 @@ var CardArea = function(pdiv, wrapper, card) {
 	this._card = card;
 }
 
+var uniqid = 1;
+
 var Area = function(parent, tag) {
 	"use strict";
 	if (parent) {
@@ -15,8 +17,10 @@ var Area = function(parent, tag) {
 		this._doc = parent._doc;
 		this._indiv = parent._mydiv;
 		this._mydiv = this._doc.createElement(tag);
+		this._mydiv.setAttribute('id', 'uid_'+(uniqid++));
 		this._mydiv._area = this;
 		this._indiv.appendChild(this._mydiv);
+		this._card = parent._card;
 	}
 }
 
@@ -24,18 +28,31 @@ Area.prototype._clear = function() {
 	this._mydiv.innerHTML = '';
 }
 
-Area.prototype._onAssign = function(obj, field) {
+Area.prototype._onAssign = function(obj, field, fn) {
 	"use strict";
-	this._wrapper.onUpdate("assign", obj, field, this);
+	this._wrapper.onUpdate("assign", obj, field, this, fn);
 }
 
 var DivArea = function(parent, tag) {
 	"use strict";
 	Area.call(this, parent, tag || 'div');
+	this._interests = [];
 }
 
 DivArea.prototype = new Area();
 DivArea.prototype.constructor = DivArea;
+
+DivArea.prototype._interested = function(obj, fn) {
+	this._interests.push({obj: obj, fn: fn});
+	fn.call(obj);
+}
+
+DivArea.prototype._fireInterests = function() {
+	for (var i=0;i<this._interests.length;i++) {
+		var ii = this._interests[i];
+		ii.fn.call(ii.obj);
+	}
+}
 
 var ListArea = function(parent, tag) {
 	"use strict";
@@ -45,7 +62,7 @@ var ListArea = function(parent, tag) {
 ListArea.prototype = new Area();
 ListArea.prototype.constructor = ListArea;
 
-ListArea.prototype._assignTo = function(croset) {
+ListArea.prototype._assignToVar = function(croset) {
 	"use strict";
 	this._wrapper.removeActions(this);
 	this._croset = croset;
@@ -62,6 +79,7 @@ ListArea.prototype._assignTo = function(croset) {
     		child._assignTo(v);
   		}
   		this._wrapper.onUpdate("croins", croset, null, this);
+  		this._wrapper.onUpdate("crodel", croset, null, this);
 	}
 	this._format();
 }
@@ -74,6 +92,19 @@ ListArea.prototype._insertItem = function(child) {
 		var a = this._mydiv.children[i];
 		if (_Croset.prototype._keycomp(child._crokey, a._area._crokey) < 0) {
 			this._mydiv.insertBefore(child._mydiv, a);
+			return;
+		}
+	}
+	// if we reached the end
+	this._mydiv.appendChild(child._mydiv);
+}
+
+ListArea.prototype._deleteItem = function(key) {
+  	"use strict";
+	for (var i=0;i<this._mydiv.children.length;i++) {
+		var a = this._mydiv.children[i];
+		if (_Croset.prototype._keycomp(key, a._area._crokey) == 0) {
+			this._mydiv.removeChild(a);
 			return;
 		}
 	}
@@ -103,7 +134,7 @@ TextArea.prototype._setText = function(text) {
 	this._mydiv.appendChild(tmp);
 }
 
-TextArea.prototype._assignTo = function(e) {
+TextArea.prototype._assignToText = function(e) {
 	"use strict";
 	e = FLEval.full(e);
 	if (e === null || e === undefined)
@@ -111,3 +142,42 @@ TextArea.prototype._assignTo = function(e) {
 	this._setText(e.toString());
 }
 
+TextArea.prototype._edit = function(ev, rules, containingObj) {
+	var self = this;
+	var ct = "";
+	if (this._mydiv.childNodes.length > 0)
+		ct = this._mydiv.childNodes[0].wholeText;
+	this._mydiv.innerHTML = '';
+	var input = this._doc.createElement("input");
+	input.setAttribute("type", "text");
+	input.value = ct;
+	input.select();
+	input.onblur = function(ev) { self._save(ev, rules, null, containingObj); }
+	input.onkeyup = function(ev) { if (ev.keyCode == 13) { input.blur(); ev.preventDefault(); } }
+	input.onkeydown = function(ev) { if (ev.keyCode == 27) { self._save(ev, rules, ct, containingObj); ev.preventDefault(); } }
+	this._mydiv.appendChild(input); 
+	input.focus(); 
+	this._mydiv.onclick = null;
+}
+
+TextArea.prototype._save = function(ev, rules, revertTo) {
+	var self = this;
+	var input = revertTo || this._mydiv.children[0].value;
+	if (revertTo == null) {
+		console.log("rules =", rules);
+		// TODO: may need to do final validity checking
+		// if (!rules.validate(input)) { ... }
+		rules.save.call(this, this._wrapper, input);
+	}
+	this._mydiv.innerHTML = '';
+	var text = this._doc.createTextNode(input);
+	this._mydiv.appendChild(text);
+	this._mydiv.onclick = function(ev) { self._edit(ev, rules); }
+}
+
+TextArea.prototype._editable = function(rules) {
+	var self = this;
+//	console.log("registering field", elt.id, "as subject to editing");
+//	this._mydiv.flasckEditMode = false; 
+	this._mydiv.onclick = function(ev) { self._edit(ev, rules); }
+}

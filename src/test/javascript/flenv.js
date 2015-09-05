@@ -1,5 +1,6 @@
 function FLError(s) {
 	this.message = s;
+	console.log("FLAS Error encountered:", s);
 }
 
 FLError.prototype.toString = function() {
