@@ -246,10 +246,11 @@ _Croset.prototype._insertAt = function(pos, id) {
 	} else if (pos == this.members.length) {
 		k = lastKey(this.members[this.members.length-1].key);
 	} else
-		k = midKey(this.members[pos-1], this.members[pos]);
+		k = midKey(this.members[pos-1].key, this.members[pos].key);
 	
 	var entry = { key: k, id: id };
 	this.members.splice(pos, 0, entry);
+	return k;
 }
 
 _Croset.prototype.get = function(k) {
@@ -329,6 +330,8 @@ _Croset.prototype.put = function(obj) {
 
 _Croset.prototype.delete = function(id) {
 	"use strict"
+	if (!this.hash[id])
+		throw new Error("There isn't an entry", id);
 	delete this.hash[id];
 	var msgs = [];
 	for (var i=0;i<this.members.length;) {
@@ -353,35 +356,47 @@ _Croset.prototype._hasId = function(id) {
 
 _Croset.prototype.findLocation = function(id) {
 	"use strict"
-	for (var i=0;i<this.members.length;i++) {
-		if (this.members[i].id === id)
-			return i;
-	}
+	if (typeof id === 'string') {
+		for (var i=0;i<this.members.length;i++) {
+			if (this.members[i].id === id)
+				return i;
+		}
+	} else if (id instanceof Array) {
+		for (var i=0;i<this.members.length;i++) {
+			if (this.members[i].key === id)
+				return i;
+		}
+	} else
+		throw new Error("What is this?" + id);
 	return -1;
 }
 
 _Croset.prototype.moveBefore = function(toMove, placeBefore) {
-	console.log(toMove + " has moved before " + placeBefore);
+//	console.log(toMove + " has moved before " + placeBefore);
 	var moverLoc = this.findLocation(toMove);
-	this.members.splice(moverLoc, 1); // remove the item at moverLoc
+	var oldKey = this.members[moverLoc].key;
+	var mover = this.members.splice(moverLoc, 1)[0]; // remove the item at moverLoc
+	var newKey;
 	if (!placeBefore) { // moving to the end is the simplest case
-		this._append(toMove);
-		console.log("moved to end:", this);
-		return []; // need update messages
+		debugger; 
+		newKey = this._append(mover.id);
+//		console.log("moved to end:", this);
+	} else {
+		// This location is the location AFTER removing the element we're going to move
+		var beforeLoc = this.findLocation(placeBefore);
+		debugger; 
+		newKey = this._insertAt(beforeLoc, mover.id);
+//		console.log("moved to", beforeLoc, ":", this);
 	}
-	// This location is the location AFTER removing the element we're going to move
-	var beforeLoc = this.findLocation(placeBefore); 
-	this._insertAt(beforeLoc, toMove);
-	console.log("moved to", beforeLoc, ":", this);
-	return []; // need update messages
+	return [new CrosetMove(this, oldKey, newKey)];
 }
 
 // Native drag-n-drop support
 
-var findContainer = function(ev, id) {
+var findContainer = function(ev, div) {
 	var t = ev.target;
 	while (t) {
-		if (t.id === id && t.croset)
+		if (t === div && t._area._croset)
     		return t;
     	t = t.parentElement;
     }
@@ -389,7 +404,7 @@ var findContainer = function(ev, id) {
 }
 
 _Croset.listDrag = function(ev) {
-    ev.dataTransfer.setData("application/json", JSON.stringify({id: ev.target.id, item: ev.target.item_id, y: ev.y}));
+    ev.dataTransfer.setData("application/json", JSON.stringify({id: ev.target.id, y: ev.y}));
 }
 
 _Croset.listDragOver = function(ev, into) {
@@ -401,10 +416,11 @@ _Croset.listDragOver = function(ev, into) {
 _Croset.listDrop = function(ev, into) {
 	var c = findContainer(ev, into);
 	if (c) {
-		console.log("container croset has id", c.croset);
+//		console.log("container croset is", c._area._croset);
+		var doc = into.ownerDocument;
 	    ev.preventDefault();
 	    var data = JSON.parse(ev.dataTransfer.getData("application/json"));
-	    var elt = document.getElementById(data.id);
+	    var elt = doc.getElementById(data.id);
 	    var moved = ev.y-data.y;
 	    var newY = elt.offsetTop-c.offsetTop+moved;
 	    var prev;
@@ -413,21 +429,14 @@ _Croset.listDrop = function(ev, into) {
 	    	var chtop = child.offsetTop - c.offsetTop;
 	    	if (newY < chtop) {
 	    		if (child.id !== data.id && (prev == null || prev.id != data.id)) {
-				    // console.log(data.item + " has moved before " + child.item_id);
-	    			var msgs = c.croset.moveBefore(data.item, child.item_id);
-	    			// and now we need a context to process these ...
-	    			// c.insertBefore(elt, child);
+	    			return c._area._croset.moveBefore(doc.getElementById(data.id)._area._crokey, child._area._crokey);
 	    		}
-	    		// else not moved in fact
-	    		return;
+	    		// else not moved in fact ... nothing to do
+	    		return [];
 	    	}
 	    	prev = child;
 	    }
-	    // if it's not above anything, put it at the end
-	    // c.appendChild(elt);
-//	    console.log(data.item + " has moved to the end");
-		var msgs = c.croset.moveBefore(data.item, null);
-		// and now we need a context to process these ...
+		return c._area._croset.moveBefore(doc.getElementById(data.id)._area._crokey, null);
 	}
 }
 
@@ -507,3 +516,12 @@ _CrosetRemove = function(target, key) {
 	this.key = key;
 }
 CrosetRemove = function(target, key) { return new _CrosetRemove(target, key); }
+
+_CrosetMove = function(target, from, to) {
+	"use strict"
+	this._ctor = "CrosetMove";
+	this.target = target;
+	this.from = from;
+	this.to = to;
+}
+CrosetMove = function(target, from, to) { return new _CrosetMove(target, from, to); }

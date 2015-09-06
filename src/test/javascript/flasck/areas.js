@@ -54,6 +54,13 @@ DivArea.prototype._fireInterests = function() {
 	}
 }
 
+DivArea.prototype._makeDraggable = function() {
+	this._mydiv.setAttribute('draggable', 'true');
+	this._mydiv['ondragstart'] = function(event) {
+		_Croset.listDrag(event);
+	}
+}
+
 var ListArea = function(parent, tag) {
 	"use strict";
 	Area.call(this, parent, tag || 'ul');
@@ -80,6 +87,7 @@ ListArea.prototype._assignToVar = function(croset) {
   		}
   		this._wrapper.onUpdate("croins", croset, null, this);
   		this._wrapper.onUpdate("crodel", croset, null, this);
+  		this._wrapper.onUpdate("cromove", croset, null, this);
 	}
 	this._format();
 }
@@ -112,9 +120,45 @@ ListArea.prototype._deleteItem = function(key) {
 	this._mydiv.appendChild(child._mydiv);
 }
 
+ListArea.prototype._moveItem = function(from, to) {
+  	"use strict";
+//  	console.log("moving from", from, "to", to);
+  	var removeDiv, beforeDiv;
+	for (var i=0;i<this._mydiv.children.length;i++) {
+		var a = this._mydiv.children[i];
+		if (_Croset.prototype._keycomp(from, a._area._crokey) == 0) {
+			removeDiv = a;
+			if (beforeDiv) break;
+		}
+		if (!beforeDiv && _Croset.prototype._keycomp(to, a._area._crokey) <= 0) {
+			beforeDiv = a;
+			if (removeDiv) break;
+		}
+	}
+//	console.log("move", removeDiv, "before", beforeDiv);
+	if (beforeDiv == removeDiv) return;
+	if (beforeDiv)
+		this._mydiv.insertBefore(removeDiv, beforeDiv)
+	else
+		this._mydiv.appendChild(removeDiv);
+	removeDiv._area._crokey = to;
+}
+
 ListArea.prototype._format = function() {
 	for (var c=0;c<this._mydiv.children.length;c++) {
 		this._mydiv.children[c]._area.formatItem();
+	}
+}
+
+ListArea.prototype._supportDragging = function() {
+	var ul = this._mydiv;
+	var wrapper = this._wrapper;
+	this._mydiv['ondragover'] = function(event) {
+		_Croset.listDragOver(event, ul);
+	}
+	this._mydiv['ondrop'] = function(event) {
+		var msgs = _Croset.listDrop(event, ul);
+		wrapper.messageEventLoop(msgs);
 	}
 }
 	
@@ -128,7 +172,7 @@ TextArea.prototype.constructor = TextArea;
 
 TextArea.prototype._setText = function(text) {
 	"use strict";
-	console.log("setting text to", text);
+//	console.log("setting text to", text);
 	var tmp = doc.createTextNode(text);
 	this._mydiv.innerHTML = '';
 	this._mydiv.appendChild(tmp);
