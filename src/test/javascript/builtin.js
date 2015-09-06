@@ -378,13 +378,11 @@ _Croset.prototype.moveBefore = function(toMove, placeBefore) {
 	var mover = this.members.splice(moverLoc, 1)[0]; // remove the item at moverLoc
 	var newKey;
 	if (!placeBefore) { // moving to the end is the simplest case
-		debugger; 
 		newKey = this._append(mover.id);
 //		console.log("moved to end:", this);
 	} else {
 		// This location is the location AFTER removing the element we're going to move
 		var beforeLoc = this.findLocation(placeBefore);
-		debugger; 
 		newKey = this._insertAt(beforeLoc, mover.id);
 //		console.log("moved to", beforeLoc, ":", this);
 	}

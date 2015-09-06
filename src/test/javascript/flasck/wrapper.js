@@ -165,7 +165,6 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 			}
 		},
 		dispose: function(from) {
-		console.log("ports =", self.ports);
 			// This stops the bleeding; I think there is more we need to do, probably more we need to do *automatically*, e.g. canceling subscriptions to ZiNC
 			for (var c in self.ports) {
 				var port = self.ports[c];
