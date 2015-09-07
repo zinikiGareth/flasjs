@@ -41,3 +41,18 @@ StdLib.filter = function(f, al) {
 		}
 	}
 }
+
+map = function(f,l) {
+	"use strict"
+	var l = FLEval.head(l);
+	if (l._ctor !== 'Cons')
+		return Nil;
+	return Cons(FLEval.closure(f, l.head), FLEval.closure(map, f, l.tail));
+}
+
+// List comprehension for integers starting at n (and going to infinity)
+intsFrom = function(n) {
+	"use strict"
+	return FLEval.closure(Cons, n, FLEval.closure(intsFrom, FLEval.closure(FLEval.plus, n, 1)));
+}
+

@@ -32,20 +32,6 @@ _Cons.prototype.toString = function() {
 
 Cons = function(a,b) { return new _Cons(a,b); }
 
-map = function(f,l) {
-	"use strict"
-	var l = FLEval.head(l);
-	if (l._ctor !== 'Cons')
-		return Nil;
-	return Cons(FLEval.closure(f, l.head), FLEval.closure(map, f, l.tail));
-}
-
-// List comprehension for integers starting at n (and going to infinity)
-intsFrom = function(n) {
-	"use strict"
-	return FLEval.closure(Cons, n, FLEval.closure(intsFrom, FLEval.closure(FLEval.plus, n, 1)));
-}
-
 /*
 List.prototype.toString = function() {
 	var ret = "[";
@@ -135,47 +121,109 @@ Assoc = function(k,v,r) { return new _Assoc(k,v,r); }
  * a dedicated CROKEY which can be resolved is a better bet.
  */
 
-/* TODO: refactor out the CROKEY.  It should be an array of "bytes" generated to the same algorithm as
- * server side if possible.  This should generate a javascript array like [0xe3, 0x87, 0x40] where each
- * byte is 0-255
- */ 
-var onlyKey = function() {
-	return [100];
+function _Crokey(from, id) {
+	"use strict"
+	if (typeof id !== 'string')
+		throw new Error("id must be a string");
+	this._ctor = 'Crokey';
+	this.id = id;
+	if (from instanceof Array) {
+		// (assume) it's an array of numbers ...
+		this.key = from;
+	} else if (typeof from === 'string') {
+		// it's a hex string
+		this.key = [];
+		for (var i=0;i<from.length;i+=2)
+			this.key[i/2] = parseInt(from.substring(i, i+2), 16);
+	} else if (typeof from === 'object' && from._ctor === 'Crokey') {
+		// it's another Crokey
+		this.key = from.key;
+	} else
+		throw new Error("Cannot create a Crokey like that");
 }
 
-var firstKey = function(before) {
-	if (before[0] == 0)
+_Crokey.prototype.firstKey = function(id) {
+	"use strict"
+	if (this.key[0] == 0)
 		throw new Error("We need to handle the very-very-very-beginning difficult case");
-	return [before[0]/2];
+	return new Crokey([this.key[0]/2], id);
 }
 
-var lastKey = function(after) {
-	return [after[0]+10];
+_Crokey.prototype.lastKey = function(id) {
+	"use strict"
+	var prev = this.key[0];
+	if (prev > 0xf0) throw new Error("The almost-as-tricky near-the-end case");
+	return new Crokey([prev+8], id);
 }
 
-var midKey = function(after, before) {
+_Crokey.prototype.before = function(before, id) {
+	"use strict"
 	var me = [];
-	for (var i=0;i<after.length;i++) {
+	for (var i=0;i<this.key.length;i++) {
 		// TODO: I think we're missing out the case where "before" expires before after
-		if (after[i]+1<before[i]) {
-			me.push((after[i]+before[i])/2);
-			return me;
+		if (this.key[i]+1<before.key[i]) {
+			me.push((this.key[i]+before.key[i])/2);
+			return new Crokey(me, id);
 		}
 		me.push(after[i]);
 	}
 	// if we get to the end with them seeming identical ...
 	// this may or may not be the right thing to do
-	me.push(128);
-	return me;
+	me.push(0x80);
+	return new Crokey(me, id);
 }
 
-function _Croset(list) {
+// return 1 if other is AFTER this, -1 if other is BEFORE this and 0 if they are the same key
+_Crokey.prototype.compare = function(other) {
 	"use strict"
+	if (other._ctor !== 'Crokey')
+		throw new Error("Cannot compare crokey to non-Crokey");
+	for (var i=0;i<this.key.length;i++) {
+		if (this.key[i] > other.key[i]) return 1;
+		if (this.key[i] < other.key[i]) return -1;
+	}
+	if (this.key.length == other.key.length) return 0; // they are the same key
+	if (this.key.length > other.key.length) return 1; // this.key is a subkey of other.key and thus after it
+	if (this.key.length < other.key.length) return -1; // this.key is a prefix of other.key and thus before it
+	throw new Error("You should never get here");
+}
+
+_Crokey.prototype.toString = function() {
+	var ret = "";
+	for (var i=0;i<this.key.length;i++) {
+		var hx = this.key[i].toString(16).toUpperCase();
+		while (hx.length < 2)
+			hx = "0" + hx;
+		ret += hx;
+	}
+	return ret;
+}
+
+function Crokey(from, id) { return new _Crokey(from, id); }
+
+Crokey.onlyKey = function(id) {
+	"use strict"
+	return new Crokey([0x10], id);
+}
+
+function _Crokeys(l) {
+	this._ctor = 'Crokeys';
+	this.keys = FLEval.inflate(l);
+}
+
+function Crokeys(l) { return new _Crokeys(l); }
+
+function _Croset(crokeys) {
+	"use strict"
+	if (crokeys instanceof Array || crokeys._ctor === 'Cons' || crokeys._ctor === 'Nil')
+		crokeys = Crokeys(crokeys);
+	else if (crokeys._ctor !== 'Crokeys')
+		throw new Error("Cannot create a croset with " + crokeys);
 	this._ctor = 'Croset';
 	this._special = 'object';
 	this.members = [];
 	this.hash = {};
-	this.mergeAppend(list);
+	this.mergeAppend(crokeys);
 }
 
 _Croset.prototype.length = function() {
@@ -197,34 +245,21 @@ _Croset.prototype._append = function(id) {
 	var key;
 	if (this.members.length === 0) {
 		// the initial case
-		key = onlyKey();
+		key = Crokey.onlyKey(id);
 	} else {
 		// at end
-		key = lastKey(this.members[this.members.length-1].key);
+		key = this.members[this.members.length-1].lastKey(id);
 	}
-	this.members.push({ key: key, id: id });
+	this.members.push(key);
 	return key;
-}
-
-// return 1 if k2 is AFTER k1, -1 if k2 is BEFORE k1 and 0 if they are the same key
-_Croset.prototype._keycomp = function(k1, k2) {
-	"use strict"
-	for (var i=0;i<k1.length;i++) {
-		if (k1[i] > k2[i]) return 1;
-		if (k1[i] < k2[i]) return -1;
-	}
-	if (k1.length == k2.length) return 0; // they are the same key
-	if (k1.length > k2.length) return 1; // k1 is a subkey of k2 and thus after it
-	if (k1.length < k2.length) return -1; // k1 is a prefix of k2 and thus before it
-	throw new Error("You should never get here");
 }
 
 _Croset.prototype._insert = function(k, id) {
 	"use strict"
-	var entry = { key: k, id: id };
+	var entry = new _Crokey(k, id);
 	for (var i=0;i<this.members.length;i++) {
 		var m = this.members[i];
-		if (this._keycomp(m['key'], k) === 1) {
+		if (m['key'].compare(k) === 1) {
 			this.members.splice(i, 0, entry);
 			return;
 		}
@@ -240,16 +275,15 @@ _Croset.prototype._insertAt = function(pos, id) {
 	var k;
 	if (pos == 0) {
 		if (this.members.length == 0)
-			k = onlyKey();
+			k = Crokey.onlyKey(id);
 		else
-			k = firstKey(this.members[0].key);
+			k = this.members[0].firstKey(id);
 	} else if (pos == this.members.length) {
-		k = lastKey(this.members[this.members.length-1].key);
+		k = this.members[this.members.length-1].lastKey(id);
 	} else
-		k = midKey(this.members[pos-1].key, this.members[pos].key);
+		k = this.members[pos-1].before(this.members[pos], id);
 	
-	var entry = { key: k, id: id };
-	this.members.splice(pos, 0, entry);
+	this.members.splice(pos, 0, k);
 	return k;
 }
 
@@ -257,25 +291,25 @@ _Croset.prototype.get = function(k) {
 	"use strict"
 	for (var i=0;i<this.members.length;i++) {
 		var m = this.members[i];
-		if (m.key === k)
+		if (m.compare(k) === 0)
 			return this.hash[m.id];
-		else if (m.key > k)
+		else if (m.compare(k) === 0)
 			break;
 	}
-	throw new Error("No key" + k + "in" + this);
+	throw new Error("No key " + k + " in" + this);
 }
 
 _Croset.prototype.getOrId = function(k) {
 	"use strict"
 	for (var i=0;i<this.members.length;i++) {
 		var m = this.members[i];
-		if (m.key === k) {
+		if (m.compare(k) === 0) {
 			var x = this.hash[m.id];
 			if (x) 
 				return x;
 			// otherwise return "just the id"
 			return { _ctor: 'org.ziniki.ID', id: m.id };
-		} else if (m.key > k)
+		} else if (m.compare(k) === 0)
 			break;
 	}
 	throw new Error("No key" + k + "in" + this);
@@ -305,8 +339,8 @@ _Croset.prototype.range = function(from, to) {
 _Croset.prototype.mergeAppend = function(l) {
 	"use strict"
 	var l = FLEval.full(FLEval.inflate(l));
-	if (l._ctor === 'Crokeys')
-		l = FLEval.inflate(l.keys);
+	if (l._ctor !== 'Crokeys')
+		throw new Error("MergeAppend only accepts Crokeys objects");
 	var msgs = [];
 	while (l._ctor === 'Cons') {
 //		console.log("handle", l.head);
@@ -341,12 +375,12 @@ _Croset.prototype.put = function(obj) {
 	}
 	obj.id = FLEval.full(obj.id);
 	var msgs;
-	var item = this._hasId(obj.id);
-	if (!item) {
-		var key = this._append(obj.id);
+	var key = this._hasId(obj.id);
+	if (!key) {
+		key = this._append(obj.id);
 		msgs = [new CrosetInsert(this, key)];
 	} else
-		msgs = [new CrosetReplace(this, item.key)];
+		msgs = [new CrosetReplace(this, key)];
 	if (obj._ctor)
 		this.hash[obj.id] = obj;
 	return msgs;
@@ -360,7 +394,7 @@ _Croset.prototype.delete = function(id) {
 	var msgs = [];
 	for (var i=0;i<this.members.length;) {
 		if (this.members[i].id === id) {
-			msgs.push(new CrosetRemove(this, this.members[i].key));
+			msgs.push(new CrosetRemove(this, this.members[i]));
 			this.members.splice(i, 1);
 		} else
 			i++;
@@ -397,10 +431,20 @@ _Croset.prototype.findLocation = function(id) {
 			if (this.members[i].id === id)
 				return i;
 		}
+		/* I think this was supposed to be a key comparison, but I don't think it would have worked ...
 	} else if (id instanceof Array) {
 		for (var i=0;i<this.members.length;i++) {
 			if (this.members[i].key === id)
 				return i;
+		}
+		*/
+	} else if (id instanceof _Crokey) {
+		for (var i=0;i<this.members.length;i++) {
+			var cmp = this.members[i].compare(id);
+			if (cmp === 0)
+				return i;
+			else if (cmp > 0)
+				return -1;
 		}
 	} else
 		throw new Error("What is this?" + id);
@@ -410,7 +454,8 @@ _Croset.prototype.findLocation = function(id) {
 _Croset.prototype.moveBefore = function(toMove, placeBefore) {
 //	console.log(toMove + " has moved before " + placeBefore);
 	var moverLoc = this.findLocation(toMove);
-	var oldKey = this.members[moverLoc].key;
+	if (moverLoc === -1) throw new Error("Did not find " + toMove);
+	var oldKey = this.members[moverLoc];
 	var mover = this.members.splice(moverLoc, 1)[0]; // remove the item at moverLoc
 	var newKey;
 	if (!placeBefore) { // moving to the end is the simplest case
@@ -419,6 +464,7 @@ _Croset.prototype.moveBefore = function(toMove, placeBefore) {
 	} else {
 		// This location is the location AFTER removing the element we're going to move
 		var beforeLoc = this.findLocation(placeBefore);
+		if (moverLoc === -1) throw new Error("Did not find " + placeBefore);
 		newKey = this._insertAt(beforeLoc, mover.id);
 //		console.log("moved to", beforeLoc, ":", this);
 	}
@@ -529,6 +575,7 @@ D3Action = function(action, args) { return new _D3Action(action, args); }
 
 _CrosetInsert = function(target, key) {
 	"use strict"
+	if (key._ctor !== 'Crokey') throw new Error("Not a crokey");
 	this._ctor = "CrosetInsert";
 	this.target = target;
 	this.key = key;
@@ -537,6 +584,7 @@ CrosetInsert = function(target, key) { return new _CrosetInsert(target, key); }
 
 _CrosetReplace = function(target, key) {
 	"use strict"
+	if (key._ctor !== 'Crokey') throw new Error("Not a crokey");
 	this._ctor = "CrosetReplace";
 	this.target = target;
 	this.key = key;
@@ -545,6 +593,7 @@ CrosetReplace = function(target, key) { return new _CrosetReplace(target, key); 
 
 _CrosetRemove = function(target, key) {
 	"use strict"
+	if (key._ctor !== 'Crokey') throw new Error("Not a crokey");
 	this._ctor = "CrosetRemove";
 	this.target = target;
 	this.key = key;
@@ -553,6 +602,8 @@ CrosetRemove = function(target, key) { return new _CrosetRemove(target, key); }
 
 _CrosetMove = function(target, from, to) {
 	"use strict"
+	if (from._ctor !== 'Crokey') throw new Error("Not a crokey");
+	if (to._ctor !== 'Crokey') throw new Error("Not a crokey");
 	this._ctor = "CrosetMove";
 	this.target = target;
 	this.from = from;

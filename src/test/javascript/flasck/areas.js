@@ -103,7 +103,7 @@ ListArea.prototype._insertItem = function(child) {
 		throw new Error("Cannot handle null _crokey in " + child);
 	for (var i=0;i<this._mydiv.children.length;i++) {
 		var a = this._mydiv.children[i];
-		if (_Croset.prototype._keycomp(child._crokey, a._area._crokey) < 0) {
+		if (child._crokey.compare(a._area._crokey) < 0) {
 			this._mydiv.insertBefore(child._mydiv, a);
 			return;
 		}
@@ -116,7 +116,7 @@ ListArea.prototype._deleteItem = function(key) {
   	"use strict";
 	for (var i=0;i<this._mydiv.children.length;i++) {
 		var a = this._mydiv.children[i];
-		if (_Croset.prototype._keycomp(key, a._area._crokey) == 0) {
+		if (key.compare(a._area._crokey) == 0) {
 			this._mydiv.removeChild(a);
 			return;
 		}
@@ -131,11 +131,11 @@ ListArea.prototype._moveItem = function(from, to) {
   	var removeDiv, beforeDiv;
 	for (var i=0;i<this._mydiv.children.length;i++) {
 		var a = this._mydiv.children[i];
-		if (_Croset.prototype._keycomp(from, a._area._crokey) == 0) {
+		if (from.compare(a._area._crokey) == 0) {
 			removeDiv = a;
 			if (beforeDiv) break;
 		}
-		if (!beforeDiv && _Croset.prototype._keycomp(to, a._area._crokey) <= 0) {
+		if (!beforeDiv && to.compare(a._area._crokey) <= 0) {
 			beforeDiv = a;
 			if (removeDiv) break;
 		}
