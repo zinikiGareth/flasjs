@@ -181,7 +181,7 @@ TextArea.prototype._setText = function(text) {
 TextArea.prototype._assignToText = function(e) {
 	"use strict";
 	e = FLEval.full(e);
-	if (e === null || e === undefined)
+	if (e === null || e === undefined || e instanceof FLError)
 		e = "";
 	this._setText(e.toString());
 }
@@ -224,4 +224,31 @@ TextArea.prototype._editable = function(rules) {
 //	console.log("registering field", elt.id, "as subject to editing");
 //	this._mydiv.flasckEditMode = false; 
 	this._mydiv.onclick = function(ev) { self._edit(ev, rules); }
+}
+
+var CardSlotArea = function(parent, cardOpts) {
+	"use strict";
+	Area.call(this, parent, 'div');
+	if (parent)
+		this._wrapper.showCard(this._mydiv, cardOpts);
+}
+
+CardSlotArea.prototype = new Area();
+CardSlotArea.prototype.constructor = CardSlotArea;
+
+var CasesArea = function(parent) {
+	"use strict";
+	Area.call(this, parent, 'div');
+}
+
+CasesArea.prototype = new Area();
+CasesArea.prototype.constructor = CasesArea;
+
+CasesArea.prototype._setTo = function(fn) {
+	if (this._current == fn)
+		return;
+	this._current = fn;
+	this._mydiv.innerHTML = '';
+	var r = new Object();
+	fn.call(r, this);
 }

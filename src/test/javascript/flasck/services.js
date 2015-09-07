@@ -44,12 +44,20 @@ FlasckServices.KeyValueService.prototype.subscribe = function(resource, handler)
 	"use strict";
 	var self = this;
 //	console.log("self =", self, "subscribe to", resource);
+
+	// I think extracting this is a hack
+	var idx = resource.lastIndexOf('/');
+	var prop = resource.substring(idx+1);
 	if (self.store.hasOwnProperty(resource)) {
-		self.postbox.deliver(handler.chan, {method: 'update', args:[self.store[resource]]});
+		setTimeout(function() { self.postbox.deliver(handler.chan, {method: 'update', args:[self.store[resource]]}); }, 0);
+		return;
+	}
+	else if (self.store.hasOwnProperty(prop)) {
+		setTimeout(function() { self.postbox.deliver(handler.chan, {method: 'update', args:[self.store[prop]]}); }, 0);
 		return;
 	}
 	var zinchandler = function (msg) {
-//		console.log("kv received", msg, "from Ziniki");
+		console.log("kv received", msg, "from Ziniki");
 		var main = msg.payload._main;
 		for (var k in msg.payload) {
 			if (k[0] !== '_' && msg.payload.hasOwnProperty(k)) {
@@ -115,8 +123,9 @@ FlasckServices.CredentialsService.prototype.logout = function() {
 	this.doc.getElementById("flasck_login").showModal();
 }
 
-FlasckServices.QueryService = function(postbox) {
+FlasckServices.QueryService = function(postbox, store) {
 	this.postbox = postbox;
+	this.store = store;
 	return this;
 }
 
@@ -125,20 +134,40 @@ FlasckServices.QueryService.prototype.process = function(message) {
 	var meth = this[message.method];
 	if (!meth)
 		throw new Error("There is no method '" + message.method +"'");
-	meth.apply(this.service, message.args);
+	meth.apply(this, message.args);
 }
 
 FlasckServices.QueryService.prototype.scan = function(index, type, handler) {
+	"use strict";
 	console.log("scan", index, type, handler);
 	var self = this;
 	var zinchandler = function(msg) {
 	    var payload = msg.payload;
+	    console.log("scan payload =", payload);
 	    if (!payload || !payload[type])
 	    	return;
-	    payload[type].forEach(function (item) {
-			item._ctor = type;		    
-			self.postbox.deliver(handler.chan, {method: 'entry', args: [item.id, item]}); 
-		});
+		var main = msg.payload._main;
+		for (var k in msg.payload) {
+			if (k[0] !== '_' && msg.payload.hasOwnProperty(k)) {
+				if (!main)
+					main = k;
+				if (main !== 'Croset')
+					throw new Error("I was expecting a croset ...");
+				var l = msg.payload[k];
+				if (k == 'Croset') {
+					; // fine, dealt with below
+				} else { // sideload actual objects
+					if (l instanceof Array) {
+						for (var i=0;i<l.length;i++) {
+							var it = l[i];
+							it._ctor = k;
+							self.store[it.id] = it;
+						}
+					}
+				}
+			}
+		}
+		self.postbox.deliver(handler.chan, {method: 'keys', args:[msg.payload[main]]});
 	}
 	if (haveZiniki)
 		ZinikiConn.req.subscribe(index, zinchandler).setOption("type", "wikipedia").send();
@@ -162,6 +191,7 @@ FlasckServices.provideAll = function(document, postbox, services) {
 	Flasck.provideService(postbox, services, "org.ziniki.Timer", new FlasckServices.TimerService(postbox));
 	Flasck.provideService(postbox, services, "org.ziniki.Render", new FlasckServices.RenderService(postbox));
 	Flasck.provideService(postbox, services, "org.ziniki.Credentials", new FlasckServices.CredentialsService(document, postbox));
-	Flasck.provideService(postbox, services, "org.ziniki.KeyValue", new FlasckServices.KeyValueService(postbox));
-	Flasck.provideService(postbox, services, "org.ziniki.Query", new FlasckServices.QueryService(postbox));
+	var kvs = new FlasckServices.KeyValueService(postbox);
+	Flasck.provideService(postbox, services, "org.ziniki.KeyValue", kvs);
+	Flasck.provideService(postbox, services, "org.ziniki.Query", new FlasckServices.QueryService(postbox, kvs.store));
 }

@@ -35,7 +35,10 @@ FlasckWrapper.Processor.prototype.process = function(message) {
 	var meth = this.service[message.method];
 	if (!meth)
 		throw new Error("There is no method '" + message.method +"'");
-	var clos = meth.apply(this.service, message.args);
+	var args = [];
+	for (var i=0;i<message.args.length;i++)
+		args.push(FLEval.inflate(message.args[i]));
+	var clos = meth.apply(this.service, args);
 	if (clos) {
 		this.wrapper.messageEventLoop(FLEval.full(clos));
 	}
@@ -338,12 +341,14 @@ FlasckWrapper.prototype.nextSlotId = function() {
 
 FlasckWrapper.prototype.onUpdate = function(op, obj, field, area, fn) {
 //	console.log("on update type", op);
+	if (!obj) obj = this.card; // should we insist on getting the card by throwing an error if not?
 	if (op === 'assign' && !fn)
 		throw new Error("Must provide fn for assign");
 	this.updateAreas.push({op: op, obj: obj, field: field, area: area, fn: fn});
 }
 
 FlasckWrapper.prototype.removeOnUpdate = function(op, obj, field, area) {
+	if (!obj) obj = this.card; // should we insist on getting the card by throwing an error if not?
 	for (var i=0;i<this.updateAreas.length;) {
 		var ua = this.updateAreas[i];
 		if (ua.op == op && ua.area === area && ua.obj == obj && ua.field == field)
@@ -373,12 +378,14 @@ FlasckWrapper.prototype.updateDisplay = function(todo) {
 	for (var t=0;t<todo.length;t++) {
 		var item = todo[t];
 		if (item instanceof _Assign) {
-			console.log("Assign");
+//			console.log("Assign");
+			var target = item.target || this.card;
 			for (var i=0;i<this.updateAreas.length;i++) {
 				var ua = this.updateAreas[i];
-				if (ua.op != 'assign' || ua.field != item.field || ua.obj != item.target)
+				if (ua.op != 'assign') continue;
+				if (ua.field != item.field || ua.obj != target)
 					continue;
-				ua.fn.call(ua.area, item.target[item.field]);
+				ua.fn.call(ua.area, target[item.field]);
 			}
 		} else if (item instanceof _CrosetInsert) {
 //			console.log("Croset Insert");
@@ -424,19 +431,21 @@ FlasckWrapper.prototype.updateDisplay = function(todo) {
 	}
 }
 
-FlasckWrapper.prototype.showCard = function(slot, cardOpts) {
+FlasckWrapper.prototype.showCard = function(into, cardOpts) {
 	var mode = cardOpts.mode || 'local';
-	var div = doc.getElementById(this.infoAbout[slot]);
-	div.innerHTML = '';
-	if (this.cardCache[slot] && !this.cardCache[slot]._isDisposed) {
-   		this.cardCache[slot].redrawInto(div);
-   		return this.cardCache[slot];
+	if (!(into instanceof HTMLElement)) // deprecated
+		into = doc.getElementById(this.infoAbout[into]);
+	into.innerHTML = '';
+	var uid = into.id;
+	if (this.cardCache[uid] && !this.cardCache[uid]._isDisposed) {
+   		this.cardCache[uid].redrawInto(into);
+   		return this.cardCache[uid];
 	} else {
   		var svcs = cardOpts.services;
   		if (!svcs || svcs._ctor === 'Nil')
 	  		svcs = this.services;
-  		var innerCard = Flasck.createCard(this.postbox, div, { mode: mode, explicit: cardOpts.card }, svcs);
-  		this.cardCache[slot] = innerCard;
+  		var innerCard = Flasck.createCard(this.postbox, into, { mode: mode, explicit: cardOpts.card }, svcs);
+  		this.cardCache[uid] = innerCard;
   		return innerCard;
 	}
 }

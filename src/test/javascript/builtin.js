@@ -293,10 +293,15 @@ _Croset.prototype.mergeAppend = function(l) {
 //		console.log("handle", l.head);
 		if (l.head.id) {
 			if (!this._hasId(l.head.id)) { // only append if it's not in the list
-				var key = this._append(l.head.id);
+				var key;
+				if (l.head.key) {
+					key = l.head.key;
+					this._insert(key, l.head.id);
+				} else
+					key = this._append(l.head.id);
 				msgs.push(new CrosetInsert(this, key));
 			}
-			if (l.head._ctor)
+			if (l.head._ctor && l.head._ctor !== 'org.ziniki.ID')
 				this.hash[l.head.id] = l.head;
 		}
 		l = l.tail;
@@ -340,6 +345,18 @@ _Croset.prototype.delete = function(id) {
 			this.members.splice(i, 1);
 		} else
 			i++;
+	}
+	return msgs;
+}
+
+_Croset.prototype.clear = function() {
+	"use strict"
+	var msgs = [];
+	while (this.members.length>0) {
+		var m = this.members[0];
+		delete this.hash[m.id];
+		msgs.push(new CrosetRemove(this, m.key));
+		this.members.splice(0, 1);
 	}
 	return msgs;
 }

@@ -26,14 +26,18 @@ function FLEval() {
 
 FLEval.head = function(x) {
 //	console.log("head(" + x + ")");
-	while (x instanceof FLClosure) {
-//		console.log("evaluating " + x.fn);
-		if (x.fn instanceof FLClosure)
-		  x.fn = FLEval.head(x.fn);
-		if (!x.fn || !x.fn.apply)
-		  return x.fn;
-		x = x.fn.apply(x.obj, x.args);
-//		console.log("head saw " + x);
+	try {
+		while (x instanceof FLClosure) {
+	//		console.log("evaluating " + x.fn);
+			if (x.fn instanceof FLClosure)
+			  x.fn = FLEval.head(x.fn);
+			if (!x.fn || !x.fn.apply)
+			  return x.fn;
+			x = x.fn.apply(x.obj, x.args);
+	//		console.log("head saw " + x);
+		}
+	} catch (ex) {
+		return new FLError(ex);
 	}
 	return x;
 }
@@ -139,6 +143,8 @@ FLEval.inflate = function(list) {
 		return ret;
 	} else if (list instanceof Object) {
 		if (!list._ctor && list.id) {
+			if (list.key) // probably this case should already be handled
+				return { _ctor: 'org.ziniki.Crokey', key: list.key, id: list.id };
 			// TODO: really only if it JUST has "id"
 			return { _ctor: 'org.ziniki.ID', id: list.id };
 		}
