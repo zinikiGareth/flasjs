@@ -9,17 +9,22 @@ var CardArea = function(pdiv, wrapper, card) {
 
 var uniqid = 1;
 
-var Area = function(parent, tag) {
+var Area = function(parent, tag, ns) {
 	"use strict";
 	if (parent) {
 		this._parent = parent;
 		this._wrapper = parent._wrapper;
 		this._doc = parent._doc;
 		this._indiv = parent._mydiv;
-		this._mydiv = this._doc.createElement(tag);
-		this._mydiv.setAttribute('id', 'uid_'+(uniqid++));
-		this._mydiv._area = this;
-		this._indiv.appendChild(this._mydiv);
+		if (tag) {
+			if (ns)
+				this._mydiv = this._doc.createElementNS(ns, tag);
+			else
+				this._mydiv = this._doc.createElement(tag);
+			this._mydiv.setAttribute('id', 'uid_'+(uniqid++));
+			this._mydiv._area = this;
+			this._indiv.appendChild(this._mydiv);
+		}
 		this._card = parent._card;
 	}
 }
@@ -33,9 +38,9 @@ Area.prototype._onAssign = function(obj, field, fn) {
 	this._wrapper.onUpdate("assign", obj, field, this, fn);
 }
 
-var DivArea = function(parent, tag) {
+var DivArea = function(parent, tag, ns) {
 	"use strict";
-	Area.call(this, parent, tag || 'div');
+	Area.call(this, parent, tag || 'div', ns);
 	this._interests = [];
 }
 
@@ -251,4 +256,20 @@ CasesArea.prototype._setTo = function(fn) {
 	this._mydiv.innerHTML = '';
 	var r = new Object();
 	fn.call(r, this);
+}
+
+var D3Area = function(parent, cardOpts) {
+	"use strict";
+	Area.call(this, parent);
+	if (parent) {
+		this._data = FLEval.full(this._card._d3init_chart());
+		this._onUpdate();
+	}
+}
+
+D3Area.prototype = new Area();
+D3Area.prototype.constructor = D3Area;
+
+D3Area.prototype._onUpdate = function() {
+	this._wrapper.updateD3(this._indiv, this._data);
 }

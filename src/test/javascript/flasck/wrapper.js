@@ -457,7 +457,7 @@ function d3attrFn(card, flfn) {
     }
 }
 
-FlasckWrapper.prototype.updateD3 = function(slot, info) { // TODO: other args
+FlasckWrapper.prototype.updateD3 = function(svg, info) { // TODO: other args
 	info = FLEval.full(info);
 	// info is an assoc of key -> value
 	// info.data is a function returning the list of data items (of any type; that's up to the user code to sort out)
@@ -475,7 +475,6 @@ FlasckWrapper.prototype.updateD3 = function(slot, info) { // TODO: other args
     
     // info.layout is a list of zero-or-more layouts on the card, each of which is a pair of (pattern, [prop]) where each prop is a pair (name, value-or-function)
     var layout = info.assoc("layout");
-	var svg = doc.getElementById(slot);
     for (var c in cmds)
         d3.select(svg).selectAll(cmds[c].select).data(mydata).enter().append(cmds[c].insert);
     while (layout._ctor === 'Cons') {
