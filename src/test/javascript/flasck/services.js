@@ -50,12 +50,12 @@ FlasckServices.KeyValueService.prototype.subscribe = function(resource, handler)
 	var prop = resource.substring(idx+1);
 	if (self.store.hasOwnProperty(resource)) {
 		// this 'null' represents the 'type' of the object
-		setTimeout(function() { self.postbox.deliver(handler.chan, {method: 'update', args:[null, self.store[resource]]}); }, 0);
+		setTimeout(function() { self.postbox.deliver(handler.chan, {method: 'update', args:[self.store[resource]]}); }, 0);
 		return;
 	}
 	else if (self.store.hasOwnProperty(prop)) {
 		// this 'null' represents the 'type' of the object
-		setTimeout(function() { self.postbox.deliver(handler.chan, {method: 'update', args:[null, self.store[prop]]}); }, 0);
+		setTimeout(function() { self.postbox.deliver(handler.chan, {method: 'update', args:[self.store[prop]]}); }, 0);
 		return;
 	}
 	var zinchandler = function (msg) {
@@ -74,7 +74,7 @@ FlasckServices.KeyValueService.prototype.subscribe = function(resource, handler)
 				}
 			}
 		}
-		self.postbox.deliver(handler.chan, {method: 'update', args:[main, msg.payload[main][0]]});
+		self.postbox.deliver(handler.chan, {method: 'update', args:[msg.payload[main][0]]});
 	};
 	if (haveZiniki) {
 		// we can either subscribe to a resource or to a specific object by ID

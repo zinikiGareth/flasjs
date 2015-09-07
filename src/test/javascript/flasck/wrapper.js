@@ -151,9 +151,9 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 			}
 		},
 		loadId: function(from, id) {
-			var uf = function(type, obj) {
+			var uf = function(obj) {
 				if (userInit && userInit.service.update)
-					userInit.process({from: from, method: 'update', args: [FLEval.inflateType(type, obj)]});
+					userInit.process({from: from, method: 'update', args: [FLEval.inflate(obj)]});
 				else
 					console.log("there is no update method to handle", id, type, obj);
 			};
