@@ -100,7 +100,9 @@ FlasckComponents.popoverCard = function(postbox, services, card) {
 	popover.innerHTML = '';
 	var card = Flasck.createCard(postbox, popover, { mode: 'overlay', explicit: card }, services);
 	FlasckComponents.currentCard = card
-	doc.getElementById('flasck_popover').showModal();
+	var p1 = doc.getElementById('flasck_popover');
+	if (!p1.open)
+		p1.showModal();
 	return card;
 }
 

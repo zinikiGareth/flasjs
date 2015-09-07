@@ -136,6 +136,7 @@ FLEval.inflateType = function (type, obj) {
 }
 
 FLEval.inflate = function(list) {
+	list = FLEval.head(list);
 	if (list instanceof Array) {
 		var ret = Nil;
 		for (var k=list.length-1;k>=0;k--)
@@ -147,6 +148,10 @@ FLEval.inflate = function(list) {
 				return { _ctor: 'org.ziniki.Crokey', key: list.key, id: list.id };
 			// TODO: really only if it JUST has "id"
 			return { _ctor: 'org.ziniki.ID', id: list.id };
+		}
+		for (var k in list) {
+			var obj = list[k];
+			list[k] = FLEval.inflate(obj);
 		}
 //		console.log("may want to inflate obj if it has some identifying marks", list);
 		return list;

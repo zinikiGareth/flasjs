@@ -265,6 +265,22 @@ _Croset.prototype.get = function(k) {
 	throw new Error("No key" + k + "in" + this);
 }
 
+_Croset.prototype.getOrId = function(k) {
+	"use strict"
+	for (var i=0;i<this.members.length;i++) {
+		var m = this.members[i];
+		if (m.key === k) {
+			var x = this.hash[m.id];
+			if (x) 
+				return x;
+			// otherwise return "just the id"
+			return { _ctor: 'org.ziniki.ID', id: m.id };
+		} else if (m.key > k)
+			break;
+	}
+	throw new Error("No key" + k + "in" + this);
+}
+
 _Croset.prototype.index = function(idx) {
 	"use strict"
 	if (idx >= 0 && idx < this.members.length)
@@ -285,9 +301,12 @@ _Croset.prototype.range = function(from, to) {
 	return ret;
 }
 
+// Still trying to figure out the API here, but I would like this to expect a "Crokeys" object which is an object containing a list in the field keys of (id, key) pairs each of which is a Crokey object
 _Croset.prototype.mergeAppend = function(l) {
 	"use strict"
 	var l = FLEval.full(FLEval.inflate(l));
+	if (l._ctor === 'Crokeys')
+		l = FLEval.inflate(l.keys);
 	var msgs = [];
 	while (l._ctor === 'Cons') {
 //		console.log("handle", l.head);
@@ -301,7 +320,7 @@ _Croset.prototype.mergeAppend = function(l) {
 					key = this._append(l.head.id);
 				msgs.push(new CrosetInsert(this, key));
 			}
-			if (l.head._ctor && l.head._ctor !== 'org.ziniki.ID')
+			if (l.head._ctor && l.head._ctor !== 'org.ziniki.ID' && l.head._ctor !== 'Crokey')
 				this.hash[l.head.id] = l.head;
 		}
 		l = l.tail;

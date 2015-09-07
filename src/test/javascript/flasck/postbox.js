@@ -18,10 +18,12 @@ Postbox = function(name, window) {
 /** Create a new local-delivery address to be associated with a local component
  */
 Postbox.prototype.newAddress = function() {
+	"use strict"
 	return "" + (++this.recip);
 }
 
 Postbox.prototype.unique = function(addr) {
+	"use strict"
 	return this.name + ":" + addr;
 }
 
@@ -30,6 +32,7 @@ Postbox.prototype.unique = function(addr) {
  * @param onConnect a function to call when the postbox connects
  */
 Postbox.prototype.remote = function(name, onConnect) {
+	"use strict"
 	if (this.postboxes[name] && this.postboxes[name].window) {
 		setTimeout(function() { onConnect(name) }, 0);
 	} else {
@@ -42,11 +45,13 @@ Postbox.prototype.remote = function(name, onConnect) {
  * @param pbox a window handle for the remote postbox
  */
 Postbox.prototype.connect = function(name, atWindow) {
+	"use strict"
 	this.postboxes[name] = { window: atWindow };	
 	atWindow.postMessage({action:'connect',from:this.name}, "*");
 }
 
 Postbox.prototype.receiveMessage = function(msg) {
+	"use strict"
 //	console.log("received", msg.data);
 	if (!msg.data.from)
 		throw new Error("Message did not have a from address");
@@ -75,12 +80,14 @@ Postbox.prototype.receiveMessage = function(msg) {
  * @param comp the physical component to deliver to (service, impl or handler)
  */
 Postbox.prototype.register = function(address, comp) {
+	"use strict"
 	this.recipients[address] = comp;
 }
 
 /** Remove a local component
  */
 Postbox.prototype.remove = function(address) {
+	"use strict"
 	var idx = address.lastIndexOf(":");
 	var pb = address.substr(0, idx);
 	var addr = address.substr(idx+1);
@@ -92,13 +99,13 @@ Postbox.prototype.remove = function(address) {
  * @param invocation the invocation message to deliver to the address and invoke on the target component 
  */
 Postbox.prototype.deliver = function(address, message) {
+	"use strict"
 //	console.log("deliver", message, "to", address);
 	var idx = address.lastIndexOf(":");
 	var pb = address.substr(0, idx);
 	var addr = address.substr(idx+1);
 	if (this.name !== pb) {
 		var rpb = this.postboxes[pb];
-		console.log("dest = ", rpb);
 		if (!rpb || !rpb.window)
 			throw new Error("I think this should now put things in a queue"); 
 		rpb.window.postMessage({action:'data', from: this.name, to: address, message: message}, "*");

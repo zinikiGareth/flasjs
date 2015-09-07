@@ -17,6 +17,7 @@ FlasckWrapper.Processor = function(wrapper, service) {
 	if (!service)
 		throw new Error("No service was defined");
 	this.wrapper = wrapper;
+	/*
 	if (service._ctor === "net.ziniki.perspocpoc.EditProfile.BlockHandler") {
 		var hack = {
 			update: function(type, obj) {
@@ -26,6 +27,7 @@ FlasckWrapper.Processor = function(wrapper, service) {
 		this.service = hack;
 		return;
 	}
+	*/
 	this.service = service;
 }
 
@@ -190,13 +192,13 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 		},
 		render: function(from, opts) {
 			"use strict";
-			if (!self.card._initialRender)
-				console.log("There is no method _initialRender on ", self.card);
+			if (!self.card._render)
+				console.log("There is no method _render on ", self.card);
 			else {
 				self.infoAbout = {};
 				if (opts.into)
 					self.div = opts.into;
-				self.card._initialRender.call(self.card, self.div.ownerDocument, self, self.div);
+				self.card._render.call(self.card, self.div.ownerDocument, self, self.div);
 			}
 		},
 		service: {} // to store _myaddr
@@ -315,7 +317,7 @@ FlasckWrapper.prototype.processOne = function(msg, todo) {
 		into[msg.field] = msg.value;
 		todo.push(msg);
 	} else if (msg._ctor === 'CrosetInsert' || msg._ctor === 'CrosetReplace' || msg._ctor === 'CrosetRemove' || msg._ctor === 'CrosetMove') {
-		todo.push(msg);		
+		todo.push(msg);
 	} else if (msg._ctor === 'CreateCard') {
 		// If the user requests that we make a new card in response to some action, we need to know where to place it
 		// The way we fundamentally know this is to look at the "where" option
@@ -396,7 +398,14 @@ FlasckWrapper.prototype.updateDisplay = function(todo) {
 				var child = ua.area._newChild();
 				child._crokey = item.key;
 				ua.area._insertItem(child);
-				child._assignToVar(item.target.get(item.key));
+				
+				// Hard question: what do we do when we have "inserted" something of nothing?
+				// i.e. we have created a "member" with a key and an ID, but nothing in the hash?
+				// I am currently taking the option to send across "just the id"
+				var obj = item.target.getOrId(item.key);
+
+				// Either way, pass the object
+				child._assignToVar(obj);
 			}
 		} else if (item instanceof _CrosetReplace) {
 //			console.log("Croset Replace");
@@ -406,6 +415,7 @@ FlasckWrapper.prototype.updateDisplay = function(todo) {
 				if (ua.op != 'crorepl') continue;
 				if (ua.field != obj.id || ua.obj != item.target)
 					continue;
+//				console.log("crorepl", i, ua.area, item.target, obj);
 				ua.area._assignToVar(obj);
 			}
 		} else if (item instanceof _CrosetRemove) {
@@ -483,20 +493,20 @@ FlasckWrapper.prototype.updateD3 = function(svg, info) { // TODO: other args
         var props = mine.members[1];
         var actOn = d3.select(svg).selectAll(patt);
         while (props._ctor === 'Cons') {
-                            var ph = props.head;
-                            var attr = ph.members[0];
-                            if (attr === 'text')
-                                    actOn = actOn.text(d3attrFn(this.card, ph.members[1]));
-                            else {
-                                    if (attr === 'textAnchor')
-                                            attr = 'text-anchor';
-                                    else if (attr === 'fontFamily')
-                                            attr = 'font-family';
-                                    else if (attr === 'fontSize')
-                                            attr = 'font-size';
-                                    actOn = actOn.attr(attr, d3attrFn(this.card, ph.members[1]));
-                            }
-                            props = props.tail;
+            var ph = props.head;
+            var attr = ph.members[0];
+            if (attr === 'text')
+                    actOn = actOn.text(d3attrFn(this.card, ph.members[1]));
+            else {
+                    if (attr === 'textAnchor')
+                            attr = 'text-anchor';
+                    else if (attr === 'fontFamily')
+                            attr = 'font-family';
+                    else if (attr === 'fontSize')
+                            attr = 'font-size';
+                    actOn = actOn.attr(attr, d3attrFn(this.card, ph.members[1]));
+            }
+            props = props.tail;
         }
         layout = layout.tail;
     }

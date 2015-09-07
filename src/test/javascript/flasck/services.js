@@ -43,19 +43,25 @@ FlasckServices.KeyValueService.prototype.process = function(message) {
 FlasckServices.KeyValueService.prototype.subscribe = function(resource, handler) {
 	"use strict";
 	var self = this;
-//	console.log("self =", self, "subscribe to", resource);
+	console.log("self =", self, "subscribe to", resource);
 
 	// I think extracting this is a hack
 	var idx = resource.lastIndexOf('/');
 	var prop = resource.substring(idx+1);
 	if (self.store.hasOwnProperty(resource)) {
 		// this 'null' represents the 'type' of the object
-		setTimeout(function() { self.postbox.deliver(handler.chan, {method: 'update', args:[self.store[resource]]}); }, 0);
+		setTimeout(function() { 
+			var obj = self.store[resource];
+			self.postbox.deliver(handler.chan, {method: 'update', args:[obj]});
+		}, 0);
 		return;
 	}
 	else if (self.store.hasOwnProperty(prop)) {
 		// this 'null' represents the 'type' of the object
-		setTimeout(function() { self.postbox.deliver(handler.chan, {method: 'update', args:[self.store[prop]]}); }, 0);
+		setTimeout(function() {
+			var obj = self.store[prop];
+			self.postbox.deliver(handler.chan, {method: 'update', args:[obj]});
+		}, 0);
 		return;
 	}
 	var zinchandler = function (msg) {
@@ -69,12 +75,26 @@ FlasckServices.KeyValueService.prototype.subscribe = function(resource, handler)
 				if (l instanceof Array) {
 					for (var i=0;i<l.length;i++) {
 						var it = l[i];
+						if (!it._ctor)
+							it._ctor = main;
 						self.store[it.id] = it;
 					}
 				}
 			}
 		}
-		self.postbox.deliver(handler.chan, {method: 'update', args:[msg.payload[main][0]]});
+		var obj = msg.payload[main][0];
+		// HACK!
+		if (main === 'net.ziniki.perspocpoc.PocpocPersona') {
+			var blocks = obj['blocks'];
+			obj['blocks'] = {id: 'personaCroset'};
+			var key = 100;
+			for (var i=0;i<blocks.length;i++) {
+				blocks[i]._ctor = 'Crokey';
+				blocks[i]['key'] = "" + (key+10*i);
+			}
+			self.store['croset/personaCroset/range/0/10'] = {id: 'personaCroset', _ctor: 'Crokeys', keys: blocks }; // this may not be quite right ...
+		}
+		self.postbox.deliver(handler.chan, {method: 'update', args:[obj]});
 	};
 	if (haveZiniki) {
 		// we can either subscribe to a resource or to a specific object by ID
