@@ -6,6 +6,7 @@
   	<script type='text/javascript' src='../javascript/stdlib.js'></script>
   	<script type='text/javascript' src='../javascript/dom.js'></script>
  	<script type='text/javascript' src='../javascript/flasck/flasck.js'></script>
+ 	<script type='text/javascript' src='../javascript/flasck/areas.js'></script>
   	<script type='text/javascript' src='../javascript/flasck/handle.js'></script>
   	<script type='text/javascript' src='../javascript/flasck/postbox.js'></script>
   	<script type='text/javascript' src='../javascript/flasck/services.js'></script>
@@ -25,10 +26,12 @@
 var postbox = new Postbox("main", window);
 var services = {};
 Flasck.provideService(postbox, services, 'test.ziniki.Timer', new FlasckServices.TimerService(postbox));
-Flasck.provideService(postbox, services, 'org.ziniki.KeyValue', new FlasckServices.KeyValueService(postbox));
+var kv = new FlasckServices.KeyValueService(postbox);
+Flasck.provideService(postbox, services, 'org.ziniki.KeyValue', kv);
+kv.store['counter'] = myCounter;
 
 	var handle = Flasck.createCard(postbox, body, { explicit: test.ziniki.CounterCard, mode: 'local'}, services);
-	handle.send('org.ziniki.KeyValue', 'value', myCounter);
+	handle.send('org.ziniki.Init', 'loadId', 'counter');
   	</script>
   </body>
 </html>

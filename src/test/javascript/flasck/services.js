@@ -21,7 +21,7 @@ FlasckServices.TimerService.prototype.requestTicks = function(handler, amount) {
 //	console.log("Add timer for handler", handler, amount);
 //	console.log("interval should be every " + amount + "s");
 	setInterval(function() {
-		self.postbox.deliver(handler.chan, {method: 'onTick'});
+		self.postbox.deliver(handler.chan, {method: 'onTick', args:[] });
 	}, 1000);
 }
 
@@ -49,11 +49,13 @@ FlasckServices.KeyValueService.prototype.subscribe = function(resource, handler)
 	var idx = resource.lastIndexOf('/');
 	var prop = resource.substring(idx+1);
 	if (self.store.hasOwnProperty(resource)) {
-		setTimeout(function() { self.postbox.deliver(handler.chan, {method: 'update', args:[self.store[resource]]}); }, 0);
+		// this 'null' represents the 'type' of the object
+		setTimeout(function() { self.postbox.deliver(handler.chan, {method: 'update', args:[null, self.store[resource]]}); }, 0);
 		return;
 	}
 	else if (self.store.hasOwnProperty(prop)) {
-		setTimeout(function() { self.postbox.deliver(handler.chan, {method: 'update', args:[self.store[prop]]}); }, 0);
+		// this 'null' represents the 'type' of the object
+		setTimeout(function() { self.postbox.deliver(handler.chan, {method: 'update', args:[null, self.store[prop]]}); }, 0);
 		return;
 	}
 	var zinchandler = function (msg) {
