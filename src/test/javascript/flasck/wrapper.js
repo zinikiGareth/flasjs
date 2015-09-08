@@ -17,17 +17,6 @@ FlasckWrapper.Processor = function(wrapper, service) {
 	if (!service)
 		throw new Error("No service was defined");
 	this.wrapper = wrapper;
-	/*
-	if (service._ctor === "net.ziniki.perspocpoc.EditProfile.BlockHandler") {
-		var hack = {
-			update: function(type, obj) {
-				return service.update.apply(service, [FLEval.inflateType(type, obj)]);
-			}
-		}
-		this.service = hack;
-		return;
-	}
-	*/
 	this.service = service;
 }
 
@@ -97,7 +86,11 @@ FlasckWrapper.prototype.saveObject = function(obj) {
 		console.log("cannot save object without an id");
 		return;
 	}
-	var foo = this.contractInfo['org.ziniki.KeyValue'].service;
+	// TODO: fix this
+	// This used to be KeyValue ... both are hacks.  It should come out of whoever takes responsibility for providing the object
+	// and we should probably have that in the "rules" or something
+	// We may need an interim better hack of switch on _ctor or something
+	var foo = this.contractInfo['org.ziniki.Persona'].service;
 //	console.log(foo._addr, foo._myaddr);
 	this.postbox.deliver(foo._addr, {from: foo._myaddr, method: "save", args: [obj] });
 }
@@ -166,7 +159,21 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 				var uq = self.postbox.unique(ha);
 				self.ports.push(uq);
 				var handler = { type: 'handler', chan: uq };
-				self.postbox.deliver(self.services['org.ziniki.KeyValue'], {from: self.ctrmap['org.ziniki.Init'], method: 'subscribe', args:[id, handler] });
+				// not sure to what extent this is a hack ...
+				if (id.substring(0, 11) === 'personafor/') {
+					var next = id.substring(11);
+					var idx = next.indexOf('/');
+					var appl = next.substring(0, idx);
+					next = next.substring(idx+1);
+					idx = next.indexOf('/');
+					if (idx >= 0)
+						next = next.substring(0, idx);
+					self.postbox.deliver(self.services['org.ziniki.Persona'], {from: self.ctrmap['org.ziniki.Init'], method: 'forApplication', args:[appl, next, handler] });
+				} else if (id.substring(0, 9) === 'resource/') {
+					self.postbox.deliver(self.services['org.ziniki.KeyValue'], {from: self.ctrmap['org.ziniki.Init'], method: 'resource', args:[id, handler] });
+				} else {
+					self.postbox.deliver(self.services['org.ziniki.KeyValue'], {from: self.ctrmap['org.ziniki.Init'], method: 'typed', args:[id, handler] });
+				}
 			}
 		},
 		dispose: function(from) {
@@ -261,9 +268,9 @@ FlasckWrapper.prototype.processOne = function(msg, todo) {
 			return;
 		}
 		if (typeof target === 'string') {
-			target = this.card[msg.target];
+			target = this.card[target];
 			if (target instanceof FLClosure) {
-				target = FLEval.full(this.card[msg.target]);
+				target = FLEval.full(this.card[target]);
 				this.card[msg.target] = target; // if _we_ had to evaluate it, store the output so we don't repeat the evaluation
 			}
 		}
@@ -272,33 +279,17 @@ FlasckWrapper.prototype.processOne = function(msg, todo) {
 			return;
 		}
 		var meth = msg.method;
-		var args = FLEval.flattenList(msg.args);
-//		console.log("trying to send", meth, args);
 		if (target._special === 'contract') {
+			var args = FLEval.deflate(this, msg.args);
+			console.log("trying to send", meth, args);
 			var addr = target._addr;
 			if (!addr) {
 				console.log("No service was provided for " + target._contract);
 				return;
 			}
-			// convert "handlers" to local postbox addresses
-			for (var p=0;p<args.length;p++) {
-				var a = args[p];
-				if (a._special) {
-					if (!a._onchan) {
-						if (a._special === 'handler') {
-							var proxy = new FlasckWrapper.Processor(this, a);
-							var ha = this.postbox.newAddress();
-							this.postbox.register(ha, proxy);
-							a._myaddr = this.postbox.unique(ha);
-							this.ports.push(a._myaddr);
-						} else
-							throw new Error("Cannot send an object of type " + a._special);
-					}
-					args[p] = { type: a._special, chan: a._myaddr };
-				}
-			}
 			this.postbox.deliver(addr, {from: target._myaddr, method: meth, args: args });
 		} else if (target._special === 'object') {
+			var args = FLEval.flattenList(msg.args);
 			var actM = target[meth];
 			if (!actM) {
 				console.log("There is no method " + meth + " on ", target);
@@ -336,9 +327,18 @@ FlasckWrapper.prototype.processOne = function(msg, todo) {
 		throw new Error("The method message " + msg._ctor + " is not supported");
 }
 
-var nextid = 1; // TODO: this might actually be the right scoping; what I want is for it global per document.  On the other hand, I would prefer it to be somewhere that looked logical
-FlasckWrapper.prototype.nextSlotId = function() {
-	return 'slot_' + nextid++;
+FlasckWrapper.prototype.convertSpecial = function(obj) {
+	if (!obj._onchan) {
+		if (obj._special === 'handler') {
+			var proxy = new FlasckWrapper.Processor(this, obj);
+			var ha = this.postbox.newAddress();
+			this.postbox.register(ha, proxy);
+			obj._myaddr = this.postbox.unique(ha);
+			this.ports.push(obj._myaddr);
+		} else
+			throw new Error("Cannot send an object of type " + a._special);
+	}
+	return { type: obj._special, chan: obj._myaddr };
 }
 
 FlasckWrapper.prototype.onUpdate = function(op, obj, field, area, fn) {
@@ -387,6 +387,7 @@ FlasckWrapper.prototype.updateDisplay = function(todo) {
 				if (ua.op != 'assign') continue;
 				if (ua.field != item.field || ua.obj != target)
 					continue;
+//				console.log("assign", i, ua.area, target, item.field, obj);
 				ua.fn.call(ua.area, target[item.field]);
 			}
 		} else if (item instanceof _CrosetInsert) {

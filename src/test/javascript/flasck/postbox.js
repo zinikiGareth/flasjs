@@ -111,12 +111,16 @@ Postbox.prototype.deliver = function(address, message) {
 		rpb.window.postMessage({action:'data', from: this.name, to: address, message: message}, "*");
 		return;
 	}
-	var recip = this.recipients[addr];
-	if (!recip) {
-		console.log("There is no registered recipient for ", address);
-		return;
-	}
-	if (!recip.process)
-		throw new Error("There is no process method on" + recip);
-	recip.process(message);
+	// deliver it directly to the recipient; just not yet.
+	// currently, this seems to be broken 
+//	setTimeout(function() {
+		var recip = this.recipients[addr];
+		if (!recip) {
+			console.log("There is no registered recipient for ", address);
+			return;
+		}
+		if (!recip.process)
+			throw new Error("There is no process method on" + recip);
+		recip.process(message);
+//	}, 0);
 }

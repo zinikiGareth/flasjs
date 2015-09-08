@@ -93,11 +93,6 @@ FLEval.tuple = function() { // need to use arguments because it's varargs
 	return new _Tuple(arguments); // defined in builtin
 }
 
-FLEval.structs = {};
-FLEval.registerStruct = function(name, main, copy) {
-	FLEval.structs[name] = { name: name, main: main, copy: copy };
-}
-
 FLEval.flattenList = function(list) {
 	list = FLEval.full(list);
 	if (list instanceof Array)
@@ -108,31 +103,6 @@ FLEval.flattenList = function(list) {
 		list = list.tail;
 	}
 	return ret;
-}
-
-FLEval.inflateType = function (type, obj) {
-	if (obj instanceof Array) {
-		var ret = Nil;
-		for (var k=obj.length-1;k>=0;k--)
-			ret = Cons(FLEval.inflateType(type, obj[k]), ret);
-		return ret;
-	} else if (obj instanceof Object) {
-		var sc = FLEval.structs[type];
-		if (sc) {
-			var other = {}
-			var tc = sc.copy;
-			for (var x in obj) {
-				if (obj.hasOwnProperty(x)) {
-					other[x] = FLEval.inflate(obj[x]);
-				}
-			}
-			return new tc(other);
-		} else
-			return obj;
-	} else {
-//		console.log("just returning", obj);
-		return obj;
-	}
 }
 
 FLEval.inflate = function(list) {
@@ -161,14 +131,31 @@ FLEval.inflate = function(list) {
 	}
 }
 
-/* I don't actually think this is necessary - use oclosure with FLEval.curry ...
-FLEval.ocurry = function(obj) {
-	var args = [];
-	for (var i=1;i<arguments.length;i++)
-		args[i-1] = arguments[i];
-	FLEval.curry.apply(obj, args);
-}
-*/
+FLEval.deflate = function(wrapper, obj) {
+	"use strict"
+	if (obj instanceof FLClosure)
+		obj = FLEval.full(obj);
+	if (obj._ctor === 'Nil' || obj._ctor === 'Cons') {
+		return FLEval.deflate(wrapper, FLEval.flattenList(obj));
+	} else if (obj instanceof Array) {
+		var ret = [];
+		for (var i=0;i<obj.length;i++)
+			ret[i] = FLEval.deflate(wrapper, obj[i]);
+		return ret;
+	} else if (typeof obj == 'object') {
+		if (obj._special) {
+			return wrapper.convertSpecial(obj);
+		} else {
+			var ret = {};
+			for (var x in obj) {
+				if (obj.hasOwnProperty(x))
+					ret[x] = FLEval.deflate(postbox, obj[x]);
+			}
+			return ret;
+		}
+	} else
+		return obj; // presumably something simple
+}		
 
 // curry a function (which can include a previous curried function)
 // args are:

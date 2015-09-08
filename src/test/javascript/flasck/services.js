@@ -25,9 +25,15 @@ FlasckServices.TimerService.prototype.requestTicks = function(handler, amount) {
 	}, 1000);
 }
 
+FlasckServices.CentralStore = {
+	keyValue: {_hack: 'keyvalue'},
+	personae: {_hack: 'personae'},
+	crosets: {_hack: 'crosets'}
+};
+
 FlasckServices.KeyValueService = function(postbox) {
 	this.postbox = postbox;
-	this.store = {};
+	this.store = FlasckServices.CentralStore.keyValue;
 	return this;
 }
 
@@ -40,28 +46,21 @@ FlasckServices.KeyValueService.prototype.process = function(message) {
 	meth.apply(this, message.args);
 }
 
-FlasckServices.KeyValueService.prototype.subscribe = function(resource, handler) {
+FlasckServices.KeyValueService.prototype.typed = function(type, id, handler) {
 	"use strict";
 	var self = this;
-	console.log("self =", self, "subscribe to", resource);
-
-	// I think extracting this is a hack
-	var idx = resource.lastIndexOf('/');
-	var prop = resource.substring(idx+1);
-	if (self.store.hasOwnProperty(resource)) {
-		// this 'null' represents the 'type' of the object
-		setTimeout(function() { 
-			var obj = self.store[resource];
-			self.postbox.deliver(handler.chan, {method: 'update', args:[obj]});
-		}, 0);
+	if (self.store.hasOwnProperty(id)) {
+		var obj = self.store[id];
+		self.postbox.deliver(handler.chan, {method: 'update', args:[obj]});
 		return;
 	}
-	else if (self.store.hasOwnProperty(prop)) {
-		// this 'null' represents the 'type' of the object
-		setTimeout(function() {
-			var obj = self.store[prop];
-			self.postbox.deliver(handler.chan, {method: 'update', args:[obj]});
-		}, 0);
+
+	var resource = 'typedObject/' + type + '/' + id;
+	console.log("self =", self, "subscribe to", resource);
+
+	if (self.store.hasOwnProperty(resource)) {
+		var obj = self.store[resource];
+		self.postbox.deliver(handler.chan, {method: 'update', args:[obj]});
 		return;
 	}
 	var zinchandler = function (msg) {
@@ -83,17 +82,47 @@ FlasckServices.KeyValueService.prototype.subscribe = function(resource, handler)
 			}
 		}
 		var obj = msg.payload[main][0];
-		// HACK!
-		if (main === 'net.ziniki.perspocpoc.PocpocPersona') {
-			var blocks = obj['blocks'];
-			obj['blocks'] = {id: 'personaCroset'};
-			var key = 100;
-			for (var i=0;i<blocks.length;i++) {
-				blocks[i]._ctor = 'Crokey';
-				blocks[i]['key'] = "" + (key+10*i);
+		self.postbox.deliver(handler.chan, {method: 'update', args:[obj]});
+	};
+	if (haveZiniki) {
+		// we can either subscribe to a resource or to a specific object by ID
+		// we need to distinguish between these cases
+		// for now we are putting the burden on the person asking for the object
+		ZinikiConn.req.subscribe(resource, zinchandler).send();
+	} else {
+		self.postbox.deliver(handler.chan, {method: 'update', args:['hello, world']});
+	}
+}
+
+FlasckServices.KeyValueService.prototype.resource = function(resource, handler) {
+	"use strict";
+	var self = this;
+	console.log("self =", self, "subscribe to", resource);
+
+	if (self.store.hasOwnProperty(resource)) {
+		var obj = self.store[resource];
+		self.postbox.deliver(handler.chan, {method: 'update', args:[obj]});
+		return;
+	}
+	var zinchandler = function (msg) {
+		console.log("kv received", msg, "from Ziniki");
+		var main = msg.payload._main;
+		for (var k in msg.payload) {
+			if (k[0] !== '_' && msg.payload.hasOwnProperty(k)) {
+				if (!main)
+					main = k;
+				var l = msg.payload[k];
+				if (l instanceof Array) {
+					for (var i=0;i<l.length;i++) {
+						var it = l[i];
+						if (!it._ctor)
+							it._ctor = main;
+						self.store[it.id] = it;
+					}
+				}
 			}
-			self.store['croset/personaCroset/range/0/10'] = {id: 'personaCroset', _ctor: 'Crokeys', keys: blocks }; // this may not be quite right ...
 		}
+		var obj = msg.payload[main][0];
 		self.postbox.deliver(handler.chan, {method: 'update', args:[obj]});
 	};
 	if (haveZiniki) {
@@ -110,20 +139,126 @@ FlasckServices.KeyValueService.prototype.save = function(obj) {
 	"use strict";
 	var self = this;
 	if (haveZiniki) {
-		var payload = {};
-		var arr = payload['net.ziniki.perspocpoc.Block'] = [];
 		var cvobj = {};
 		for (var x in obj) {
-			if (obj.hasOwnProperty(x) && obj[0] != '_' && !(obj[x] instanceof Array))
+			if (obj.hasOwnProperty(x) && obj[0] != '_' && !(obj[x] instanceof Array) && typeof obj[x] !== 'object')
 				cvobj[x] = obj[x];
 		}
-		arr.push(cvobj);
-		console.log("saving payload", payload);
-		ZinikiConn.req.invoke("update/net.ziniki.perspocpoc.Block/" + obj.id).setPayload(payload).send();
+		var payload = {};
+		payload[obj._ctor] = [cvobj];
+		console.log("saving payload", JSON.stringify(payload));
+		ZinikiConn.req.invoke("update/" + obj._ctor + "/" + obj.id).setPayload(payload).send();
 	} else {
 		console.log("no Ziniki; but request to save object", obj);
 	}
 }
+
+FlasckServices.CrosetService = function(postbox) {
+	this.postbox = postbox;
+	this.store = FlasckServices.CentralStore.crosets;
+	return this;
+}
+
+FlasckServices.CrosetService.prototype.process = function(message) {
+//	console.log("received message", message);
+	"use strict";
+	var meth = this[message.method];
+	if (!meth)
+		throw new Error("There is no method '" + message.method +"'");
+	meth.apply(this, message.args);
+}
+
+// This is obviously a minimalist hack
+FlasckServices.CrosetService.prototype.range = function(croId, from, to, handler) {
+	"use strict";
+	var self = this;
+	setTimeout(function() {
+		var obj = self.store['personaCroset'];
+		self.postbox.deliver(handler.chan, {method: 'update', args:[obj]});
+	}, 0);
+}
+
+FlasckServices.PersonaService = function(postbox) {
+	"use strict";
+	this.postbox = postbox;
+	this.store = FlasckServices.CentralStore.personae;
+	return this;
+}
+
+FlasckServices.PersonaService.prototype.process = function(message) {
+//	console.log("received message", message);
+	"use strict";
+	var meth = this[message.method];
+	if (!meth)
+		throw new Error("There is no method '" + message.method +"'");
+	meth.apply(this, message.args);
+}
+
+FlasckServices.PersonaService.prototype.forApplication = function(appl, type, handler) {
+	"use strict";
+	var self = this;
+	var resource = 'personafor/' + appl +'/' + type;
+	console.log("self =", self, "subscribe to", resource);
+
+	var zinchandler = function (msg) {
+		console.log("kv received", msg, "from Ziniki");
+		var main = msg.payload._main;
+		for (var k in msg.payload) {
+			if (k[0] !== '_' && msg.payload.hasOwnProperty(k)) {
+				if (!main)
+					main = k;
+				var l = msg.payload[k];
+				if (l instanceof Array) {
+					for (var i=0;i<l.length;i++) {
+						var it = l[i];
+						if (!it._ctor)
+							it._ctor = main;
+						self.store[it.id] = it;
+					}
+				}
+			}
+		}
+		var obj = msg.payload[main][0];
+		// HACK! - to work around Ziniki not doing Crosets yet ...
+		if (main === 'net.ziniki.perspocpoc.PocpocPersona') {
+			var blocks = obj['blocks'];
+			obj['blocks'] = {id: 'personaCroset'};
+			var key = 100;
+			for (var i=0;i<blocks.length;i++) {
+				blocks[i]._ctor = 'Crokey';
+				blocks[i]['key'] = "" + (key+10*i);
+			}
+			FlasckServices.CentralStore.crosets['personaCroset'] = {id: 'personaCroset', _ctor: 'Crokeys', keys: blocks }; // this may not be quite right ...
+		}
+		self.postbox.deliver(handler.chan, {method: 'update', args:[obj]});
+	};
+	if (haveZiniki) {
+		// we can either subscribe to a resource or to a specific object by ID
+		// we need to distinguish between these cases
+		// for now we are putting the burden on the person asking for the object
+		ZinikiConn.req.subscribe(resource, zinchandler).send();
+	} else {
+		self.postbox.deliver(handler.chan, {method: 'update', args:['hello, world']});
+	}
+}
+
+FlasckServices.PersonaService.prototype.save = function(obj) {
+	"use strict";
+	if (haveZiniki) {
+		var cvobj = {};
+		for (var x in obj) {
+			if (obj.hasOwnProperty(x) && obj[0] != '_' && !(obj[x] instanceof Array) && typeof obj[x] !== 'object')
+				cvobj[x] = obj[x];
+		}
+		var payload = {};
+		payload[obj._ctor] = [cvobj];
+		console.log("saving payload", JSON.stringify(payload));
+		ZinikiConn.req.invoke("updatePersona/" + obj._ctor + "/" + obj.id).setPayload(payload).send();
+	} else {
+		console.log("no Ziniki; but request to save persona", obj);
+	}
+}
+
 FlasckServices.CredentialsService = function(document, postbox) {
 	this.doc = document;
 	this.postbox = postbox;
@@ -145,9 +280,9 @@ FlasckServices.CredentialsService.prototype.logout = function() {
 	this.doc.getElementById("flasck_login").showModal();
 }
 
-FlasckServices.QueryService = function(postbox, store) {
+FlasckServices.QueryService = function(postbox) {
 	this.postbox = postbox;
-	this.store = store;
+	this.store = FlasckServices.keyValue;
 	return this;
 }
 
@@ -213,7 +348,8 @@ FlasckServices.provideAll = function(document, postbox, services) {
 	Flasck.provideService(postbox, services, "org.ziniki.Timer", new FlasckServices.TimerService(postbox));
 	Flasck.provideService(postbox, services, "org.ziniki.Render", new FlasckServices.RenderService(postbox));
 	Flasck.provideService(postbox, services, "org.ziniki.Credentials", new FlasckServices.CredentialsService(document, postbox));
-	var kvs = new FlasckServices.KeyValueService(postbox);
-	Flasck.provideService(postbox, services, "org.ziniki.KeyValue", kvs);
-	Flasck.provideService(postbox, services, "org.ziniki.Query", new FlasckServices.QueryService(postbox, kvs.store));
+	Flasck.provideService(postbox, services, "org.ziniki.KeyValue", new FlasckServices.KeyValueService(postbox));
+	Flasck.provideService(postbox, services, "org.ziniki.Croset", new FlasckServices.CrosetService(postbox));
+	Flasck.provideService(postbox, services, "org.ziniki.Persona", new FlasckServices.PersonaService(postbox));
+	Flasck.provideService(postbox, services, "org.ziniki.Query", new FlasckServices.QueryService(postbox));
 }
