@@ -141,7 +141,7 @@ FlasckServices.KeyValueService.prototype.save = function(obj) {
 	if (haveZiniki) {
 		var cvobj = {};
 		for (var x in obj) {
-			if (obj.hasOwnProperty(x) && obj[0] != '_' && !(obj[x] instanceof Array) && typeof obj[x] !== 'object')
+			if (obj.hasOwnProperty(x) && x[0] != '_' && !(obj[x] instanceof Array) && typeof obj[x] !== 'object')
 				cvobj[x] = obj[x];
 		}
 		var payload = {};
@@ -223,12 +223,14 @@ FlasckServices.PersonaService.prototype.forApplication = function(appl, type, ha
 		if (main === 'net.ziniki.perspocpoc.PocpocPersona') {
 			var blocks = obj['blocks'];
 			obj['blocks'] = {id: 'personaCroset'};
-			var key = 100;
-			for (var i=0;i<blocks.length;i++) {
-				blocks[i]._ctor = 'Crokey';
-				blocks[i]['key'] = "" + (key+10*i);
+			if (!FlasckServices.CentralStore.crosets['personaCroset']) {
+				var key = 100;
+				for (var i=0;i<blocks.length;i++) {
+					blocks[i]._ctor = 'Crokey';
+					blocks[i]['key'] = "" + (key+10*i);
+				}
+				FlasckServices.CentralStore.crosets['personaCroset'] = {id: 'personaCroset', _ctor: 'Crokeys', keys: blocks }; // this may not be quite right ...
 			}
-			FlasckServices.CentralStore.crosets['personaCroset'] = {id: 'personaCroset', _ctor: 'Crokeys', keys: blocks }; // this may not be quite right ...
 		}
 		self.postbox.deliver(handler.chan, {method: 'update', args:[obj]});
 	};
@@ -247,7 +249,7 @@ FlasckServices.PersonaService.prototype.save = function(obj) {
 	if (haveZiniki) {
 		var cvobj = {};
 		for (var x in obj) {
-			if (obj.hasOwnProperty(x) && obj[0] != '_' && !(obj[x] instanceof Array) && typeof obj[x] !== 'object')
+			if (obj.hasOwnProperty(x) && x[0] != '_' && !(obj[x] instanceof Array) && typeof obj[x] !== 'object')
 				cvobj[x] = obj[x];
 		}
 		var payload = {};

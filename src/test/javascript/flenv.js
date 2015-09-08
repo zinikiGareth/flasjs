@@ -105,6 +105,13 @@ FLEval.flattenList = function(list) {
 	return ret;
 }
 
+FLEval.inflateFrom = function(service, obj) {
+	var ret = FLEval.inflate(obj);
+	if (ret instanceof Object && ret._ctor)
+		ret._fromService = service;
+	return ret;
+}
+
 FLEval.inflate = function(list) {
 	list = FLEval.head(list);
 	if (list instanceof Array) {
@@ -121,12 +128,11 @@ FLEval.inflate = function(list) {
 		}
 		for (var k in list) {
 			var obj = list[k];
-			list[k] = FLEval.inflate(obj);
+			if (k[0] !== '_')
+				list[k] = FLEval.inflate(obj);
 		}
-//		console.log("may want to inflate obj if it has some identifying marks", list);
 		return list;
 	} else {
-//		console.log("just returning", list);
 		return list;
 	}
 }
@@ -148,12 +154,18 @@ FLEval.deflate = function(wrapper, obj) {
 		} else {
 			var ret = {};
 			for (var x in obj) {
-				if (obj.hasOwnProperty(x))
-					ret[x] = FLEval.deflate(postbox, obj[x]);
+				if (obj.hasOwnProperty(x)) {
+				 	if (typeof x === 'string') {
+				 		if (x[0] !== '_' || x === '_ctor')
+				 			ret[x] = obj[x];
+				 		// otherwise it gets deleted
+				 	} else
+						ret[x] = FLEval.deflate(postbox, obj[x]);
+				}
 			}
 			return ret;
 		}
-	} else
+	}
 		return obj; // presumably something simple
 }		
 

@@ -87,12 +87,19 @@ FlasckWrapper.prototype.saveObject = function(obj) {
 		return;
 	}
 	// TODO: fix this
-	// This used to be KeyValue ... both are hacks.  It should come out of whoever takes responsibility for providing the object
-	// and we should probably have that in the "rules" or something
-	// We may need an interim better hack of switch on _ctor or something
-	var foo = this.contractInfo['org.ziniki.Persona'].service;
-//	console.log(foo._addr, foo._myaddr);
-	this.postbox.deliver(foo._addr, {from: foo._myaddr, method: "save", args: [obj] });
+	// This should come out of whoever takes responsibility for providing the object and we should probably have that in the "rules" or something
+	// I creating an "inflateFrom" method which can store the originating service, but I'm having issues finding *that* when we get the object back :-)
+	// I think probably I need to make sure that all "Handler" objects have a pointer back to at least the contract they're implementing (currently the one I create for Init, at least, doesn't)
+	// Better would be to have them have a pointer to the service that is invoking the handler
+	// But all of that is tricky and so this hack is easier ...
+	var service;
+	if (obj._ctor === 'net.ziniki.perspocpoc.Block')
+		service = this.contractInfo['org.ziniki.KeyValue'].service;
+	else if (obj._ctor === 'net.ziniki.perspocpoc.PocpocPersona')
+		service = this.contractInfo['org.ziniki.Persona'].service;
+	else
+		throw new Error("cannot handle " + obj._ctor);
+	this.postbox.deliver(service._addr, {from: service._myaddr, method: "save", args: [obj] });
 }
 
 FlasckWrapper.prototype.cardCreated = function(card) {
