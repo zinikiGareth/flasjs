@@ -284,7 +284,7 @@ FlasckServices.CredentialsService.prototype.logout = function() {
 
 FlasckServices.QueryService = function(postbox) {
 	this.postbox = postbox;
-	this.store = FlasckServices.keyValue;
+	this.store = FlasckServices.CentralStore.keyValue;
 	return this;
 }
 
@@ -306,6 +306,7 @@ FlasckServices.QueryService.prototype.scan = function(index, type, handler) {
 	    if (!payload || !payload[type])
 	    	return;
 		var main = msg.payload._main;
+		var crokeys = { _ctor: 'Crokeys', keys: [] };
 		for (var k in msg.payload) {
 			if (k[0] !== '_' && msg.payload.hasOwnProperty(k)) {
 				if (!main)
@@ -314,7 +315,8 @@ FlasckServices.QueryService.prototype.scan = function(index, type, handler) {
 					throw new Error("I was expecting a croset ...");
 				var l = msg.payload[k];
 				if (k == 'Croset') {
-					; // fine, dealt with below
+					for (var i=0;i<l.length;i++)
+						crokeys.keys[i] = l[i];
 				} else { // sideload actual objects
 					if (l instanceof Array) {
 						for (var i=0;i<l.length;i++) {
@@ -326,7 +328,7 @@ FlasckServices.QueryService.prototype.scan = function(index, type, handler) {
 				}
 			}
 		}
-		self.postbox.deliver(handler.chan, {method: 'keys', args:[msg.payload[main]]});
+		self.postbox.deliver(handler.chan, {method: 'keys', args:[crokeys]});
 	}
 	if (haveZiniki)
 		ZinikiConn.req.subscribe(index, zinchandler).setOption("type", "wikipedia").send();
