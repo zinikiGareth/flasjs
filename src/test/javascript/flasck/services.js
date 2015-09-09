@@ -296,9 +296,9 @@ FlasckServices.QueryService.prototype.process = function(message) {
 	meth.apply(this, message.args);
 }
 
-FlasckServices.QueryService.prototype.scan = function(index, type, handler) {
+FlasckServices.QueryService.prototype.scan = function(index, type, options, handler) {
 	"use strict";
-	console.log("scan", index, type, handler);
+	console.log("scan", index, type, options, handler);
 	var self = this;
 	var zinchandler = function(msg) {
 	    var payload = msg.payload;
@@ -330,9 +330,26 @@ FlasckServices.QueryService.prototype.scan = function(index, type, handler) {
 		}
 		self.postbox.deliver(handler.chan, {method: 'keys', args:[crokeys]});
 	}
-	if (haveZiniki)
-		ZinikiConn.req.subscribe(index, zinchandler).setOption("type", "wikipedia").send();
-	else {
+	if (haveZiniki) {
+		var req = ZinikiConn.req.subscribe(index, zinchandler);
+		// options should really be a map and processed as such ...
+		// req.setOption("type", "wikipedia");
+		var idx;
+		while ((idx = options.indexOf('=')) != -1) {
+			var key = options.substring(0, idx);
+			var i2 = options.indexOf('=', idx+1);
+			var val;
+			if (i2 == -1) {
+				val = options.substring(idx+1);
+				options = "";
+			} else {
+				val = options.substring(idx+1, i2);
+				options = options.substring(i2+1);
+			}
+			req.setOption(key, val);
+		}
+		req.send();
+	} else {
 		setTimeout(function() {
             if (index.substring(index.length-9) === "/myqueues") {
                     self.postbox.deliver(handler.chan, {method: 'entry', args: ["13", new com.helpfulsidekick.chaddy.Queue('Q3', 'This Week')]}); 

@@ -122,10 +122,11 @@ FLEval.inflate = function(list) {
 	} else if (list instanceof Object) {
 		if (!list._ctor && list.id) {
 			if (list.key) // probably this case should already be handled
-				return { _ctor: 'org.ziniki.Crokey', key: list.key, id: list.id };
+				return new Crokey(list.key, list.id);
 			// TODO: really only if it JUST has "id"
 			return { _ctor: 'org.ziniki.ID', id: list.id };
-		}
+		} else if (list._ctor === 'Crokey')
+			return list;
 		for (var k in list) {
 			var obj = list[k];
 			if (k[0] !== '_')

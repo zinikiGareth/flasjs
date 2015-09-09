@@ -79,7 +79,7 @@ ListArea.prototype._assignToVar = function(croset) {
 	this._wrapper.removeActions(this);
 	this._croset = croset;
 	this._clear();
-	if (croset) {
+	if (croset && !(croset instanceof FLError)) {
    		if (croset._ctor !== 'Croset') throw new Error('ListArea logic only handles Crosets right now');
     	var off = 0;
     	for (var pos=0;pos<10;pos++) {
@@ -87,14 +87,14 @@ ListArea.prototype._assignToVar = function(croset) {
     			break;
     		var v = croset.index(pos+off);
     		var child = this._newChild();
-    		this._insertItem(child /* at end */);
-    		child._assignTo(v);
+    		child._crokey = v;
+    		this._insertItem(child);
+    		child._assignToVar(croset.getOrId(v));
   		}
   		this._wrapper.onUpdate("croins", croset, null, this);
   		this._wrapper.onUpdate("crodel", croset, null, this);
   		this._wrapper.onUpdate("cromove", croset, null, this);
 	}
-	this._format();
 }
 
 ListArea.prototype._insertItem = function(child) {

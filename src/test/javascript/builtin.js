@@ -215,6 +215,7 @@ function Crokeys(l) { return new _Crokeys(l); }
 
 function _Croset(crokeys) {
 	"use strict"
+	crokeys = FLEval.full(crokeys);
 	if (crokeys instanceof Array || crokeys._ctor === 'Cons' || crokeys._ctor === 'Nil')
 		crokeys = Crokeys(crokeys);
 	else if (crokeys._ctor !== 'Crokeys')
@@ -235,7 +236,7 @@ _Croset.prototype.insert = function(k, obj) {
 	if (!obj.id)
 		return;
 	if (!this._hasId(obj.id))
-		this._insert(k, obj.id);
+		this._insert(new Crokey(k, obj.id));
 	if (obj._ctor)
 		this.hash[obj.id] = obj;
 }
@@ -254,17 +255,16 @@ _Croset.prototype._append = function(id) {
 	return key;
 }
 
-_Croset.prototype._insert = function(k, id) {
+_Croset.prototype._insert = function(ck) {
 	"use strict"
-	var entry = new _Crokey(k, id);
 	for (var i=0;i<this.members.length;i++) {
 		var m = this.members[i];
-		if (m['key'].compare(k) === 1) {
-			this.members.splice(i, 0, entry);
+		if (m.compare(ck) === 1) {
+			this.members.splice(i, 0, ck);
 			return;
 		}
 	}
-	this.members.push(entry);
+	this.members.push(ck);
 }
 
 // The goal here is that after this operation, this[pos] === id
@@ -341,21 +341,15 @@ _Croset.prototype.mergeAppend = function(l) {
 	var l = FLEval.full(FLEval.inflate(l));
 	if (l._ctor !== 'Crokeys')
 		throw new Error("MergeAppend only accepts Crokeys objects");
+	l = l.keys;
 	var msgs = [];
 	while (l._ctor === 'Cons') {
 //		console.log("handle", l.head);
-		if (l.head.id) {
-			if (!this._hasId(l.head.id)) { // only append if it's not in the list
-				var key;
-				if (l.head.key) {
-					key = l.head.key;
-					this._insert(key, l.head.id);
-				} else
-					key = this._append(l.head.id);
-				msgs.push(new CrosetInsert(this, key));
-			}
-			if (l.head._ctor && l.head._ctor !== 'org.ziniki.ID' && l.head._ctor !== 'Crokey')
-				this.hash[l.head.id] = l.head;
+		if (l.head._ctor !== 'Crokey')
+			throw new Error("Needs to be a Crokey");
+		if (!this._hasId(l.head.id)) { // only insert if it's not in the list
+			this._insert(l.head);
+			msgs.push(new CrosetInsert(this, l.head));
 		}
 		l = l.tail;
 	}
