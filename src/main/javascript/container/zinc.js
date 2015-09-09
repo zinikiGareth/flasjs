@@ -1,6 +1,3 @@
-"use strict";
-
-var atmosphere = requireModule('atmosphere');
 window.Zinc = {}
 
 var connpool = {};

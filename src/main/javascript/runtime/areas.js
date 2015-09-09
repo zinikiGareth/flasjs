@@ -149,11 +149,13 @@ ListArea.prototype._moveItem = function(from, to) {
 	removeDiv._area._crokey = to;
 }
 
+/*
 ListArea.prototype._format = function() {
 	for (var c=0;c<this._mydiv.children.length;c++) {
 		this._mydiv.children[c]._area.formatItem();
 	}
 }
+*/
 
 ListArea.prototype._supportDragging = function() {
 	var ul = this._mydiv;

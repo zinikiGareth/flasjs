@@ -60,7 +60,9 @@ FlasckServices.KeyValueService.prototype.typed = function(type, id, handler) {
 
 	if (self.store.hasOwnProperty(resource)) {
 		var obj = self.store[resource];
-		self.postbox.deliver(handler.chan, {method: 'update', args:[obj]});
+		setTimeout(function() { // this really needs to be in postbox.  Fix whatever the other problem is!
+			self.postbox.deliver(handler.chan, {method: 'update', args:[obj]});
+		}, 0);
 		return;
 	}
 	var zinchandler = function (msg) {

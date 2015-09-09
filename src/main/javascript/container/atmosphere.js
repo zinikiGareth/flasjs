@@ -23,10 +23,6 @@
  * Highly inspired by
  * - Portal by Donghwan Kim http://flowersinthesand.github.io/portal/
  */
-define('atmosphere', ['exports'], function(exports) {
-
-    "use strict";
-
     var version = "2.2.3-javascript",
         atmosphere = {},
         guid,
@@ -3257,10 +3253,4 @@ define('atmosphere', ['exports'], function(exports) {
             }
         }
     });
-
-    for (var i in atmosphere) {
-      if (atmosphere.hasOwnProperty(i))
-        exports[i] = atmosphere[i];
-    }    
-});
 /* jshint eqnull:true, noarg:true, noempty:true, eqeqeq:true, evil:true, laxbreak:true, undef:true, browser:true, indent:false, maxerr:50 */
