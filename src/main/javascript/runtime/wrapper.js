@@ -28,7 +28,7 @@ FlasckWrapper.Processor.prototype.process = function(message) {
 		throw new Error("There is no method '" + message.method +"'");
 	var args = [];
 	for (var i=0;i<message.args.length;i++)
-		args.push(FLEval.fromWire(message.args[i]));
+		args.push(FLEval.fromWireService(message.from, message.args[i]));
 	var clos = meth.apply(this.service, args);
 	if (clos) {
 		this.wrapper.messageEventLoop(FLEval.full(clos));
@@ -86,20 +86,22 @@ FlasckWrapper.prototype.saveObject = function(obj) {
 		console.log("cannot save object without an id");
 		return;
 	}
-	// TODO: fix this
-	// This should come out of whoever takes responsibility for providing the object and we should probably have that in the "rules" or something
-	// I creating an "inflateFrom" method which can store the originating service, but I'm having issues finding *that* when we get the object back :-)
-	// I think probably I need to make sure that all "Handler" objects have a pointer back to at least the contract they're implementing (currently the one I create for Init, at least, doesn't)
-	// Better would be to have them have a pointer to the service that is invoking the handler
-	// But all of that is tricky and so this hack is easier ...
-	var service;
-	if (obj._ctor === 'net.ziniki.perspocpoc.Block')
+	if (!obj._fromService) {
+		console.log("cannot automatically save object", obj, "because it does not have a _fromService tag.  Is it new?  a sub-object?  a new case?");
+		return;
+	}
+	
+	// TODO: this may seem slightly more complex than it "needs" to be, but it considers the case that it's a different service that doesn't just have "save"
+	// also, it means we don't have to store two pointers, remote & local
+	if (this.contractInfo['org.ziniki.KeyValue'].service._addr === obj._fromService)
 		service = this.contractInfo['org.ziniki.KeyValue'].service;
-	else if (obj._ctor === 'net.ziniki.perspocpoc.PocpocPersona')
+	else if (this.contractInfo['org.ziniki.Persona'].service._addr === obj._fromService)
 		service = this.contractInfo['org.ziniki.Persona'].service;
-	else
-		throw new Error("cannot handle " + obj._ctor);
-	this.postbox.deliver(service._addr, {from: service._myaddr, method: "save", args: [obj] });
+	else {
+		console.log("don't know how to save to service associated with", obj);
+		return;
+	}
+	this.postbox.deliver(obj._fromService, {from: service._myaddr, method: "save", args: [obj] });
 }
 
 FlasckWrapper.prototype.cardCreated = function(card) {
@@ -240,7 +242,7 @@ FlasckWrapper.prototype.messageEventLoop = function(flfull) {
 	var msgs = FLEval.flattenList(flfull);
 	var todo = [];
 	while (msgs && msgs.length > 0) {
-		msgs = FLEval.flattenList(this.processMessages(msgs, todo));
+		msgs = FLEval.flattenList(FLEval.full(this.processMessages(msgs, todo)));
 	}
 	this.updateDisplay(todo);
 }

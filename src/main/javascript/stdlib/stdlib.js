@@ -42,12 +42,24 @@ StdLib.filter = function(f, al) {
 	}
 }
 
+// We still need to decide what to do about arrays and the like
+// In general, we expect "list" but Crokeys in particular doesn't want to play that game
 map = function(f,l) {
 	"use strict"
 	var l = FLEval.head(l);
+	if (l instanceof Array)
+		return StdLib._mapArray(f, l);
 	if (l._ctor !== 'Cons')
 		return Nil;
 	return Cons(FLEval.closure(f, l.head), FLEval.closure(map, f, l.tail));
+}
+
+StdLib._mapArray = function(f, arr) {
+	"use strict";
+	var ret = Nil;
+	for (var i=arr.length-1;i>=0;i--)
+		ret = Cons(FLEval.closure(f, arr[i]), ret);
+	return ret;
 }
 
 // List comprehension for integers starting at n (and going to infinity)

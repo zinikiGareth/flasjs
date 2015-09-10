@@ -100,6 +100,8 @@ Postbox.prototype.remove = function(address) {
  */
 Postbox.prototype.deliver = function(address, message) {
 	"use strict"
+	if (!message.from || !message.method || !message.args)
+		throw new Error("invalid message - must contain from, method and args" + JSON.stringify(message));
 //	console.log("deliver", message, "to", address);
 	var idx = address.lastIndexOf(":");
 	var pb = address.substr(0, idx);

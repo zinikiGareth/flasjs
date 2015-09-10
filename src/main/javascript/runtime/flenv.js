@@ -50,19 +50,18 @@ FLEval.full = function(x) {
 	if (typeof x === 'object' && x['_ctor']) {
 //		console.log("ctor = " + x['_ctor']);
 		for (var p in x) {
-			if (p !== '_ctor' && x.hasOwnProperty(p)) {
+			if (p[0] !== '_' && x.hasOwnProperty(p)) {
 //				console.log("fully evaluating " + p, x[p], x[p].constructor == Array);
 				if (!x[p])
 					continue;
-				else if (x[p] instanceof FLClosure)
-					x[p] = FLEval.full(x[p]);
-				else if (x[p].constructor == Array) {
+				else if (x[p] instanceof Array) {
 					var y = x[p];
 					for (var i=0;i<y.length;i++) {
 					    if (y[i] instanceof FLClosure)
 					    	y[i] = FLEval.full(y[i]);
 					}
-				}
+				} else
+					x[p] = FLEval.full(x[p]);
 			}
 		}
 	}
@@ -107,10 +106,10 @@ FLEval.flattenList = function(list) {
 
 // This may or may not be valuable
 // The idea behind this is to try and track where something came from when we want to save it
-FLEval.fromWireService = function(service, obj) {
+FLEval.fromWireService = function(addr, obj) {
 	var ret = FLEval.fromWire(obj);
 	if (ret instanceof Object && ret._ctor)
-		ret._fromService = service;
+		ret._fromService = addr;
 	return ret;
 }
 
@@ -128,10 +127,10 @@ FLEval.fromWire = function(obj, denyOthers) {
 		return obj; // it's a primitive
 	if (obj._ctor) {
 		if (obj._ctor === 'Crokeys') { // an array of crokey hashes - map to a Crokeys object of Crokey objects
-			return FLEval.makeCrokeys(obj.keys); 
+			return FLEval.makeCrokeys(obj.id, obj.keys); 
 		} else { // a flat-ish object
 			for (var x in obj)
-				if (obj.hasOwnProperty(x) && obj instanceof Object)
+				if (obj.hasOwnProperty(x) && obj[x] instanceof Object)
 					throw new Error("I claim " + x + " is in violation of the wire protocol: " + obj[x]);
 			return obj;
 		}
@@ -150,12 +149,14 @@ FLEval.fromWire = function(obj, denyOthers) {
 	}
 }
 
-FLEval.makeCrokeys = function(keys) {
+FLEval.makeCrokeys = function(id, keys) {
 	var ret = [];
 	for (var i=0;i<keys.length;i++)
 		ret.push(new Crokey(keys[i].key, keys[i].id));
 	
-	return new Crokeys(ret);
+	var cks = new Crokeys(ret);
+	cks.id = id;
+	return cks;
 }
 
 FLEval.toWire = function(wrapper, obj, dontLoop) {

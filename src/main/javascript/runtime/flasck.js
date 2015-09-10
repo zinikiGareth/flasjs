@@ -5,7 +5,7 @@ Flasck = {};
 Flasck.provideService = function(postbox, services, svcName, svc) {
 	var addr = postbox.newAddress();
 	postbox.register(addr, svc);
-	services[svcName] = postbox.unique(addr);
+	svc._myAddr = services[svcName] = postbox.unique(addr);
 }
 
 Flasck.createCard = function(postbox, inside, cardInfo, services) {

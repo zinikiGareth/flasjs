@@ -21,7 +21,7 @@ FlasckServices.TimerService.prototype.requestTicks = function(handler, amount) {
 //	console.log("Add timer for handler", handler, amount);
 //	console.log("interval should be every " + amount + "s");
 	setInterval(function() {
-		self.postbox.deliver(handler.chan, {method: 'onTick', args:[] });
+		self.postbox.deliver(handler.chan, {from: self._myAddr, method: 'onTick', args:[] });
 	}, 1000);
 }
 
@@ -51,7 +51,7 @@ FlasckServices.KeyValueService.prototype.typed = function(type, id, handler) {
 	var self = this;
 	if (self.store.hasOwnProperty(id)) {
 		var obj = self.store[id];
-		self.postbox.deliver(handler.chan, {method: 'update', args:[obj]});
+		self.postbox.deliver(handler.chan, {from: self._myAddr, method: 'update', args:[obj]});
 		return;
 	}
 
@@ -61,7 +61,7 @@ FlasckServices.KeyValueService.prototype.typed = function(type, id, handler) {
 	if (self.store.hasOwnProperty(resource)) {
 		var obj = self.store[resource];
 //		setTimeout(function() { // this really needs to be in postbox.  Fix whatever the other problem is!
-			self.postbox.deliver(handler.chan, {method: 'update', args:[obj]});
+			self.postbox.deliver(handler.chan, {from: self._myAddr, method: 'update', args:[obj]});
 //		}, 0);
 		return;
 	}
@@ -84,7 +84,7 @@ FlasckServices.KeyValueService.prototype.typed = function(type, id, handler) {
 			}
 		}
 		var obj = msg.payload[main][0];
-		self.postbox.deliver(handler.chan, {method: 'update', args:[obj]});
+		self.postbox.deliver(handler.chan, {from: self._myAddr, method: 'update', args:[obj]});
 	};
 	if (haveZiniki) {
 		// we can either subscribe to a resource or to a specific object by ID
@@ -92,7 +92,7 @@ FlasckServices.KeyValueService.prototype.typed = function(type, id, handler) {
 		// for now we are putting the burden on the person asking for the object
 		ZinikiConn.req.subscribe(resource, zinchandler).send();
 	} else {
-		self.postbox.deliver(handler.chan, {method: 'update', args:['hello, world']});
+		self.postbox.deliver(handler.chan, {from: self._myAddr, method: 'update', args:['hello, world']});
 	}
 }
 
@@ -103,7 +103,7 @@ FlasckServices.KeyValueService.prototype.resource = function(resource, handler) 
 
 	if (self.store.hasOwnProperty(resource)) {
 		var obj = self.store[resource];
-		self.postbox.deliver(handler.chan, {method: 'update', args:[obj]});
+		self.postbox.deliver(handler.chan, {from: self._myAddr, method: 'update', args:[obj]});
 		return;
 	}
 	var zinchandler = function (msg) {
@@ -125,7 +125,7 @@ FlasckServices.KeyValueService.prototype.resource = function(resource, handler) 
 			}
 		}
 		var obj = msg.payload[main][0];
-		self.postbox.deliver(handler.chan, {method: 'update', args:[obj]});
+		self.postbox.deliver(handler.chan, {from: self._myAddr, method: 'update', args:[obj]});
 	};
 	if (haveZiniki) {
 		// we can either subscribe to a resource or to a specific object by ID
@@ -133,7 +133,7 @@ FlasckServices.KeyValueService.prototype.resource = function(resource, handler) 
 		// for now we are putting the burden on the person asking for the object
 		ZinikiConn.req.subscribe(resource, zinchandler).send();
 	} else {
-		self.postbox.deliver(handler.chan, {method: 'update', args:['hello, world']});
+		self.postbox.deliver(handler.chan, {from: self._myAddr, method: 'update', args:['hello, world']});
 	}
 }
 
@@ -176,7 +176,7 @@ FlasckServices.CrosetService.prototype.range = function(croId, from, to, handler
 	var self = this;
 	setTimeout(function() {
 		var obj = self.store['personaCroset'];
-		self.postbox.deliver(handler.chan, {method: 'update', args:[obj]});
+		self.postbox.deliver(handler.chan, {from: self._myAddr, method: 'update', args:[obj]});
 	}, 0);
 }
 
@@ -234,7 +234,7 @@ FlasckServices.PersonaService.prototype.forApplication = function(appl, type, ha
 				FlasckServices.CentralStore.crosets['personaCroset'] = {id: 'personaCroset', _ctor: 'Crokeys', keys: blocks }; // this may not be quite right ...
 			}
 		}
-		self.postbox.deliver(handler.chan, {method: 'update', args:[obj]});
+		self.postbox.deliver(handler.chan, {from: self._myAddr, method: 'update', args:[obj]});
 	};
 	if (haveZiniki) {
 		// we can either subscribe to a resource or to a specific object by ID
@@ -242,7 +242,7 @@ FlasckServices.PersonaService.prototype.forApplication = function(appl, type, ha
 		// for now we are putting the burden on the person asking for the object
 		ZinikiConn.req.subscribe(resource, zinchandler).send();
 	} else {
-		self.postbox.deliver(handler.chan, {method: 'update', args:['hello, world']});
+		self.postbox.deliver(handler.chan, {from: self._myAddr, method: 'update', args:['hello, world']});
 	}
 }
 
@@ -313,12 +313,14 @@ FlasckServices.QueryService.prototype.scan = function(index, type, options, hand
 			if (k[0] !== '_' && msg.payload.hasOwnProperty(k)) {
 				if (!main)
 					main = k;
-				if (main !== 'Croset')
-					throw new Error("I was expecting a croset ...");
+				if (main !== 'Crokeys')
+					throw new Error("I was expecting crokeys ...");
 				var l = msg.payload[k];
-				if (k == 'Croset') {
-					for (var i=0;i<l.length;i++)
-						crokeys.keys[i] = l[i];
+				if (k == 'Crokeys') {
+					if (l[0].keyType !== 'crindex')
+						throw new Error("don't handle natural keys yet");
+					crokeys.id = l[0].id;
+					crokeys.keys = l[0].keys;
 				} else { // sideload actual objects
 					if (l instanceof Array) {
 						for (var i=0;i<l.length;i++) {
@@ -330,7 +332,7 @@ FlasckServices.QueryService.prototype.scan = function(index, type, options, hand
 				}
 			}
 		}
-		self.postbox.deliver(handler.chan, {method: 'keys', args:[crokeys]});
+		self.postbox.deliver(handler.chan, {from: self._myAddr, method: 'keys', args:[crokeys]});
 	}
 	if (haveZiniki) {
 		var req = ZinikiConn.req.subscribe(index, zinchandler);
@@ -345,13 +347,13 @@ FlasckServices.QueryService.prototype.scan = function(index, type, options, hand
 	} else {
 		setTimeout(function() {
             if (index.substring(index.length-9) === "/myqueues") {
-                    self.postbox.deliver(handler.chan, {method: 'entry', args: ["13", new com.helpfulsidekick.chaddy.Queue('Q3', 'This Week')]}); 
-                    self.postbox.deliver(handler.chan, {method: 'entry', args: ["31", new com.helpfulsidekick.chaddy.Queue('Q1', 'Captured Items')]}); 
-                    self.postbox.deliver(handler.chan, {method: 'entry', args: ["29", new com.helpfulsidekick.chaddy.Queue('Q2', 'TODO Today')]}); 
-                    self.postbox.deliver(handler.chan, {method: 'entry', args: ["55", new com.helpfulsidekick.chaddy.Queue('Q5', 'Chaddy bugs')]}); 
-                    self.postbox.deliver(handler.chan, {method: 'entry', args: ["47", new com.helpfulsidekick.chaddy.Queue('Q4', 'Flasck Issues')]});
+                    self.postbox.deliver(handler.chan, {from: self._myAddr, method: 'entry', args: ["13", new com.helpfulsidekick.chaddy.Queue('Q3', 'This Week')]}); 
+                    self.postbox.deliver(handler.chan, {from: self._myAddr, method: 'entry', args: ["31", new com.helpfulsidekick.chaddy.Queue('Q1', 'Captured Items')]}); 
+                    self.postbox.deliver(handler.chan, {from: self._myAddr, method: 'entry', args: ["29", new com.helpfulsidekick.chaddy.Queue('Q2', 'TODO Today')]}); 
+                    self.postbox.deliver(handler.chan, {from: self._myAddr, method: 'entry', args: ["55", new com.helpfulsidekick.chaddy.Queue('Q5', 'Chaddy bugs')]}); 
+                    self.postbox.deliver(handler.chan, {from: self._myAddr, method: 'entry', args: ["47", new com.helpfulsidekick.chaddy.Queue('Q4', 'Flasck Issues')]});
             } else if (index.substring(index.length-3) === "/Q3") {
-                    self.postbox.deliver(handler.chan, {method: 'entry', args: ["17", new com.helpfulsidekick.chaddy.Task('I31', 'This Week #1')]}); 
+                    self.postbox.deliver(handler.chan, {from: self._myAddr, method: 'entry', args: ["17", new com.helpfulsidekick.chaddy.Task('I31', 'This Week #1')]}); 
             }
  	   }, 10);
 	}

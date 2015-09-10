@@ -340,6 +340,14 @@ _Croset.prototype.mergeAppend = function(crokeys) {
 	crokeys = FLEval.full(crokeys);
 	if (crokeys._ctor !== 'Crokeys')
 		throw new Error("MergeAppend only accepts Crokeys objects");
+	if (crokeys.keys._ctor === 'Nil')
+		return;
+	if (!crokeys.id)
+		throw new Error("Incoming crokeys must have a Croset ID");
+	if (!this.crosetId)
+		this.crosetId = crokeys.id;
+	else if (this.crosetId != crokeys.id)
+		throw new Error("Cannot apply changes from a different croset");
 	var l = crokeys.keys;
 	var msgs = [];
 	while (l._ctor === 'Cons') {
@@ -404,6 +412,7 @@ _Croset.prototype.clear = function() {
 		msgs.push(new CrosetRemove(this, m.key));
 		this.members.splice(0, 1);
 	}
+	delete this.crosetId;
 	return msgs;
 }
 
