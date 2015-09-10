@@ -60,9 +60,9 @@ FlasckServices.KeyValueService.prototype.typed = function(type, id, handler) {
 
 	if (self.store.hasOwnProperty(resource)) {
 		var obj = self.store[resource];
-		setTimeout(function() { // this really needs to be in postbox.  Fix whatever the other problem is!
+//		setTimeout(function() { // this really needs to be in postbox.  Fix whatever the other problem is!
 			self.postbox.deliver(handler.chan, {method: 'update', args:[obj]});
-		}, 0);
+//		}, 0);
 		return;
 	}
 	var zinchandler = function (msg) {
@@ -337,18 +337,9 @@ FlasckServices.QueryService.prototype.scan = function(index, type, options, hand
 		// options should really be a map and processed as such ...
 		// req.setOption("type", "wikipedia");
 		var idx;
-		while ((idx = options.indexOf('=')) != -1) {
-			var key = options.substring(0, idx);
-			var i2 = options.indexOf('=', idx+1);
-			var val;
-			if (i2 == -1) {
-				val = options.substring(idx+1);
-				options = "";
-			} else {
-				val = options.substring(idx+1, i2);
-				options = options.substring(i2+1);
-			}
-			req.setOption(key, val);
+		for (var k in options) {
+			if (options.hasOwnProperty(k))
+				req.setOption(key, options[k]);
 		}
 		req.send();
 	} else {

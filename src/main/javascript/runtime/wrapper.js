@@ -28,7 +28,7 @@ FlasckWrapper.Processor.prototype.process = function(message) {
 		throw new Error("There is no method '" + message.method +"'");
 	var args = [];
 	for (var i=0;i<message.args.length;i++)
-		args.push(FLEval.inflate(message.args[i]));
+		args.push(FLEval.fromWire(message.args[i]));
 	var clos = meth.apply(this.service, args);
 	if (clos) {
 		this.wrapper.messageEventLoop(FLEval.full(clos));
@@ -155,7 +155,7 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 		loadId: function(from, id) {
 			var uf = function(obj) {
 				if (userInit && userInit.service.update)
-					userInit.process({from: from, method: 'update', args: [FLEval.inflate(obj)]});
+					userInit.process({from: from, method: 'update', args: [obj]});
 				else
 					console.log("there is no update method to handle", id, type, obj);
 			};
@@ -287,7 +287,12 @@ FlasckWrapper.prototype.processOne = function(msg, todo) {
 		}
 		var meth = msg.method;
 		if (target._special === 'contract') {
-			var args = FLEval.deflate(this, msg.args);
+			var args = [];
+			var l = msg.args;
+			while (l && l._ctor === 'Cons') {
+				args.push(FLEval.toWire(this, l.head));
+				l = l.tail;
+			}
 			console.log("trying to send", meth, args);
 			var addr = target._addr;
 			if (!addr) {
@@ -345,6 +350,7 @@ FlasckWrapper.prototype.convertSpecial = function(obj) {
 		} else
 			throw new Error("Cannot send an object of type " + a._special);
 	}
+	// TODO: I can't help feeling type should be "_type" or "_special" ... this is the wire format, after all
 	return { type: obj._special, chan: obj._myaddr };
 }
 

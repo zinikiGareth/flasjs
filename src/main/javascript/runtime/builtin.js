@@ -206,9 +206,9 @@ Crokey.onlyKey = function(id) {
 	return new Crokey([0x10], id);
 }
 
-function _Crokeys(l) {
+function _Crokeys(listKeys) {
 	this._ctor = 'Crokeys';
-	this.keys = FLEval.inflate(l);
+	this.keys = listKeys;
 }
 
 function Crokeys(l) { return new _Crokeys(l); }
@@ -335,13 +335,12 @@ _Croset.prototype.range = function(from, to) {
 	return ret;
 }
 
-// Still trying to figure out the API here, but I would like this to expect a "Crokeys" object which is an object containing a list in the field keys of (id, key) pairs each of which is a Crokey object
-_Croset.prototype.mergeAppend = function(l) {
+_Croset.prototype.mergeAppend = function(crokeys) {
 	"use strict"
-	var l = FLEval.full(FLEval.inflate(l));
-	if (l._ctor !== 'Crokeys')
+	crokeys = FLEval.full(crokeys);
+	if (crokeys._ctor !== 'Crokeys')
 		throw new Error("MergeAppend only accepts Crokeys objects");
-	l = l.keys;
+	var l = crokeys.keys;
 	var msgs = [];
 	while (l._ctor === 'Cons') {
 //		console.log("handle", l.head);

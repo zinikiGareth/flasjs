@@ -105,69 +105,104 @@ FLEval.flattenList = function(list) {
 	return ret;
 }
 
-FLEval.inflateFrom = function(service, obj) {
-	var ret = FLEval.inflate(obj);
+// This may or may not be valuable
+// The idea behind this is to try and track where something came from when we want to save it
+FLEval.fromWireService = function(service, obj) {
+	var ret = FLEval.fromWire(obj);
 	if (ret instanceof Object && ret._ctor)
 		ret._fromService = service;
 	return ret;
 }
 
-FLEval.inflate = function(list) {
-	list = FLEval.head(list);
-	if (list instanceof Array) {
+// Something coming in off the wire must be one of the following things:
+// A primitive (number, string, etc)
+// A flat-ish object (must have _ctor; fields must be primitives; references are via ID - go fetch)
+// [Note: it may also be possible to pass 'handlers' and other specials in a similar way; but this doesn't happen in this direction YET]
+// A crokeys definition
+// A hash (from string to any of the above) 
+// An array of (any of the above including hash)
+
+FLEval.fromWire = function(obj, denyOthers) {
+	"use strict"
+	if (!(obj instanceof Object))
+		return obj; // it's a primitive
+	if (obj._ctor) {
+		if (obj._ctor === 'Crokeys') { // an array of crokey hashes - map to a Crokeys object of Crokey objects
+			return FLEval.makeCrokeys(obj.keys); 
+		} else { // a flat-ish object
+			for (var x in obj)
+				if (obj.hasOwnProperty(x) && obj instanceof Object)
+					throw new Error("I claim " + x + " is in violation of the wire protocol: " + obj[x]);
+			return obj;
+		}
+	}
+	if (denyOthers)
+		throw new Error("Wire protocol violation - nested complex objects at " + obj);
+	if (obj instanceof Array) {
 		var ret = Nil;
 		for (var k=list.length-1;k>=0;k--)
-			ret = Cons(FLEval.inflate(list[k]), ret);
+			ret = Cons(FLEval.fromWire(obj[k], true), ret);
 		return ret;
-	} else if (list instanceof Object) {
-		if (!list._ctor && list.id) {
-			if (list.key) // probably this case should already be handled
-				return new Crokey(list.key, list.id);
-			// TODO: really only if it JUST has "id"
-			return { _ctor: 'org.ziniki.ID', id: list.id };
-		} else if (list._ctor === 'Crokey')
-			return list;
-		for (var k in list) {
-			var obj = list[k];
-			if (k[0] !== '_')
-				list[k] = FLEval.inflate(obj);
-		}
-		return list;
 	} else {
-		return list;
+		for (var k in obj)
+			obj = FLEval.fromWire(obj[k]);
+		return obj;
 	}
 }
 
-FLEval.deflate = function(wrapper, obj) {
+FLEval.makeCrokeys = function(keys) {
+	var ret = [];
+	for (var i=0;i<keys.length;i++)
+		ret.push(new Crokey(keys[i].key, keys[i].id));
+	
+	return new Crokeys(ret);
+}
+
+FLEval.toWire = function(wrapper, obj, dontLoop) {
 	"use strict"
 	if (obj instanceof FLClosure)
 		obj = FLEval.full(obj);
+	if (!(obj instanceof Object))
+		return obj; // a primitive
+	if (obj instanceof Array)
+		throw new Error("We should not have loose arrays internally");
 	if (obj._ctor === 'Nil' || obj._ctor === 'Cons') {
-		return FLEval.deflate(wrapper, FLEval.flattenList(obj));
-	} else if (obj instanceof Array) {
+		if (dontLoop)
+			throw new Error("Found list in a field and don't know what to do");
 		var ret = [];
-		for (var i=0;i<obj.length;i++)
-			ret[i] = FLEval.deflate(wrapper, obj[i]);
+		while (obj && obj._ctor === 'Cons') {
+			ret.push(FLEval.toWire(wrapper, obj.head, true));
+			obj = obj.tail;
+		}
 		return ret;
-	} else if (typeof obj == 'object') {
-		if (obj._special) {
-			return wrapper.convertSpecial(obj);
-		} else {
-			var ret = {};
-			for (var x in obj) {
-				if (obj.hasOwnProperty(x)) {
-				 	if (typeof x === 'string') {
-				 		if (x[0] !== '_' || x === '_ctor')
-				 			ret[x] = obj[x];
-				 		// otherwise it gets deleted
-				 	} else
-						ret[x] = FLEval.deflate(postbox, obj[x]);
-				}
-			}
-			return ret;
+	}
+	if (obj._ctor === 'Crokeys')
+		throw new Error("Crokeys is special and we should handle it");
+	if (obj._ctor === 'Assoc' || obj._ctor === 'NilMap') {
+		if (dontLoop)
+			throw new Error("Found map in a field and don't know what to do");
+		var ret = {};
+		while (obj && obj._ctor === 'Assoc') {
+			var val = FLEval.toWire(wrapper, obj.value, true);
+			ret[obj.key] = val;
+			obj = obj.rest;
+		}
+		return ret;
+	}
+	if (obj._special)
+		return wrapper.convertSpecial(obj);
+
+	// pack a shallow copy
+	var ret = {};
+	for (var x in obj) {
+		if (obj.hasOwnProperty(x)) {
+		 	if (typeof x === 'string' && x[0] === '_' && x !== '_ctor')
+		 		; // delete it
+		 	else
+				ret[x] = FLEval.toWire(wrapper, obj[x], true);
 		}
 	}
-		return obj; // presumably something simple
+	return ret;
 }		
 
 // curry a function (which can include a previous curried function)
