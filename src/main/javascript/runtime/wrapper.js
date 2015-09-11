@@ -115,15 +115,21 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 	}
 	var userInit;
 	var kvupdate;
+	// After long deliberation, this is NOT a hack
+	// This is more by way of a proxy or an impedance-matching layer
+	// Another way of thinking about it is that it is doing "boilerplate" things that are required by the underlying Flasck/Card paradigm, but that FLAS users shouldn't need to do
+	// For example:
+	//  * the initial handshaking about services
+	//  * rewriting object IDs when Ziniki creates them
+	//  * monkeying around with Croset changes
 	var contracts = {};
 	for (var ctr in card._contracts) {
 		contracts[ctr] = new FlasckWrapper.Processor(this, card._contracts[ctr]);
 		if (ctr === 'org.ziniki.Init')
 			userInit = contracts[ctr];
-		else if (ctr === 'net.ziniki.perspocpoc.KVUpdate')
-			kvupdate = contracts[ctr];
+		else if (ctr == 'org.ziniki.Render' || ctr == 'org.ziniki.Croset')
+			throw new Error("Users cannot define " + ctr);
 	}
-	// THIS MAY OR MAY NOT BE A HACK
 	contracts['org.ziniki.Init'] = {
 		process: function(message) {
 			"use strict";
@@ -195,7 +201,7 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 		},
 		service: {} // to store _myaddr
 	}
-	contracts['net.ziniki.perspocpoc.KVUpdate'] = {
+	contracts['org.ziniki.Croset'] = {
 		service: {} // to store _myaddr
 	}
 	contracts['org.ziniki.Render'] = {
@@ -322,6 +328,25 @@ FlasckWrapper.prototype.processOne = function(msg, todo) {
 		into[msg.field] = msg.value;
 		todo.push(msg);
 	} else if (msg._ctor === 'CrosetInsert' || msg._ctor === 'CrosetReplace' || msg._ctor === 'CrosetRemove' || msg._ctor === 'CrosetMove') {
+		var meth;
+		switch (msg._ctor) {
+		case 'CrosetInsert':
+			meth = 'insert';
+			args = [msg.target.crosetId, msg.key.toString(), msg.key.id];
+			break;
+		case 'CrosetMove':
+			meth = 'move';
+			args = [msg.target.crosetId, msg.from.id, msg.from.toString(), msg.to.toString()];
+			break;
+		case 'CrosetReplace':
+			// This is just a change to the actual object, which should be separately recorded; the Croset does not change
+			break;
+		default:
+			console.log("don't handle", msg);
+			debugger;
+		}
+		if (meth)
+			this.postbox.deliver(this.services['org.ziniki.Croset'], {from: this.contractInfo['org.ziniki.Croset'].service._myaddr, method: meth, args: args });
 		todo.push(msg);
 	} else if (msg._ctor === 'CreateCard') {
 		// If the user requests that we make a new card in response to some action, we need to know where to place it

@@ -146,7 +146,7 @@ _Crokey.prototype.firstKey = function(id) {
 	"use strict"
 	if (this.key[0] == 0)
 		throw new Error("We need to handle the very-very-very-beginning difficult case");
-	return new Crokey([this.key[0]/2], id);
+	return new Crokey([Math.floor(this.key[0]/2)], id);
 }
 
 _Crokey.prototype.lastKey = function(id) {
@@ -162,7 +162,7 @@ _Crokey.prototype.before = function(before, id) {
 	for (var i=0;i<this.key.length;i++) {
 		// TODO: I think we're missing out the case where "before" expires before after
 		if (this.key[i]+1<before.key[i]) {
-			me.push((this.key[i]+before.key[i])/2);
+			me.push(Math.floor((this.key[i]+before.key[i])/2));
 			return new Crokey(me, id);
 		}
 		me.push(after[i]);
@@ -349,16 +349,17 @@ _Croset.prototype.mergeAppend = function(crokeys) {
 	else if (this.crosetId != crokeys.id)
 		throw new Error("Cannot apply changes from a different croset");
 	var l = crokeys.keys;
+	if (!(l instanceof Array))
+		throw new Error("keys should be an array");
 	var msgs = [];
-	while (l._ctor === 'Cons') {
+	for (var i=0;i<l.length;i++) {
 //		console.log("handle", l.head);
-		if (l.head._ctor !== 'Crokey')
+		if (l[i]._ctor !== 'Crokey')
 			throw new Error("Needs to be a Crokey");
-		if (!this._hasId(l.head.id)) { // only insert if it's not in the list
-			this._insert(l.head);
-			msgs.push(new CrosetInsert(this, l.head));
+		if (!this._hasId(l[i].id)) { // only insert if it's not in the list
+			this._insert(l[i]);
+			msgs.push(new CrosetInsert(this, l[i]));
 		}
-		l = l.tail;
 	}
 	return msgs;
 }
