@@ -262,6 +262,25 @@ FlasckServices.CrosetService.prototype.move = function(crosetId, objId, fromKey,
 	ZinikiConn.req.invoke("croset/" + crosetId + "/move/" + sendId + "/" + fromKey +"/" + toKey).send();
 }
 
+FlasckServices.CrosetService.prototype.delete = function(crosetId, key, objId) {
+	"use strict";
+	var self = this;
+	var sendId = FlasckServices.CentralStore.realId(objId);
+	if (!sendId) {
+		// I think in this case we need to try and remember that we should do this and get a callback
+		// when we have the real ID.  This gets more complex as time goes by, because you end up changing
+		// the thing you inserted and everything, so you probably need to consolidate those changes
+		// for now, just keep retrying until it is here :-)
+		console.log("We don't have a real id for this yet; deferred case handling needed");
+		setTimeout(function() { self.delete(crosetId, key, objId); }, 150);
+		return;
+	}
+	var croset = this.store[crosetId];
+	if (!croset)
+		throw new Error("There is no croset for" + crosetId);
+	ZinikiConn.req.invoke("croset/" + crosetId + "/delete/" + key).send();
+}
+
 FlasckServices.PersonaService = function(postbox) {
 	"use strict";
 	this.postbox = postbox;

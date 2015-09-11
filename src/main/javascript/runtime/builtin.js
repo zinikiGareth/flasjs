@@ -390,6 +390,8 @@ _Croset.prototype.put = function(obj) {
 
 _Croset.prototype.delete = function(id) {
 	"use strict"
+	if (!id)
+		return; // part of our "be nice to nulls" policy
 	if (!this.hash[id])
 		throw new Error("There isn't an entry", id);
 	delete this.hash[id];

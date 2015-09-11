@@ -338,6 +338,10 @@ FlasckWrapper.prototype.processOne = function(msg, todo) {
 			meth = 'move';
 			args = [msg.target.crosetId, msg.from.id, msg.from.toString(), msg.to.toString()];
 			break;
+		case 'CrosetRemove':
+			meth = 'delete';
+			args = [msg.target.crosetId, msg.key.toString(), msg.key.id];
+			break;
 		case 'CrosetReplace':
 			// This is just a change to the actual object, which should be separately recorded; the Croset does not change
 			break;
