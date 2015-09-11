@@ -26,7 +26,7 @@ FlasckServices.TimerService.prototype.requestTicks = function(handler, amount) {
 }
 
 FlasckServices.CentralStore = {
-	keyValue: {_hack: 'keyvalue'},
+	keyValue: {_hack: 'keyvalue', _localMapping: {}},
 	personae: {_hack: 'personae'},
 	crosets: {_hack: 'crosets'}
 };
@@ -34,6 +34,7 @@ FlasckServices.CentralStore = {
 FlasckServices.KeyValueService = function(postbox) {
 	this.postbox = postbox;
 	this.store = FlasckServices.CentralStore.keyValue;
+	this.nextLocal = 1;
 	return this;
 }
 
@@ -44,6 +45,34 @@ FlasckServices.KeyValueService.prototype.process = function(message) {
 	if (!meth)
 		throw new Error("There is no method '" + message.method +"'");
 	meth.apply(this, message.args);
+}
+
+FlasckServices.KeyValueService.prototype.create = function(type, handler) {
+	var self = this;
+	var id = '__' + (self.nextLocal++)
+	var letMeCreate = { _ctor: type, id: id };
+	self.postbox.deliver(handler.chan, {from: self._myAddr, method: 'itemCreated', args:[letMeCreate]});
+	// NOTE: we should now close "handler.chan" because it has served its purpose
+	
+
+	if (haveZiniki) {
+		var zinchandler = function (msg) {
+			console.log("kv received", msg, "from Ziniki for local id", id);
+			var obj = self._unpackPayload(msg.payload);
+			self.store._localMapping[id] = obj.id;
+			// still to do:
+			// 3. notify my KV client (not the handler) of an ID change
+		};
+
+		var payload = {};
+		payload[type] = [{}];
+
+		var resource = 'create/' + type;
+		var req = ZinikiConn.req.invoke(resource, zinchandler);
+		req.setPayload(payload);
+		req.send();
+	}
+	
 }
 
 FlasckServices.KeyValueService.prototype.typed = function(type, id, handler) {
@@ -67,23 +96,7 @@ FlasckServices.KeyValueService.prototype.typed = function(type, id, handler) {
 	}
 	var zinchandler = function (msg) {
 		console.log("kv received", msg, "from Ziniki");
-		var main = msg.payload._main;
-		for (var k in msg.payload) {
-			if (k[0] !== '_' && msg.payload.hasOwnProperty(k)) {
-				if (!main)
-					main = k;
-				var l = msg.payload[k];
-				if (l instanceof Array) {
-					for (var i=0;i<l.length;i++) {
-						var it = l[i];
-						if (!it._ctor)
-							it._ctor = main;
-						self.store[it.id] = it;
-					}
-				}
-			}
-		}
-		var obj = msg.payload[main][0];
+		var obj = self._unpackPayload(msg.payload);
 		self.postbox.deliver(handler.chan, {from: self._myAddr, method: 'update', args:[obj]});
 	};
 	if (haveZiniki) {
@@ -108,23 +121,7 @@ FlasckServices.KeyValueService.prototype.resource = function(resource, handler) 
 	}
 	var zinchandler = function (msg) {
 		console.log("kv received", msg, "from Ziniki");
-		var main = msg.payload._main;
-		for (var k in msg.payload) {
-			if (k[0] !== '_' && msg.payload.hasOwnProperty(k)) {
-				if (!main)
-					main = k;
-				var l = msg.payload[k];
-				if (l instanceof Array) {
-					for (var i=0;i<l.length;i++) {
-						var it = l[i];
-						if (!it._ctor)
-							it._ctor = main;
-						self.store[it.id] = it;
-					}
-				}
-			}
-		}
-		var obj = msg.payload[main][0];
+		var obj = self._unpackPayload(msg.payload);
 		self.postbox.deliver(handler.chan, {from: self._myAddr, method: 'update', args:[obj]});
 	};
 	if (haveZiniki) {
@@ -146,6 +143,17 @@ FlasckServices.KeyValueService.prototype.save = function(obj) {
 			if (obj.hasOwnProperty(x) && x[0] != '_' && !(obj[x] instanceof Array) && typeof obj[x] !== 'object')
 				cvobj[x] = obj[x];
 		}
+		if (obj.id[0] == '_' && obj.id[1] == '_') { // it still has a local id
+			if (this.store._localMapping[obj.id])
+				obj.id = this.store._localMapping[obj.id]; // really, the client should have made the change already, but it could be "in-flight" somewhere
+			else {
+				// in this case, we haven't yet seen a real id back from Ziniki (or possibly it was so long ago that we've forgotten about it)
+				// what we need to do is to park this record somewhere waiting for the rewrite event to occur and when it does, turn around and save the object
+				// in the meantime, we should at least cache this value locally and notify other local clients ... when that code is written
+				console.log("difficult case still to be handled ... see comment");
+				return;
+			}
+		}
 		var payload = {};
 		payload[obj._ctor] = [cvobj];
 		console.log("saving payload", JSON.stringify(payload));
@@ -153,6 +161,26 @@ FlasckServices.KeyValueService.prototype.save = function(obj) {
 	} else {
 		console.log("no Ziniki; but request to save object", obj);
 	}
+}
+
+FlasckServices.KeyValueService.prototype._unpackPayload = function(payload) {
+	var main = payload._main;
+	for (var k in payload) {
+		if (k[0] !== '_' && payload.hasOwnProperty(k)) {
+			if (!main)
+				main = k;
+			var l = payload[k];
+			if (l instanceof Array) {
+				for (var i=0;i<l.length;i++) {
+					var it = l[i];
+					if (!it._ctor)
+						it._ctor = main;
+					this.store[it.id] = it;
+				}
+			}
+		}
+	}
+	return payload[main][0];
 }
 
 FlasckServices.CrosetService = function(postbox) {
