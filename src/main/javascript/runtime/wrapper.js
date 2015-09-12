@@ -114,6 +114,7 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 		this.services[svc] = this.postbox.unique(svcAddr);
 	}
 	var userInit;
+	var userCroset;
 	var kvupdate;
 	// After long deliberation, this is NOT a hack
 	// This is more by way of a proxy or an impedance-matching layer
@@ -127,7 +128,9 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 		contracts[ctr] = new FlasckWrapper.Processor(this, card._contracts[ctr]);
 		if (ctr === 'org.ziniki.Init')
 			userInit = contracts[ctr];
-		else if (ctr == 'org.ziniki.Render' || ctr == 'org.ziniki.Croset')
+		else if (ctr == 'org.ziniki.Croset')
+			userCroset = contracts[ctr];
+		else if (ctr == 'org.ziniki.Render')
 			throw new Error("Users cannot define " + ctr);
 	}
 	contracts['org.ziniki.Init'] = {
@@ -202,6 +205,21 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 		service: {} // to store _myaddr
 	}
 	contracts['org.ziniki.Croset'] = {
+		process: function(message) {
+			"use strict";
+			/*
+			if (message.method === 'services')
+				this.services(message.from, message.args[0]);
+			else if (message.method === 'state')
+				this.state(message.from, message.args[0]);
+			else if (message.method === 'loadId')
+				this.loadId(message.from, message.args[0]);
+			else if (message.method == 'dispose')
+				this.dispose(message.from);
+			else
+			*/
+				userCroset.process(message);
+		},
 		service: {} // to store _myaddr
 	}
 	contracts['org.ziniki.Render'] = {
@@ -234,6 +252,8 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 		this.ctrmap[ctr] = uq;
 		contracts[ctr].service._myaddr = uq;
 	}
+	if (userCroset)
+		userCroset.service._myaddr = contracts['org.ziniki.Croset'].service._myaddr;
 	this.contractInfo = contracts;
 	this.postbox.deliver(this.initSvc, {from: this.ctrmap['org.ziniki.Init'], method: 'ready', args:[this.ctrmap]});
 }
@@ -339,8 +359,11 @@ FlasckWrapper.prototype.processOne = function(msg, todo) {
 			args = [msg.target.crosetId, msg.from.id, msg.from.toString(), msg.to.toString()];
 			break;
 		case 'CrosetRemove':
-			meth = 'delete';
-			args = [msg.target.crosetId, msg.key.toString(), msg.key.id];
+			if (msg.forReal) {
+				meth = 'delete';
+				args = [msg.target.crosetId, msg.key.toString(), msg.key.id];
+			}
+			// otherwise this is just removing it from the local copy ... should we actually make these different messages?
 			break;
 		case 'CrosetReplace':
 			// This is just a change to the actual object, which should be separately recorded; the Croset does not change

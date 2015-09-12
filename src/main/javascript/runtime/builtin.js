@@ -398,7 +398,7 @@ _Croset.prototype.delete = function(id) {
 	var msgs = [];
 	for (var i=0;i<this.members.length;) {
 		if (this.members[i].id === id) {
-			msgs.push(new CrosetRemove(this, this.members[i]));
+			msgs.push(new CrosetRemove(this, this.members[i], true));
 			this.members.splice(i, 1);
 		} else
 			i++;
@@ -412,7 +412,7 @@ _Croset.prototype.clear = function() {
 	while (this.members.length>0) {
 		var m = this.members[0];
 		delete this.hash[m.id];
-		msgs.push(new CrosetRemove(this, m.key));
+		msgs.push(new CrosetRemove(this, m, false));
 		this.members.splice(0, 1);
 	}
 	delete this.crosetId;
@@ -596,14 +596,15 @@ _CrosetReplace = function(target, key) {
 }
 CrosetReplace = function(target, key) { return new _CrosetReplace(target, key); }
 
-_CrosetRemove = function(target, key) {
+_CrosetRemove = function(target, key, forReal) {
 	"use strict"
 	if (key._ctor !== 'Crokey') throw new Error("Not a crokey");
 	this._ctor = "CrosetRemove";
 	this.target = target;
 	this.key = key;
+	this.forReal = forReal;
 }
-CrosetRemove = function(target, key) { return new _CrosetRemove(target, key); }
+CrosetRemove = function(target, key, forReal) { return new _CrosetRemove(target, key, forReal); }
 
 _CrosetMove = function(target, from, to) {
 	"use strict"

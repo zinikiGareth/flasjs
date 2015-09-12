@@ -37,6 +37,26 @@ FlasckServices.CentralStore.realId = function(id) {
 	return FlasckServices.CentralStore.keyValue._localMapping[id];
 }
 
+FlasckServices.CentralStore.unpackPayload = function(store, payload) {
+	var main = payload._main;
+	for (var k in payload) {
+		if (k[0] !== '_' && payload.hasOwnProperty(k)) {
+			if (!main)
+				main = k;
+			var l = payload[k];
+			if (l instanceof Array) {
+				for (var i=0;i<l.length;i++) {
+					var it = l[i];
+					if (!it._ctor)
+						it._ctor = main;
+					store[it.id] = it;
+				}
+			}
+		}
+	}
+	return payload[main][0];
+}
+
 FlasckServices.KeyValueService = function(postbox) {
 	this.postbox = postbox;
 	this.store = FlasckServices.CentralStore.keyValue;
@@ -64,7 +84,7 @@ FlasckServices.KeyValueService.prototype.create = function(type, handler) {
 	if (haveZiniki) {
 		var zinchandler = function (msg) {
 			console.log("kv received", msg, "from Ziniki for local id", id);
-			var obj = self._unpackPayload(msg.payload);
+			var obj = FlasckServices.CentralStore.unpackPayload(self.store, msg.payload);
 			self.store._localMapping[id] = obj.id;
 			// still to do:
 			// 3. notify my KV client (not the handler) of an ID change
@@ -102,7 +122,7 @@ FlasckServices.KeyValueService.prototype.typed = function(type, id, handler) {
 	}
 	var zinchandler = function (msg) {
 		console.log("kv received", msg, "from Ziniki");
-		var obj = self._unpackPayload(msg.payload);
+		var obj = FlasckServices.CentralStore.unpackPayload(self.store, msg.payload);
 		self.postbox.deliver(handler.chan, {from: self._myAddr, method: 'update', args:[obj]});
 	};
 	if (haveZiniki) {
@@ -127,7 +147,7 @@ FlasckServices.KeyValueService.prototype.resource = function(resource, handler) 
 	}
 	var zinchandler = function (msg) {
 		console.log("kv received", msg, "from Ziniki");
-		var obj = self._unpackPayload(msg.payload);
+		var obj = FlasckServices.CentralStore.unpackPayload(self.store, msg.payload);
 		self.postbox.deliver(handler.chan, {from: self._myAddr, method: 'update', args:[obj]});
 	};
 	if (haveZiniki) {
@@ -167,26 +187,6 @@ FlasckServices.KeyValueService.prototype.save = function(obj) {
 	}
 }
 
-FlasckServices.KeyValueService.prototype._unpackPayload = function(payload) {
-	var main = payload._main;
-	for (var k in payload) {
-		if (k[0] !== '_' && payload.hasOwnProperty(k)) {
-			if (!main)
-				main = k;
-			var l = payload[k];
-			if (l instanceof Array) {
-				for (var i=0;i<l.length;i++) {
-					var it = l[i];
-					if (!it._ctor)
-						it._ctor = main;
-					this.store[it.id] = it;
-				}
-			}
-		}
-	}
-	return payload[main][0];
-}
-
 FlasckServices.CrosetService = function(postbox) {
 	this.postbox = postbox;
 	this.store = FlasckServices.CentralStore.crokeys;
@@ -204,6 +204,17 @@ FlasckServices.CrosetService.prototype.process = function(message) {
 	if (!meth)
 		throw new Error("There is no method '" + message.method +"'");
 	meth.apply(this, message.args);
+}
+
+FlasckServices.CrosetService.prototype.get = function(crosetId, after, count, handler) {
+	"use strict";
+	var self = this;
+	var zinchandler = function (msg) {
+		console.log("croset received", msg, "from Ziniki");
+		var obj = FlasckServices.CentralStore.unpackPayload(self.store, msg.payload);
+		self.postbox.deliver(handler.chan, {from: self._myAddr, method: 'update', args:[obj]});
+	};
+	ZinikiConn.req.subscribe("croset/" + crosetId + "/get/" + after + "/" + count, zinchandler).send();
 }
 
 // This is obviously a minimalist hack
