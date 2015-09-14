@@ -377,15 +377,17 @@ FlasckWrapper.prototype.processOne = function(msg, todo) {
 	} else if (msg._ctor === 'CreateCard') {
 		// If the user requests that we make a new card in response to some action, we need to know where to place it
 		// The way we fundamentally know this is to look at the "where" option
-		var options = FLEval.toWire(this, msg.options);
+		var options = FLEval.flattenMap(msg.options);
 		var where = options.where;
 		delete options.where;
 		if (!where)
 			throw new Error("Can't display a card nowhere");
 		else if (where === 'overlay') {
 			var overlay = this.div.ownerDocument.getElementById('flasck_popover_div');
-            this.showCard(overlay, { card: msg.card });
-            this.div.ownerDocument.getElementById('flasck_popover').showModal();
+            this.showCard(overlay, options);
+            var popover = this.div.ownerDocument.getElementById('flasck_popover');
+            if (!popover.isOpen)
+            	popover.showModal();
    		} else {
    			// assume that 'where' is the name of a div
 			var div = this.div.ownerDocument.getElementById(where);

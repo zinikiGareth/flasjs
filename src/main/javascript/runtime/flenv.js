@@ -104,6 +104,15 @@ FLEval.flattenList = function(list) {
 	return ret;
 }
 
+FLEval.flattenMap = function(obj) {
+	var ret = {};
+	while (obj && obj._ctor === 'Assoc') {
+		ret[obj.key] = obj.value;
+		obj = obj.rest;
+	}
+	return ret;
+}
+
 // This may or may not be valuable
 // The idea behind this is to try and track where something came from when we want to save it
 FLEval.fromWireService = function(addr, obj) {
@@ -115,6 +124,7 @@ FLEval.fromWireService = function(addr, obj) {
 
 // Something coming in off the wire must be one of the following things:
 // A primitive (number, string, etc)
+// An array of strings
 // A flat-ish object (must have _ctor; fields must be primitives; references are via ID - go fetch)
 // [Note: it may also be possible to pass 'handlers' and other specials in a similar way; but this doesn't happen in this direction YET]
 // A crokeys definition
@@ -129,9 +139,27 @@ FLEval.fromWire = function(obj, denyOthers) {
 		if (obj._ctor === 'Crokeys') { // an array of crokey hashes - map to a Crokeys object of Crokey objects
 			return FLEval.makeCrokeys(obj.id, obj.keys); 
 		} else { // a flat-ish object
-			for (var x in obj)
-				if (obj.hasOwnProperty(x) && obj[x] instanceof Object)
-					throw new Error("I claim " + x + " is in violation of the wire protocol: " + obj[x]);
+			var ret = { _ctor: obj._ctor };
+			for (var x in obj) {
+				if (x[0] === '_')
+					continue;
+				if (obj.hasOwnProperty(x) && obj[x] instanceof Object) {
+					if (obj[x] instanceof Array) {
+						// This is OK if they are all strings
+						var tmp = Nil;
+						var list = obj[x];
+						for (var k=list.length-1;k>=0;k--) {
+							var s = list[k];
+							if (typeof s !== 'string')
+								throw new Error("Field " + x + " is an array that should only contain strings, not " + s);
+							tmp = Cons(s, tmp);
+						}
+						ret[x] = tmp;
+					} else
+						throw new Error("I claim " + x + " is in violation of the wire protocol: " + obj[x]);
+				} else
+					ret[x] = obj[x];
+			}
 			return obj;
 		}
 	}

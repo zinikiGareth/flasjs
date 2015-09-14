@@ -545,11 +545,9 @@ _Assign = function(target, field, value) {
 
 Assign = function(target, field, value) { return new _Assign(target, field, value); }
 
-_CreateCard = function(card, value, options, services) {
+_CreateCard = function(options, services) {
 	"use strict"
 	this._ctor = 'CreateCard';
-	this.card = card;
-	this.value = value;
 	this.options = options;
 	this.services = services;
 }
@@ -559,7 +557,7 @@ _CreateCard.prototype.toString = function() {
 	return "CreateCard[" + "]";
 }
 
-CreateCard = function(card, value, options, services) { return new _CreateCard(card, value, options, services); }
+CreateCard = function(options, services) { return new _CreateCard(options, services); }
 
 _D3Action = function(action, args) {
 	"use strict"

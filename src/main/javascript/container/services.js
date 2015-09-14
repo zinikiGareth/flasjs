@@ -123,8 +123,12 @@ FlasckServices.KeyValueService.prototype.typed = function(type, id, handler) {
 	}
 	var zinchandler = function (msg) {
 		console.log("kv received", msg, "from Ziniki");
-		var obj = FlasckServices.CentralStore.unpackPayload(self.store, msg.payload);
-		self.postbox.deliver(handler.chan, {from: self._myAddr, method: 'update', args:[obj]});
+		if (msg.error)
+			console.log("error:", msg.error);
+		else {
+			var obj = FlasckServices.CentralStore.unpackPayload(self.store, msg.payload);
+			self.postbox.deliver(handler.chan, {from: self._myAddr, method: 'update', args:[obj]});
+		}
 	};
 	if (haveZiniki) {
 		// we can either subscribe to a resource or to a specific object by ID
@@ -148,8 +152,12 @@ FlasckServices.KeyValueService.prototype.resource = function(resource, handler) 
 	}
 	var zinchandler = function (msg) {
 		console.log("kv received", msg, "from Ziniki");
-		var obj = FlasckServices.CentralStore.unpackPayload(self.store, msg.payload);
-		self.postbox.deliver(handler.chan, {from: self._myAddr, method: 'update', args:[obj]});
+		if (msg.error)
+			console.log("error:", msg.error);
+		else {
+			var obj = FlasckServices.CentralStore.unpackPayload(self.store, msg.payload);
+			self.postbox.deliver(handler.chan, {from: self._myAddr, method: 'update', args:[obj]});
+		}
 	};
 	if (haveZiniki) {
 		// we can either subscribe to a resource or to a specific object by ID
