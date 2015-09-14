@@ -235,7 +235,6 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 			if (!self.card._render)
 				console.log("There is no method _render on ", self.card);
 			else {
-				self.infoAbout = {};
 				if (opts.into)
 					self.div = opts.into;
 				self.card._render.call(self.card, self.div.ownerDocument, self, self.div);
@@ -243,7 +242,7 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 		},
 		service: {} // to store _myaddr
 	}
-	// END HACK
+	// END OF PROXY DEFINITIONS
 	for (var ctr in contracts) {
 		var ctrAddr = this.postbox.newAddress();
 		this.postbox.register(ctrAddr, contracts[ctr]);
@@ -321,12 +320,12 @@ FlasckWrapper.prototype.processOne = function(msg, todo) {
 				args.push(FLEval.toWire(this, l.head));
 				l = l.tail;
 			}
-			console.log("trying to send", meth, args);
 			var addr = target._addr;
 			if (!addr) {
 				console.log("No service was provided for " + target._contract);
 				return;
 			}
+			console.log("trying to send", meth, args, "to", addr);
 			this.postbox.deliver(addr, {from: target._myaddr, method: meth, args: args });
 		} else if (target._special === 'object') {
 			var args = FLEval.flattenList(msg.args);
@@ -378,17 +377,20 @@ FlasckWrapper.prototype.processOne = function(msg, todo) {
 	} else if (msg._ctor === 'CreateCard') {
 		// If the user requests that we make a new card in response to some action, we need to know where to place it
 		// The way we fundamentally know this is to look at the "where" option
-		var where = msg.options.assoc("where");
+		var options = FLEval.toWire(this, msg.options);
+		var where = options.where;
+		delete options.where;
 		if (!where)
 			throw new Error("Can't display a card nowhere");
 		else if (where === 'overlay') {
-			// HACK: because showCard automatically pulls the div#id out of infoAbout, we need to put it in.
-            // I think we should probably change that, or else have two methods
-            this.infoAbout['flasck_popover_div'] = 'flasck_popover_div';
-            this.showCard('flasck_popover_div', { card: msg.card });
+			var overlay = this.div.ownerDocument.getElementById('flasck_popover_div');
+            this.showCard(overlay, { card: msg.card });
             this.div.ownerDocument.getElementById('flasck_popover').showModal();
-   		} else
-			throw new Error("Cannot yet place a card " + where);
+   		} else {
+   			// assume that 'where' is the name of a div
+			var div = this.div.ownerDocument.getElementById(where);
+   			this.showCard(div, options); 
+		}
 	} else
 		throw new Error("The method message " + msg._ctor + " is not supported");
 }
@@ -409,20 +411,22 @@ FlasckWrapper.prototype.convertSpecial = function(obj) {
 }
 
 FlasckWrapper.prototype.onUpdate = function(op, obj, field, area, fn) {
-//	console.log("on update type", op);
 	if (!obj) obj = this.card; // should we insist on getting the card by throwing an error if not?
 	if (op === 'assign' && !fn)
 		throw new Error("Must provide fn for assign");
+	console.log("added update", this.updateAreas.length, ":", op, obj, field);
 	this.updateAreas.push({op: op, obj: obj, field: field, area: area, fn: fn});
+	console.log("updateAreas length =", this.updateAreas.length);
 }
 
 FlasckWrapper.prototype.removeOnUpdate = function(op, obj, field, area) {
 	if (!obj) obj = this.card; // should we insist on getting the card by throwing an error if not?
 	for (var i=0;i<this.updateAreas.length;) {
 		var ua = this.updateAreas[i];
-		if (ua.op == op && ua.area === area && ua.obj == obj && ua.field == field)
+		if (ua.op == op && ua.area === area && ua.obj == obj && ua.field == field) {
 			this.updateAreas.splice(i, 1);
-		else
+			console.log("removed update #", i, op, obj, field);
+		} else
 			i++;
 	}
 }
@@ -431,9 +435,10 @@ FlasckWrapper.prototype.removeActions = function(area) {
 //	console.log("remove all actions that have area", area);
 	for (var i=0;i<this.updateAreas.length;) {
 		var ua = this.updateAreas[i];
-		if (ua.area === area)
+		if (ua.area === area) {
 			this.updateAreas.splice(i, 1);
-		else
+			console.log("removed update #", i, ua.op, ua.obj, ua.field);
+		} else
 			i++;
 	}
 }
@@ -461,7 +466,7 @@ FlasckWrapper.prototype.updateDisplay = function(todo) {
 //			console.log("Croset Insert");
 			for (var i=0;i<this.updateAreas.length;i++) {
 				var ua = this.updateAreas[i];
-				if (ua.op != 'croins' || ua.obj != item.target)
+				if (ua.op != 'croset' || ua.obj != item.target)
 					continue;
 				var child = ua.area._newChild();
 				child._crokey = item.key;
@@ -490,7 +495,7 @@ FlasckWrapper.prototype.updateDisplay = function(todo) {
 //			console.log("Croset Remove");
 			for (var i=0;i<this.updateAreas.length;i++) {
 				var ua = this.updateAreas[i];
-				if (ua.op != 'crodel') continue;
+				if (ua.op != 'croset') continue;
 				if (ua.obj != item.target)
 					continue;
 				ua.area._deleteItem(item.key);
@@ -499,7 +504,7 @@ FlasckWrapper.prototype.updateDisplay = function(todo) {
 //			console.log("Croset Move");
 			for (var i=0;i<this.updateAreas.length;i++) {
 				var ua = this.updateAreas[i];
-				if (ua.op != 'cromove') continue;
+				if (ua.op != 'croset') continue;
 				if (ua.obj != item.target)
 					continue;
 				ua.area._moveItem(item.from, item.to);
@@ -510,22 +515,25 @@ FlasckWrapper.prototype.updateDisplay = function(todo) {
 }
 
 FlasckWrapper.prototype.showCard = function(into, cardOpts) {
-	var mode = cardOpts.mode || 'local';
-	if (!(into instanceof HTMLElement)) // deprecated
-		into = doc.getElementById(this.infoAbout[into]);
+	if (!cardOpts.mode)
+		cardOpts.mode = 'local';
+	if (!into)
+		throw new Error("Must specify a div to put the card into");
 	into.innerHTML = '';
+	/* I accept the intent of this, but I don't see how it works - if it works
 	var uid = into.id;
 	if (this.cardCache[uid] && !this.cardCache[uid]._isDisposed) {
    		this.cardCache[uid].redrawInto(into);
    		return this.cardCache[uid];
 	} else {
+	*/
   		var svcs = cardOpts.services;
   		if (!svcs || svcs._ctor === 'Nil')
 	  		svcs = this.services;
-  		var innerCard = Flasck.createCard(this.postbox, into, { mode: mode, explicit: cardOpts.card }, svcs);
-  		this.cardCache[uid] = innerCard;
+  		var innerCard = Flasck.createCard(this.postbox, into, cardOpts, svcs);
+//  		this.cardCache[uid] = innerCard;
   		return innerCard;
-	}
+//	}
 }
 
 function d3attrFn(card, flfn) {
@@ -539,10 +547,10 @@ FlasckWrapper.prototype.updateD3 = function(svg, info) { // TODO: other args
 	info = FLEval.full(info);
 	// info is an assoc of key -> value
 	// info.data is a function returning the list of data items (of any type; that's up to the user code to sort out)
-    var mydata = FLEval.flattenList(info.assoc("data").call(this.card));
+    var mydata = FLEval.flattenList(StdLib.assoc(info, "data").call(this.card));
     
     // info.enter is a list of zero-or-more 'enter' methods on the card each of which is () -> [D3Action] 
-    var enter = info.assoc("enter");
+    var enter = StdLib.assoc(info, "enter");
     var cmds = [];
     while (enter._ctor === 'Cons') {
         var a = enter.head;
@@ -552,7 +560,7 @@ FlasckWrapper.prototype.updateD3 = function(svg, info) { // TODO: other args
     }
     
     // info.layout is a list of zero-or-more layouts on the card, each of which is a pair of (pattern, [prop]) where each prop is a pair (name, value-or-function)
-    var layout = info.assoc("layout");
+    var layout = StdLib.assoc(info, "layout");
     for (var c in cmds)
         d3.select(svg).selectAll(cmds[c].select).data(mydata).enter().append(cmds[c].insert);
     while (layout._ctor === 'Cons') {

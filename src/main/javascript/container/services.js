@@ -106,6 +106,7 @@ FlasckServices.KeyValueService.prototype.typed = function(type, id, handler) {
 	var self = this;
 	if (self.store.hasOwnProperty(id)) {
 		var obj = self.store[id];
+		console.log("kv sending", id, "from store");
 		self.postbox.deliver(handler.chan, {from: self._myAddr, method: 'update', args:[obj]});
 		return;
 	}
@@ -217,17 +218,6 @@ FlasckServices.CrosetService.prototype.get = function(crosetId, after, count, ha
 	ZinikiConn.req.subscribe("croset/" + crosetId + "/get/" + after + "/" + count, zinchandler).send();
 }
 
-// This is obviously a minimalist hack
-FlasckServices.CrosetService.prototype.range = function(croId, from, to, handler) {
-	"use strict";
-	throw new Error("This minimalist hack is now too hacky to be useful (see personaCroset); if you use it, fix it");
-	var self = this;
-	setTimeout(function() {
-		var obj = self.store['personaCroset'];
-		self.postbox.deliver(handler.chan, {from: self._myAddr, method: 'update', args:[obj]});
-	}, 0);
-}
-
 FlasckServices.CrosetService.prototype.insert = function(crosetId, key, objId) {
 	"use strict";
 	var self = this;
@@ -333,19 +323,6 @@ FlasckServices.PersonaService.prototype.forApplication = function(appl, type, ha
 			}
 		}
 		var obj = msg.payload[main][0];
-		// HACK! - to work around Ziniki not doing Crosets yet ...
-		if (main === 'net.ziniki.perspocpoc.PocpocPersona') {
-			var blocks = obj['blocks'];
-			obj['blocks'] = {id: 'personaCroset'};
-			if (!FlasckServices.CentralStore.crosets['personaCroset']) {
-				var key = 100;
-				for (var i=0;i<blocks.length;i++) {
-					blocks[i]._ctor = 'Crokey';
-					blocks[i]['key'] = "" + (key+10*i);
-				}
-				FlasckServices.CentralStore.crosets['personaCroset'] = {id: 'personaCroset', _ctor: 'Crokeys', keys: blocks }; // this may not be quite right ...
-			}
-		}
 		self.postbox.deliver(handler.chan, {from: self._myAddr, method: 'update', args:[obj]});
 	};
 	if (haveZiniki) {
@@ -450,12 +427,10 @@ FlasckServices.QueryService.prototype.scan = function(index, type, options, hand
 	}
 	if (haveZiniki) {
 		var req = ZinikiConn.req.subscribe(index, zinchandler);
-		// options should really be a map and processed as such ...
-		// req.setOption("type", "wikipedia");
 		var idx;
 		for (var k in options) {
 			if (options.hasOwnProperty(k))
-				req.setOption(key, options[k]);
+				req.setOption(k, options[k]);
 		}
 		req.send();
 	} else {

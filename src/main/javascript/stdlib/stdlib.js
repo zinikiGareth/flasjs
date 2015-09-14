@@ -68,3 +68,16 @@ intsFrom = function(n) {
 	return FLEval.closure(Cons, n, FLEval.closure(intsFrom, FLEval.closure(FLEval.plus, n, 1)));
 }
 
+
+StdLib.assoc = function(map, key) {
+	"use strict"
+	map = FLEval.head(map);
+	key = FLEval.full(key);
+	if (map._ctor === 'Assoc') {
+		if (key === map.key)
+			return map.value;
+		else
+			return StdLib.assoc(map.rest, key);
+	}
+}
+

@@ -96,14 +96,6 @@ _Assoc = function(k,v,r) {
 	return this;
 }
 
-_Assoc.prototype.assoc = function(key) {
-	"use strict"
-	if (key === this.key)
-		return this.value;
-	else
-		return this.rest.assoc(key);
-}
-
 _Assoc.prototype.toString = function() {
 	"use strict"
 	return 'Assoc';

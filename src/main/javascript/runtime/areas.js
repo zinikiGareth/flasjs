@@ -76,7 +76,7 @@ ListArea.prototype.constructor = ListArea;
 
 ListArea.prototype._assignToVar = function(croset) {
 	"use strict";
-	this._wrapper.removeActions(this);
+	this._wrapper.removeOnUpdate("croset", this._croset, null, this);
 	this._croset = croset;
 	this._clear();
 	if (croset && !(croset instanceof FLError)) {
@@ -91,9 +91,7 @@ ListArea.prototype._assignToVar = function(croset) {
     		this._insertItem(child);
     		child._assignToVar(croset.getOrId(v));
   		}
-  		this._wrapper.onUpdate("croins", croset, null, this);
-  		this._wrapper.onUpdate("crodel", croset, null, this);
-  		this._wrapper.onUpdate("cromove", croset, null, this);
+  		this._wrapper.onUpdate("croset", croset, null, this);
 	}
 }
 

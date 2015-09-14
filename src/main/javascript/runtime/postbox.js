@@ -100,6 +100,8 @@ Postbox.prototype.remove = function(address) {
  */
 Postbox.prototype.deliver = function(address, message) {
 	"use strict"
+	if (!address)
+		throw new Error("cannot deliver without a valid address");
 	if (!message.from || !message.method || !message.args)
 		throw new Error("invalid message - must contain from, method and args" + JSON.stringify(message));
 //	console.log("deliver", message, "to", address);
@@ -125,4 +127,10 @@ Postbox.prototype.deliver = function(address, message) {
 	setTimeout(function() {
 		recip.process(message);
 	}, 0);
+}
+
+Postbox.prototype.isLocal = function(addr) {
+	var idx = addr.lastIndexOf(":");
+	var pb = addr.substr(0, idx);
+	return pb === this.name;	
 }

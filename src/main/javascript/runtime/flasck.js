@@ -57,6 +57,15 @@ Flasck.createCard = function(postbox, inside, cardInfo, services) {
 						divarg = inside;
 					postbox.deliver(contracts['org.ziniki.Render'], {from: myAddr, method: "render", args: [{into: divarg}] }); 
 				}
+				for (var i=0;i<handle.pending.length;i++) {
+					var msg = handle.pending[i];
+					var chan = handle.channels[msg.ctr];
+					if (!chan)
+						throw new Error("There is no channel " + msg.ctr);
+					delete msg.ctr;
+					handle.postbox.deliver(chan, msg);
+				}
+				delete handle.pending;
 			}
 		};
 		services['org.ziniki.Init'] = myAddr;
