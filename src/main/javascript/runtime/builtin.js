@@ -1,5 +1,14 @@
 // Builtin stuff; so core we couldn't do without it
 
+function FLError(s) {
+	this.message = s;
+	console.log("FLAS Error encountered:", s);
+}
+
+FLError.prototype.toString = function() {
+	return "ERROR: " + this.message;
+}
+
 // Lists
 
 // Define an empty list by setting "_ctor" to "nil"
@@ -606,3 +615,4 @@ _CrosetMove = function(target, from, to) {
 	this.to = to;
 }
 CrosetMove = function(target, from, to) { return new _CrosetMove(target, from, to); }
+

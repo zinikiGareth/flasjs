@@ -123,8 +123,6 @@ FlasckComponents.logout = function() {
 	var pwd = doc.getElementById('password');
 	user.value = '';
 	pwd.value = '';
-	var single = doc.getElementById('single');
-	single.innerHTML = '';
 	new FlasckServices.CredentialsService(doc, postbox).logout();
 }
 		

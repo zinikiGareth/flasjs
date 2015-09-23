@@ -178,7 +178,7 @@ TextArea.prototype.constructor = TextArea;
 TextArea.prototype._setText = function(text) {
 	"use strict";
 //	console.log("setting text to", text);
-	var tmp = doc.createTextNode(text);
+	var tmp = this._doc.createTextNode(text);
 	this._mydiv.innerHTML = '';
 	this._mydiv.appendChild(tmp);
 }
@@ -273,3 +273,4 @@ D3Area.prototype.constructor = D3Area;
 D3Area.prototype._onUpdate = function() {
 	this._wrapper.updateD3(this._indiv, this._data);
 }
+
