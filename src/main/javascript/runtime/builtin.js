@@ -207,20 +207,23 @@ Crokey.onlyKey = function(id) {
 	return new Crokey([0x10], id);
 }
 
-function _Crokeys(listKeys) {
+function _Crokeys(id, listKeys) {
 	this._ctor = 'Crokeys';
+	this.id = id;
 	this.keys = listKeys;
 }
 
-function Crokeys(l) { return new _Crokeys(l); }
+function Crokeys(id, l) { return new _Crokeys(id, l); }
 
 function _Croset(crokeys) {
 	"use strict"
 	crokeys = FLEval.full(crokeys);
 	if (crokeys instanceof Array || crokeys._ctor === 'Cons' || crokeys._ctor === 'Nil')
-		crokeys = Crokeys(crokeys);
+		crokeys = Crokeys("arr-id", crokeys);
 	else if (crokeys._ctor !== 'Crokeys')
 		throw new Error("Cannot create a croset with " + crokeys);
+	if (crokeys.keys._ctor === 'Cons' || crokeys.keys._ctor === 'Nil')
+		crokeys.keys = FLEval.flattenList(crokeys.keys);
 	this._ctor = 'Croset';
 	this._special = 'object';
 	this.members = [];

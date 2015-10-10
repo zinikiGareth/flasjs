@@ -17,13 +17,23 @@ FlasckWK.action = function(json) {
 	FlasckWK[obj.action](obj);
 }
 
-FlasckWK.newText = function(obj) {
+FlasckWK.newElement = function(obj) {
 	"use strict";
-	var text = document.createTextNode(obj.text);
+	var text = document.createElement(obj.tag);
+	if (obj.id)
+		text.setAttribute("id", obj.id);
 	var inside = FlasckWK.areas[obj.inside];
 	if (obj.after) {
 		// not yet supported
+		console.log("after not yet supported");
 	} else {
 	 	inside.appendChild(text);
 	}
+}
+
+FlasckWK.setText = function(obj) {
+	"use strict";
+	var text = document.getElementById(obj.id);
+	text.innerHTML = '';
+	text.appendChild(document.createTextNode(obj.text));
 }

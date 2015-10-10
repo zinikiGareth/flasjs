@@ -173,9 +173,7 @@ FLEval.makeCrokeys = function(id, keys) {
 	for (var i=0;i<keys.length;i++)
 		ret.push(new Crokey(keys[i].key, keys[i].id));
 	
-	var cks = new Crokeys(ret);
-	cks.id = id;
-	return cks;
+	return new Crokeys(id, ret);
 }
 
 FLEval.toWire = function(wrapper, obj, dontLoop) {

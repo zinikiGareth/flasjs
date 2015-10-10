@@ -416,9 +416,9 @@ FlasckWrapper.prototype.onUpdate = function(op, obj, field, area, fn) {
 	if (!obj) obj = this.card; // should we insist on getting the card by throwing an error if not?
 	if (op === 'assign' && !fn)
 		throw new Error("Must provide fn for assign");
-	console.log("added update", this.updateAreas.length, ":", op, obj, field);
+// 	console.log("added update", this.updateAreas.length, ":", op, obj, field);
 	this.updateAreas.push({op: op, obj: obj, field: field, area: area, fn: fn});
-	console.log("updateAreas length =", this.updateAreas.length);
+// 	console.log("updateAreas length =", this.updateAreas.length);
 }
 
 FlasckWrapper.prototype.removeOnUpdate = function(op, obj, field, area) {
