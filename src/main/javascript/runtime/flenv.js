@@ -38,7 +38,7 @@ FLEval.full = function(x) {
 	x = FLEval.head(x);
 //	console.log("full(" + x + ")");
 	// fully evaluate all my props
-	if (typeof x === 'object' && x['_ctor']) {
+	if (x !== null && typeof x === 'object' && x['_ctor']) {
 //		console.log("ctor = " + x['_ctor']);
 		for (var p in x) {
 			if (p[0] !== '_' && x.hasOwnProperty(p)) {
@@ -76,7 +76,18 @@ FLEval.oclosure = function() {
 FLEval.field = function(from, fieldName) {
 //	console.log("get field " + fieldName +" from ", from);
 	from = FLEval.head(from);
+	if (from === null || from === undefined)
+		return null;
 	return from[fieldName];
+}
+
+FLEval.method = function(obj, methodName) {
+	console.log("call method", methodName, "on", obj, "with", arguments.length-2, "arguments");
+	var method = obj[methodName];
+	var args = [];
+	for (var i=2;i<arguments.length;i++)
+		args[i-2] = arguments[i];
+	return new FLClosure(obj, method, args);
 }
 
 FLEval.tuple = function() { // need to use arguments because it's varargs
@@ -128,7 +139,7 @@ FLEval.fromWire = function(obj, denyOthers) {
 		return obj; // it's a primitive
 	if (obj._ctor) {
 		if (obj._ctor === 'Crokeys') { // an array of crokey hashes - map to a Crokeys object of Crokey objects
-			return FLEval.makeCrokeys(obj.id, obj.keys); 
+			return FLEval.makeCrokeys(obj.id, obj.keyType, obj.keys); 
 		} else { // a flat-ish object
 			var ret = { _ctor: obj._ctor };
 			for (var x in obj) {
@@ -168,12 +179,16 @@ FLEval.fromWire = function(obj, denyOthers) {
 	}
 }
 
-FLEval.makeCrokeys = function(id, keys) {
+FLEval.makeCrokeys = function(id, keyType, keys) {
 	var ret = [];
-	for (var i=0;i<keys.length;i++)
-		ret.push(new Crokey(keys[i].key, keys[i].id));
+	for (var i=0;i<keys.length;i++) {
+		if (keyType === 'natural')
+			ret.push(new NaturalCrokey(keys[i].key, keys[i].id));
+		else
+			ret.push(new Crokey(keys[i].key, keys[i].id));
+	}
 	
-	return new Crokeys(id, ret);
+	return new Crokeys(id, keyType, ret);
 }
 
 FLEval.toWire = function(wrapper, obj, dontLoop) {

@@ -393,6 +393,9 @@ FlasckWrapper.prototype.processOne = function(msg, todo) {
 			var div = this.div.ownerDocument.getElementById(where);
    			this.showCard(div, options); 
 		}
+	} else if (msg._ctor == 'Debug') {
+		var val = FLEval.full(msg.value);
+		console.log("Debug:", val);
 	} else
 		throw new Error("The method message " + msg._ctor + " is not supported");
 }

@@ -47,6 +47,8 @@ StdLib.filter = function(f, al) {
 map = function(f,l) {
 	"use strict"
 	var l = FLEval.head(l);
+	if (l === undefined || l === null)
+		return Nil;
 	if (l instanceof Array)
 		return StdLib._mapArray(f, l);
 	if (l._ctor !== 'Cons')

@@ -136,7 +136,7 @@ function _Crokey(from, id) {
 		this.key = [];
 		for (var i=0;i<from.length;i+=2)
 			this.key[i/2] = parseInt(from.substring(i, i+2), 16);
-	} else if (typeof from === 'object' && from._ctor === 'Crokey') {
+	} else if (typeof from === 'object' && (from._ctor === 'Crokey' || from._ctor === 'NaturalCrokey')) {
 		// it's another Crokey
 		this.key = from.key;
 	} else
@@ -207,25 +207,49 @@ Crokey.onlyKey = function(id) {
 	return new Crokey([0x10], id);
 }
 
-function _Crokeys(id, listKeys) {
+function _NaturalCrokey(key, id) {
+	this._ctor = 'NaturalCrokey';
+	if (typeof key === 'string')
+		this.key = key;
+	else if (typeof key === 'object' && key instanceof _NaturalCrokey)
+		this.key = key.key;
+	else
+		throw new Error("Cannot handle " + this.key);
+	this.id = id;
+}
+
+_NaturalCrokey.prototype.compare = function(other) {
+	"use strict"
+	if (other._ctor !== 'NaturalCrokey')
+		throw new Error("Cannot compare nCrokey to non-nCrokey");
+	return this.key.localeCompare(other.key);
+}
+
+function NaturalCrokey(key, id) { return new _NaturalCrokey(key, id); }
+
+function _Crokeys(id, keytype, listKeys) {
 	this._ctor = 'Crokeys';
 	this.id = id;
+	this.keytype = keytype;
 	this.keys = listKeys;
 }
 
-function Crokeys(id, l) { return new _Crokeys(id, l); }
+function Crokeys(id, type, l) { return new _Crokeys(id, type, l); }
 
 function _Croset(crokeys) {
 	"use strict"
 	crokeys = FLEval.full(crokeys);
 	if (crokeys instanceof Array || crokeys._ctor === 'Cons' || crokeys._ctor === 'Nil')
-		crokeys = Crokeys("arr-id", crokeys);
+		crokeys = Crokeys("arr-id", 'crindex', crokeys);
 	else if (crokeys._ctor !== 'Crokeys')
 		throw new Error("Cannot create a croset with " + crokeys);
 	if (crokeys.keys._ctor === 'Cons' || crokeys.keys._ctor === 'Nil')
 		crokeys.keys = FLEval.flattenList(crokeys.keys);
 	this._ctor = 'Croset';
 	this._special = 'object';
+	if (!crokeys.keytype)
+		throw new Error("crokeys.keytype was not defined"); 
+	this.keyType = crokeys.keytype;
 	this.members = [];
 	this.hash = {};
 	this.mergeAppend(crokeys);
@@ -237,12 +261,17 @@ _Croset.prototype.length = function() {
 
 _Croset.prototype.insert = function(k, obj) {
 	"use strict"
+	var msgs = [];
 	if (!obj.id)
-		return;
-	if (!this._hasId(obj.id))
-		this._insert(new Crokey(k, obj.id));
+		return msgs;
+	if (!this._hasId(obj.id)) {
+		var rk = this.keyType === 'natural' ? new NaturalCrokey(k, obj.id) : new Crokey(k, obj.id);
+		this._insert(rk);
+		msgs = [new CrosetInsert(this, rk)];
+	}
 	if (obj._ctor)
 		this.hash[obj.id] = obj;
+	return msgs;
 }
 
 _Croset.prototype._append = function(id) {
@@ -293,6 +322,21 @@ _Croset.prototype._insertAt = function(pos, id) {
 
 _Croset.prototype.get = function(k) {
 	"use strict"
+	console.log("use member instead");
+	debugger;
+	return this.member(k);
+}
+
+_Croset.prototype.member = function(k) {
+	"use strict"
+	if (typeof k === 'string') {
+		if (this.keyType === 'natural')
+			k = new NaturalCrokey(k);
+		else if (this.keyType === 'crindex')
+			k = new Crokey(k);
+		else
+			throw new Error("Cannot handle compare with strings for keyType: " + this.keyType);
+	}
 	for (var i=0;i<this.members.length;i++) {
 		var m = this.members[i];
 		if (m.compare(k) === 0)
@@ -300,7 +344,13 @@ _Croset.prototype.get = function(k) {
 		else if (m.compare(k) === 0)
 			break;
 	}
+	debugger;
 	throw new Error("No key " + k + " in" + this);
+}
+
+_Croset.prototype.item = function(id) {
+	"use strict"
+	return this.hash[id];
 }
 
 _Croset.prototype.getOrId = function(k) {
@@ -358,7 +408,7 @@ _Croset.prototype.mergeAppend = function(crokeys) {
 	var msgs = [];
 	for (var i=0;i<l.length;i++) {
 //		console.log("handle", l.head);
-		if (l[i]._ctor !== 'Crokey')
+		if (l[i]._ctor !== 'Crokey' && l[i]._ctor !== 'NaturalCrokey')
 			throw new Error("Needs to be a Crokey");
 		if (!this._hasId(l[i].id)) { // only insert if it's not in the list
 			this._insert(l[i]);
@@ -580,9 +630,17 @@ _D3Action = function(action, args) {
 
 D3Action = function(action, args) { return new _D3Action(action, args); }
 
+_Debug = function(value) {
+	"use strict";
+	this._ctor = 'Debug';
+	this.value = value;
+}
+
+Debug = function(value) { return new _Debug(value); }
+
 _CrosetInsert = function(target, key) {
 	"use strict"
-	if (key._ctor !== 'Crokey') throw new Error("Not a crokey");
+	if (key._ctor !== 'Crokey' && key._ctor !== 'NaturalCrokey') throw new Error("Not a crokey");
 	this._ctor = "CrosetInsert";
 	this.target = target;
 	this.key = key;
@@ -591,7 +649,7 @@ CrosetInsert = function(target, key) { return new _CrosetInsert(target, key); }
 
 _CrosetReplace = function(target, key) {
 	"use strict"
-	if (key._ctor !== 'Crokey') throw new Error("Not a crokey");
+	if (key._ctor !== 'Crokey' && key._ctor !== 'NaturalCrokey') throw new Error("Not a crokey");
 	this._ctor = "CrosetReplace";
 	this.target = target;
 	this.key = key;
@@ -600,7 +658,7 @@ CrosetReplace = function(target, key) { return new _CrosetReplace(target, key); 
 
 _CrosetRemove = function(target, key, forReal) {
 	"use strict"
-	if (key._ctor !== 'Crokey') throw new Error("Not a crokey");
+	if (key._ctor !== 'Crokey' && key._ctor !== 'NaturalCrokey') throw new Error("Not a crokey");
 	this._ctor = "CrosetRemove";
 	this.target = target;
 	this.key = key;
@@ -610,8 +668,8 @@ CrosetRemove = function(target, key, forReal) { return new _CrosetRemove(target,
 
 _CrosetMove = function(target, from, to) {
 	"use strict"
-	if (from._ctor !== 'Crokey') throw new Error("Not a crokey");
-	if (to._ctor !== 'Crokey') throw new Error("Not a crokey");
+	if (from._ctor !== 'Crokey' && from._ctor !== 'NaturalCrokey') throw new Error("Not a crokey");
+	if (to._ctor !== 'Crokey' && to._ctor !== 'NaturalCrokey') throw new Error("Not a crokey");
 	this._ctor = "CrosetMove";
 	this.target = target;
 	this.from = from;

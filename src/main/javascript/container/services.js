@@ -401,6 +401,10 @@ FlasckServices.QueryService.prototype.scan = function(index, type, options, hand
 	console.log("scan", index, type, options, handler);
 	var self = this;
 	var zinchandler = function(msg) {
+		if (msg.error) {
+			console.log("error on scan", msg.error);
+			throw new Error(msg.error);
+		}
 	    var payload = msg.payload;
 	    console.log("scan payload =", payload);
 	    if (!payload || !payload[type])
@@ -415,10 +419,12 @@ FlasckServices.QueryService.prototype.scan = function(index, type, options, hand
 					throw new Error("I was expecting crokeys ...");
 				var l = msg.payload[k];
 				if (k == 'Crokeys') {
-					if (l[0].keyType !== 'crindex')
-						throw new Error("don't handle natural keys yet");
-					crokeys.id = l[0].id;
-					crokeys.keys = l[0].keys;
+					var ck = l[0];
+					if (ck.keyType !== 'crindex' && ck.keyType !== 'natural')
+						throw new Error("can't handle key type " + ck.keyType);
+					crokeys.id = ck.id;
+					crokeys.keyType = ck.keyType;
+					crokeys.keys = ck.keys;
 				} else { // sideload actual objects
 					if (l instanceof Array) {
 						for (var i=0;i<l.length;i++) {
