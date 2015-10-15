@@ -353,7 +353,7 @@ _Croset.prototype.item = function(id) {
 	return this.hash[id];
 }
 
-_Croset.prototype.getOrId = function(k) {
+_Croset.prototype.memberOrId = function(k) {
 	"use strict"
 	for (var i=0;i<this.members.length;i++) {
 		var m = this.members[i];

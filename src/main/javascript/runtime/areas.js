@@ -89,7 +89,7 @@ ListArea.prototype._assignToVar = function(croset) {
     		var child = this._newChild();
     		child._crokey = v;
     		this._insertItem(child);
-    		child._assignToVar(croset.getOrId(v));
+    		child._assignToVar(croset.memberOrId(v));
   		}
   		this._wrapper.onUpdate("croset", croset, null, this);
 	}

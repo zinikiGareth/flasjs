@@ -430,7 +430,7 @@ FlasckWrapper.prototype.removeOnUpdate = function(op, obj, field, area) {
 		var ua = this.updateAreas[i];
 		if (ua.op == op && ua.area === area && ua.obj == obj && ua.field == field) {
 			this.updateAreas.splice(i, 1);
-			console.log("removed update #", i, op, obj, field);
+//			console.log("removed update #", i, op, obj, field);
 		} else
 			i++;
 	}
@@ -480,14 +480,14 @@ FlasckWrapper.prototype.updateDisplay = function(todo) {
 				// Hard question: what do we do when we have "inserted" something of nothing?
 				// i.e. we have created a "member" with a key and an ID, but nothing in the hash?
 				// I am currently taking the option to send across "just the id"
-				var obj = item.target.getOrId(item.key);
+				var obj = item.target.memberOrId(item.key);
 
 				// Either way, pass the object
 				child._assignToVar(obj);
 			}
 		} else if (item instanceof _CrosetReplace) {
 //			console.log("Croset Replace");
-			var obj = item.target.get(item.key);
+			var obj = item.target.member(item.key);
 			for (var i=0;i<this.updateAreas.length;i++) {
 				var ua = this.updateAreas[i];
 				if (ua.op != 'crorepl') continue;
