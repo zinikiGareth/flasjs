@@ -474,6 +474,7 @@ _Croset.prototype.clear = function() {
 }
 
 // Can't we just ask if it's in the hash?
+// Not if it hasn't been loaded
 _Croset.prototype._hasId = function(id) {
 	"use strict"
 	for (var i=0;i<this.members.length;i++) {
@@ -637,6 +638,15 @@ _Debug = function(value) {
 }
 
 Debug = function(value) { return new _Debug(value); }
+
+_MessageWrapper = function(value, msgs) {
+	"use strict";
+	this._ctor = 'MessageWrapper';
+	this.value = value;
+	this.msgs = msgs;
+}
+
+MessageWrapper = function(value, msgs) { return new _MessageWrapper(value, msgs); }
 
 _CrosetInsert = function(target, key) {
 	"use strict"

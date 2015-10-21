@@ -106,6 +106,13 @@ FLEval.flattenList = function(list) {
 	return ret;
 }
 
+FLEval.isA = function(obj, type) {
+	if (!obj) return false;
+	if (obj._ctor === type) return true;
+	if (obj._special === 'contract' && obj._contract === type) return true;
+	return false;
+}
+
 FLEval.flattenMap = function(obj) {
 	var ret = {};
 	while (obj && obj._ctor === 'Assoc') {

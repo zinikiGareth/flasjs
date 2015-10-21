@@ -288,7 +288,7 @@ FlasckWrapper.prototype.processMessages = function(msgs, todo) {
 		else
 			mo = this.processOne(hd, todo);
 		if (mo)
-			momsgs = momsgs.concat(FLEval.flattenList(mo));
+			momsgs = momsgs.concat(FLEval.flattenList(FLEval.full(mo)));
 	}
 	return momsgs;
 }
@@ -310,6 +310,7 @@ FlasckWrapper.prototype.processOne = function(msg, todo) {
 		}
 		if (!target._special) {
 			console.log("Target for send is not 'special'", msg.target);
+			debugger;
 			return;
 		}
 		var meth = msg.method;
@@ -344,6 +345,10 @@ FlasckWrapper.prototype.processOne = function(msg, todo) {
 		var into = msg.target;
 		if (!into)
 			into = this.card;
+		if (msg.value._ctor === 'MessageWrapper') {
+			into[msg.field] = msg.value.value;
+			return msg.value.msgs;
+		}
 		into[msg.field] = msg.value;
 		todo.push(msg);
 	} else if (msg._ctor === 'CrosetInsert' || msg._ctor === 'CrosetReplace' || msg._ctor === 'CrosetRemove' || msg._ctor === 'CrosetMove') {
