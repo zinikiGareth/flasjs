@@ -420,10 +420,10 @@ FlasckServices.QueryService.prototype.scan = function(index, type, options, hand
 				var l = msg.payload[k];
 				if (k == 'Crokeys') {
 					var ck = l[0];
-					if (ck.keyType !== 'crindex' && ck.keyType !== 'natural')
-						throw new Error("can't handle key type " + ck.keyType);
+					if (ck.keytype !== 'crindex' && ck.keytype !== 'natural')
+						throw new Error("can't handle key type " + ck.keytype);
 					crokeys.id = ck.id;
-					crokeys.keyType = ck.keyType;
+					crokeys.keytype = ck.keytype;
 					crokeys.keys = ck.keys;
 				} else { // sideload actual objects
 					if (l instanceof Array) {

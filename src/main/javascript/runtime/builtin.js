@@ -238,20 +238,26 @@ function Crokeys(id, type, l) { return new _Crokeys(id, type, l); }
 
 function _Croset(crokeys) {
 	"use strict"
+	
+	// initialize "blank" fields
+	this._ctor = 'Croset';
+	this._special = 'object';
+	this.members = [];
+	this.hash = {};
+
+	// Now try and merge in a default set of crokeys
 	crokeys = FLEval.full(crokeys);
-	if (crokeys instanceof Array || crokeys._ctor === 'Cons' || crokeys._ctor === 'Nil')
+	if (crokeys === null || crokeys === undefined || crokeys._ctor === 'Nil')
+		return;
+	if (crokeys instanceof Array || crokeys._ctor === 'Cons')
 		crokeys = Crokeys("arr-id", 'crindex', crokeys);
 	else if (crokeys._ctor !== 'Crokeys')
 		throw new Error("Cannot create a croset with " + crokeys);
 	if (crokeys.keys._ctor === 'Cons' || crokeys.keys._ctor === 'Nil')
 		crokeys.keys = FLEval.flattenList(crokeys.keys);
-	this._ctor = 'Croset';
-	this._special = 'object';
 	if (!crokeys.keytype)
 		throw new Error("crokeys.keytype was not defined"); 
-	this.keyType = crokeys.keytype;
-	this.members = [];
-	this.hash = {};
+	this.keytype = crokeys.keytype;
 	this.mergeAppend(crokeys);
 }
 
@@ -265,7 +271,7 @@ _Croset.prototype.insert = function(k, obj) {
 	if (!obj.id)
 		return msgs;
 	if (!this._hasId(obj.id)) {
-		var rk = this.keyType === 'natural' ? new NaturalCrokey(k, obj.id) : new Crokey(k, obj.id);
+		var rk = this.keytype === 'natural' ? new NaturalCrokey(k, obj.id) : new Crokey(k, obj.id);
 		this._insert(rk);
 		msgs = [new CrosetInsert(this, rk)];
 	}
@@ -330,12 +336,12 @@ _Croset.prototype.get = function(k) {
 _Croset.prototype.member = function(k) {
 	"use strict"
 	if (typeof k === 'string') {
-		if (this.keyType === 'natural')
+		if (this.keytype === 'natural')
 			k = new NaturalCrokey(k);
-		else if (this.keyType === 'crindex')
+		else if (this.keytype === 'crindex')
 			k = new Crokey(k);
 		else
-			throw new Error("Cannot handle compare with strings for keyType: " + this.keyType);
+			throw new Error("Cannot handle compare with strings for keytype: " + this.keytype);
 	}
 	for (var i=0;i<this.members.length;i++) {
 		var m = this.members[i];

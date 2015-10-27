@@ -146,7 +146,7 @@ FLEval.fromWire = function(obj, denyOthers) {
 		return obj; // it's a primitive
 	if (obj._ctor) {
 		if (obj._ctor === 'Crokeys') { // an array of crokey hashes - map to a Crokeys object of Crokey objects
-			return FLEval.makeCrokeys(obj.id, obj.keyType, obj.keys); 
+			return FLEval.makeCrokeys(obj.id, obj.keytype, obj.keys); 
 		} else { // a flat-ish object
 			var ret = { _ctor: obj._ctor };
 			for (var x in obj) {
@@ -186,16 +186,16 @@ FLEval.fromWire = function(obj, denyOthers) {
 	}
 }
 
-FLEval.makeCrokeys = function(id, keyType, keys) {
+FLEval.makeCrokeys = function(id, keytype, keys) {
 	var ret = [];
 	for (var i=0;i<keys.length;i++) {
-		if (keyType === 'natural')
+		if (keytype === 'natural')
 			ret.push(new NaturalCrokey(keys[i].key, keys[i].id));
 		else
 			ret.push(new Crokey(keys[i].key, keys[i].id));
 	}
 	
-	return new Crokeys(id, keyType, ret);
+	return new Crokeys(id, keytype, ret);
 }
 
 FLEval.toWire = function(wrapper, obj, dontLoop) {
