@@ -41,18 +41,27 @@ _Cons.prototype.toString = function() {
 
 Cons = function(a,b) { return new _Cons(a,b); }
 
-/*
-List.prototype.toString = function() {
-	var ret = "[";
-	var sep = "";
-	for (var x = this;x && x._ctor !== 'nil';x = x.tail) {
-		ret += sep + (x.head?x.head.toString():"");
-		sep = ",";
-	}
-	return ret +"]";
+_StackPush = function(h, t) {
+	"use strict";
+	this._ctor = 'StackPush';
+	this.head = h;
+	this.tail = t;
+	return this;
 }
-*/
 
+_StackPush.prototype.length = function() {
+	"use strict"
+	if (this.tail instanceof _Nil)
+		return 1;
+	return 1 + this.tail.length();
+}
+
+_StackPush.prototype.toString = function() {
+	"use strict"
+	return 'Stack' + this.length();
+}
+
+StackPush = function(h,t) {"use strict"; return new _StackPush(h,t);}
 function _Tuple(members) {
 	"use strict"
 	this._ctor = 'Tuple';
