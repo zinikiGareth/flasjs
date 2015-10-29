@@ -347,6 +347,7 @@ FlasckWrapper.prototype.processOne = function(msg, todo) {
 			into = this.card;
 		if (msg.value._ctor === 'MessageWrapper') {
 			into[msg.field] = msg.value.value;
+			todo.push(Assign(into, msg.field, msg.value.value));
 			return msg.value.msgs;
 		}
 		into[msg.field] = msg.value;
