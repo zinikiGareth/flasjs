@@ -20,11 +20,14 @@ FLEval.head = function(x) {
 	try {
 		while (x instanceof FLClosure) {
 	//		console.log("evaluating " + x.fn);
+			if (x.hasOwnProperty('value'))
+				return x.value;
+			var clos = x;
 			if (x.fn instanceof FLClosure)
 			  x.fn = FLEval.head(x.fn);
 			if (!x.fn || !x.fn.apply)
 			  return x.fn;
-			x = x.fn.apply(x.obj, x.args);
+			x = clos.value = x.fn.apply(x.obj, x.args);
 	//		console.log("head saw " + x);
 		}
 	} catch (ex) {
