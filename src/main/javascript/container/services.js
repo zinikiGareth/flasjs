@@ -241,7 +241,7 @@ FlasckServices.CrosetService.prototype.insert = function(crosetId, key, objId) {
 	}
 	var croset = this.store[crosetId];
 	if (!croset)
-		throw new Error("There is no croset for" + crosetId);
+		throw new Error("There is no croset for " + crosetId);
 	// de dup
 	for (var i=0;i<croset.keys.length;i++) {
 		if (croset.keys[i].id === sendId)

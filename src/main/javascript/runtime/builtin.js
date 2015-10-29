@@ -234,6 +234,10 @@ _NaturalCrokey.prototype.compare = function(other) {
 	return this.key.localeCompare(other.key);
 }
 
+_NaturalCrokey.prototype.toString = function() {
+	return this.key;
+}
+
 function NaturalCrokey(key, id) { return new _NaturalCrokey(key, id); }
 
 function _Crokeys(id, keytype, listKeys) {
@@ -279,11 +283,13 @@ _Croset.prototype.insert = function(k, obj) {
 	var msgs = [];
 	if (!obj.id)
 		return msgs;
-	if (!this._hasId(obj.id)) {
-		var rk = this.keytype === 'natural' ? new NaturalCrokey(k, obj.id) : new Crokey(k, obj.id);
+	var rk = this._hasId(obj.id);
+	if (rk === undefined) {
+		rk = this.keytype === 'natural' ? new NaturalCrokey(k, obj.id) : new Crokey(k, obj.id);
 		this._insert(rk);
 		msgs = [new CrosetInsert(this, rk)];
-	}
+	} else
+		msgs = [new CrosetReplace(this, rk)];
 	if (obj._ctor)
 		this.hash[obj.id] = obj;
 	return msgs;
@@ -413,9 +419,9 @@ _Croset.prototype.mergeAppend = function(crokeys) {
 		return;
 	if (!crokeys.id)
 		throw new Error("Incoming crokeys must have a Croset ID");
-	if (!this.crosetId)
+	if (!this.crosetId) {
 		this.crosetId = crokeys.id;
-	else if (this.crosetId != crokeys.id)
+	} else if (this.crosetId != crokeys.id)
 		throw new Error("Cannot apply changes from a different croset");
 	var l = crokeys.keys;
 	if (!(l instanceof Array))
