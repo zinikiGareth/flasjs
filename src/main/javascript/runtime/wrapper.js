@@ -189,9 +189,15 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 					self.postbox.deliver(self.services['org.ziniki.Persona'], {from: self.ctrmap['org.ziniki.Init'], method: 'forApplication', args:[appl, next, handler] });
 				} else if (id.substring(0, 9) === 'resource/') {
 					self.postbox.deliver(self.services['org.ziniki.KeyValue'], {from: self.ctrmap['org.ziniki.Init'], method: 'resource', args:[id, handler] });
-				} else {
-					self.postbox.deliver(self.services['org.ziniki.KeyValue'], {from: self.ctrmap['org.ziniki.Init'], method: 'typed', args:[id, handler] });
-				}
+				} else if (id.substring(0, 6) === 'typed/') {
+					idx = id.indexOf('/', 6);
+					if (idx < 0)
+						throw new Error("Invalid id in typed request: " + id);
+					var type = id.substring(6, idx);
+					id = id.substring(idx+1);
+					self.postbox.deliver(self.services['org.ziniki.KeyValue'], {from: self.ctrmap['org.ziniki.Init'], method: 'typed', args:[type, id, handler] });
+				} else
+					throw new Error("Cannot understand what you want me load: " + id);
 			}
 		},
 		dispose: function(from) {
