@@ -37,6 +37,17 @@ FlasckServices.CentralStore.realId = function(id) {
 	return FlasckServices.CentralStore.keyValue._localMapping[id];
 }
 
+FlasckServices.CentralStore.keyValue.merge = function(it) {
+	if (this[it.id] === null || this[it.id] === undefined) {
+		this[it.id] = it;
+		return;
+	}
+	var already = this[it.id];
+	for (var p in it)
+		if (it.hasOwnProperty(p))
+			already[p] = it[p];
+}
+
 FlasckServices.CentralStore.unpackPayload = function(store, payload) {
 	var main = payload._main;
 	for (var k in payload) {
@@ -430,7 +441,7 @@ FlasckServices.QueryService.prototype.scan = function(index, type, options, hand
 						for (var i=0;i<l.length;i++) {
 							var it = l[i];
 							it._ctor = k;
-							self.store[it.id] = it;
+							self.store.merge(it)
 						}
 					}
 				}
