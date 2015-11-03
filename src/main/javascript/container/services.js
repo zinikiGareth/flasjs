@@ -25,6 +25,38 @@ FlasckServices.TimerService.prototype.requestTicks = function(handler, amount) {
 	}, 1000);
 }
 
+FlasckServices.WindowService = function(postbox) {
+	this.postbox = postbox;
+	return this;
+}
+
+FlasckServices.WindowService.prototype.process = function(message) {
+	"use strict";
+	var meth = this[message.method];
+	if (!meth)
+		throw new Error("There is no method '" + message.method +"'");
+	meth.apply(this, message.args);
+}
+
+FlasckServices.WindowService.prototype.closePopup = function() {
+	"use strict";
+	var elt = document.getElementById("flasck_popover");
+	if (elt)
+		elt.close();
+}
+
+FlasckServices.WindowService.prototype.requestFullScreen = function() {
+	"use strict";
+	var body = doc.getElementsByTagName("html")[0];
+	body.webkitRequestFullScreen();
+}
+
+FlasckServices.WindowService.prototype.leaveFullScreen = function() {
+	"use strict";
+	var body = doc.getElementsByTagName("html")[0];
+	doc.webkitCancelFullScreen();
+}
+
 FlasckServices.CentralStore = {
 	keyValue: {_hack: 'keyvalue', _localMapping: {}},
 	personae: {_hack: 'personae'},
@@ -476,6 +508,7 @@ FlasckServices.QueryService.prototype.scan = function(index, type, options, hand
 FlasckServices.provideAll = function(document, postbox, services) {
 	"use strict";
 	Flasck.provideService(postbox, services, "org.ziniki.Timer", new FlasckServices.TimerService(postbox));
+	Flasck.provideService(postbox, services, "org.ziniki.Window", new FlasckServices.WindowService(postbox));
 	Flasck.provideService(postbox, services, "org.ziniki.Render", new FlasckServices.RenderService(postbox));
 	Flasck.provideService(postbox, services, "org.ziniki.Credentials", new FlasckServices.CredentialsService(document, postbox));
 	Flasck.provideService(postbox, services, "org.ziniki.KeyValue", new FlasckServices.KeyValueService(postbox));
