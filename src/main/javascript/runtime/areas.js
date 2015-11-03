@@ -213,7 +213,6 @@ TextArea.prototype._save = function(ev, rules, revertTo) {
 	var self = this;
 	var input = revertTo || this._mydiv.children[0].value;
 	if (revertTo == null) {
-		console.log("rules =", rules);
 		// TODO: may need to do final validity checking
 		// if (!rules.validate(input)) { ... }
 		rules.save.call(this, this._wrapper, input);

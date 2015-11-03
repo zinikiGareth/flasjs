@@ -79,7 +79,7 @@ FlasckWrapper.prototype.editableField = function(elt, rules, inside) {
 // TODO: may also need "saveState", or could add another condition in here
 FlasckWrapper.prototype.saveObject = function(obj) {
 	if (obj === this.card) {
-		console.log("is this an attempt to save state?");
+//		console.log("is this an attempt to save state?");
 		return;
 	}
 	if (!obj.id) {
@@ -279,7 +279,7 @@ FlasckWrapper.prototype.messageEventLoop = function(flfull) {
 }
 
 FlasckWrapper.prototype.processMessages = function(msgs, todo) {
-	console.log("processing messages", msgs);
+//	console.log("processing messages", msgs);
 	if (!todo)
 		todo = {};
 	var momsgs = [];
@@ -332,7 +332,7 @@ FlasckWrapper.prototype.processOne = function(msg, todo) {
 				console.log("No service was provided for " + target._contract);
 				return;
 			}
-			console.log("trying to send", meth, args, "to", addr);
+//			console.log("trying to send", meth, args, "to", addr);
 			this.postbox.deliver(addr, {from: target._myaddr, method: meth, args: args });
 		} else if (target._special === 'object') {
 			var args = FLEval.flattenList(msg.args);

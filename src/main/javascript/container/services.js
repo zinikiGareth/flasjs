@@ -106,13 +106,13 @@ FlasckServices.KeyValueService.prototype.typed = function(type, id, handler) {
 	var self = this;
 	if (self.store.hasOwnProperty(id)) {
 		var obj = self.store[id];
-		console.log("kv sending", id, "from store");
+//		console.log("kv sending", id, "from store");
 		self.postbox.deliver(handler.chan, {from: self._myAddr, method: 'update', args:[obj]});
 		return;
 	}
 
 	var resource = 'typedObject/' + type + '/' + id;
-	console.log("self =", self, "subscribe to", resource);
+//	console.log("self =", self, "subscribe to", resource);
 
 	if (self.store.hasOwnProperty(resource)) {
 		var obj = self.store[resource];
@@ -122,7 +122,7 @@ FlasckServices.KeyValueService.prototype.typed = function(type, id, handler) {
 		return;
 	}
 	var zinchandler = function (msg) {
-		console.log("kv received", msg, "from Ziniki");
+//		console.log("kv received", msg, "from Ziniki");
 		if (msg.error)
 			console.log("error:", msg.error);
 		else {
@@ -398,15 +398,15 @@ FlasckServices.QueryService.prototype.process = function(message) {
 
 FlasckServices.QueryService.prototype.scan = function(index, type, options, handler) {
 	"use strict";
-	console.log("scan", index, type, options, handler);
+//	console.log("scan", index, type, options, handler);
 	var self = this;
 	var zinchandler = function(msg) {
+	    console.log("scan received msg:", msg);
 		if (msg.error) {
 			console.log("error on scan", msg.error);
 			throw new Error(msg.error);
 		}
 	    var payload = msg.payload;
-	    console.log("scan payload =", payload);
 	    if (!payload || !payload[type])
 	    	return;
 		var main = msg.payload._main;

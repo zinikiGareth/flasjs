@@ -85,7 +85,7 @@ FLEval.field = function(from, fieldName) {
 }
 
 FLEval.method = function(obj, methodName) {
-	console.log("call method", methodName, "on", obj, "with", arguments.length-2, "arguments");
+//	console.log("call method", methodName, "on", obj, "with", arguments.length-2, "arguments");
 	var method = obj[methodName];
 	var args = [];
 	for (var i=2;i<arguments.length;i++)
@@ -377,7 +377,7 @@ FLEval.makeEvent = function(ev) {
 		}
 	}
 	default:
-		console.log("cannot convert event", ev.type);
+//		console.log("cannot convert event", ev.type);
 		break;
 	}
 	return null;
