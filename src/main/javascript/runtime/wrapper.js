@@ -321,6 +321,13 @@ FlasckWrapper.prototype.processOne = function(msg, todo) {
 		}
 		var meth = msg.method;
 		if (target._special === 'contract') {
+			// Complete hack to get this code in here somewhere. Use "JSNI" instead, which I think amounts to an "interface" defn
+			if (target._contract === 'org.ziniki.Content') {
+				var sendTo = msg.args.head;
+				var data = msg.args.tail.head;
+				ContentAPI.upload(sendTo, data);
+				return;
+			}
 			var args = [];
 			var l = msg.args;
 			while (l && l._ctor === 'Cons') {

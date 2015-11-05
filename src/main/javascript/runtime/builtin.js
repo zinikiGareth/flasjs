@@ -708,3 +708,16 @@ _CrosetMove = function(target, from, to) {
 }
 CrosetMove = function(target, from, to) { return new _CrosetMove(target, from, to); }
 
+ContentAPI = function() {
+}
+
+ContentAPI.upload = function(to, file) {
+	console.log("Need to hack in Content API " + to + " <- " + file);
+	var form = new FormData();
+
+	form.append("file", file);
+
+	var request = new XMLHttpRequest();
+	request.open("POST", to);
+	request.send(form);
+}

@@ -66,6 +66,44 @@ DivArea.prototype._makeDraggable = function() {
 	}
 }
 
+DivArea.prototype._dropSomethingHere = function(contentTypes) {
+	function isAcceptable(e) {
+        var files = e.dataTransfer.files;
+        var acceptable = false;
+        for (var i=0;i<files.length; i++) {
+        	for (var j=0;j<contentTypes.length;j++)
+	            if (files[i].type.match(contentTypes[j]))
+    	        	return files[i];
+        }
+        return null;
+	}
+	this._mydiv.addEventListener('dragover', function(e) {
+        e.stopPropagation();
+		e.preventDefault();
+        if (isAcceptable(e)) {
+	        e.dataTransfer.dropEffect = 'copy';
+	    }
+	});
+	var mydiv = this._mydiv;
+    this._mydiv.addEventListener('drop', function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        var file = isAcceptable(e);
+        if (file) {
+        	mydiv.innerHTML = '';
+            var reader = new FileReader();
+            reader.onload = function(e2) { // finished reading file data.
+                var img = document.createElement('img');
+                img.src = reader.result;
+                mydiv.appendChild(img);
+                if (mydiv["on_drop"])
+                	mydiv['on_drop'](new org.flasck.DropEvent(file));
+            }
+            reader.readAsDataURL(file); // start reading the file data.
+		}
+	});
+}
+
 var ListArea = function(parent, tag) {
 	"use strict";
 	Area.call(this, parent, tag || 'ul');

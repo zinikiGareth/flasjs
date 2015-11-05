@@ -364,6 +364,8 @@ FLEval.error = function(s) {
 }
 
 FLEval.makeEvent = function(ev) {
+	if (ev._ctor) // if it's already an event we created
+		return ev;
 	switch (ev.type) {
 	case "change": {
 		switch (ev.target.type) {
@@ -377,7 +379,7 @@ FLEval.makeEvent = function(ev) {
 		}
 	}
 	default:
-//		console.log("cannot convert event", ev.type);
+		console.log("cannot convert event", ev.type);
 		break;
 	}
 	return null;
