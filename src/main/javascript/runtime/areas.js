@@ -271,12 +271,25 @@ TextArea.prototype._editable = function(rules) {
 var CardSlotArea = function(parent, cardOpts) {
 	"use strict";
 	Area.call(this, parent, 'div');
-	if (parent)
+	if (parent && cardOpts)
 		this._wrapper.showCard(this._mydiv, cardOpts);
 }
 
 CardSlotArea.prototype = new Area();
 CardSlotArea.prototype.constructor = CardSlotArea;
+
+CardSlotArea.prototype._updateToCard = function(card) {
+	if (card) {
+		var ex = card.explicit;
+		if (typeof ex === 'string')
+			ex = getPackagedItem(ex);
+		var opts = { explicit: ex };
+		if (card.loadId)
+			opts['loadId'] = card.loadId;
+		this._wrapper.showCard(this._mydiv, opts);
+	}
+	// otherwise we should clear out the card
+}
 
 var CasesArea = function(parent) {
 	"use strict";

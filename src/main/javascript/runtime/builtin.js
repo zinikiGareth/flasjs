@@ -1,5 +1,17 @@
 // Builtin stuff; so core we couldn't do without it
 
+function getPackagedItem(name) {
+	"use strict";
+	var scope = window;
+	while (true) {
+		var idx = name.indexOf(".");
+		if (idx == -1)
+			return scope[name];
+		scope = scope[name.substring(0, idx)];
+		name = name.substring(idx+1);
+	}
+}
+
 function FLError(s) {
 	this.message = s;
 	console.log("FLAS Error encountered:", s);
@@ -712,12 +724,20 @@ ContentAPI = function() {
 }
 
 ContentAPI.upload = function(to, file) {
-	console.log("Need to hack in Content API " + to + " <- " + file);
+	"use strict";
 	var form = new FormData();
-
 	form.append("file", file);
-
 	var request = new XMLHttpRequest();
 	request.open("POST", to);
 	request.send(form);
+	// TODO: handle error recovery & transmission issues
 }
+
+_Card = function(explicit, loadId) {
+	"use strict";
+	this._ctor = 'Card';
+	this.explicit = explicit;
+	this.loadId = loadId;
+}
+
+Card = function(explicit, loadId) { return new _Card(explicit, loadId); }

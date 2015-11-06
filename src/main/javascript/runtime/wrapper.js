@@ -196,6 +196,9 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 					var type = id.substring(6, idx);
 					id = id.substring(idx+1);
 					self.postbox.deliver(self.services['org.ziniki.KeyValue'], {from: self.ctrmap['org.ziniki.Init'], method: 'typed', args:[type, id, handler] });
+				} else if (id.substring(0, 12) === 'unprojected/') {
+					id = id.substring(12);
+					self.postbox.deliver(self.services['org.ziniki.KeyValue'], {from: self.ctrmap['org.ziniki.Init'], method: 'unprojected', args:[id, handler] });
 				} else
 					throw new Error("Cannot understand what you want me load: " + id);
 			}

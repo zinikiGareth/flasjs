@@ -379,7 +379,7 @@ FLEval.makeEvent = function(ev) {
 		}
 	}
 	default:
-		console.log("cannot convert event", ev.type);
+//		console.log("cannot convert event", ev.type);
 		break;
 	}
 	return null;
