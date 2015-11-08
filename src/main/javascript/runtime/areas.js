@@ -283,10 +283,15 @@ CardSlotArea.prototype._updateToCard = function(card) {
 		var ex = card.explicit;
 		if (typeof ex === 'string')
 			ex = getPackagedItem(ex);
-		var opts = { explicit: ex };
-		if (card.loadId)
-			opts['loadId'] = card.loadId;
-		this._wrapper.showCard(this._mydiv, opts);
+		if (ex) {
+			var opts = { explicit: ex };
+			if (card.loadId)
+				opts['loadId'] = card.loadId;
+			this._wrapper.showCard(this._mydiv, opts);
+		} else {
+			console.log("There is no card called", card.explicit);
+			// we should clear out the card
+		}
 	}
 	// otherwise we should clear out the card
 }
