@@ -145,7 +145,7 @@ Assoc = function(k,v,r) { return new _Assoc(k,v,r); }
 
 function _Crokey(from, id) {
 	"use strict"
-	if (typeof id !== 'string')
+	if (typeof id !== 'string' && typeof id !== 'undefined')
 		throw new Error("id must be a string");
 	this._ctor = 'Crokey';
 	this.id = id;
@@ -374,8 +374,6 @@ _Croset.prototype.member = function(k) {
 		var m = this.members[i];
 		if (m.compare(k) === 0)
 			return this.hash[m.id];
-		else if (m.compare(k) === 0)
-			break;
 	}
 	debugger;
 	throw new Error("No key " + k + " in" + this);
@@ -489,6 +487,27 @@ _Croset.prototype.delete = function(id) {
 			this.members.splice(i, 1);
 		} else
 			i++;
+	}
+	return msgs;
+}
+
+_Croset.prototype.deleteSet = function(crokeys) {
+	"use strict"
+	var msgs = [];
+	for (var j=0;j<crokeys.keys.length;j++) {
+		var ck = crokeys.keys[j];
+		for (var i=0;i<this.members.length;) {
+			var m = this.members[i];
+			var x = m.compare(ck);
+			if (x === 0) {
+				delete this.hash[m.id];
+				msgs.push(new CrosetRemove(this, m, true));
+				this.members.splice(i, 1);
+			} else if (x > 0)
+				break;
+			else
+				i++;
+		}
 	}
 	return msgs;
 }

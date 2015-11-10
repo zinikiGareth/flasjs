@@ -271,8 +271,14 @@ FlasckServices.CrosetService.prototype.get = function(crosetId, after, count, ha
 	var self = this;
 	var zinchandler = function (msg) {
 		console.log("croset received", msg, "from Ziniki");
-		var obj = FlasckServices.CentralStore.unpackPayload(self.store, msg.payload);
-		self.postbox.deliver(handler.chan, {from: self._myAddr, method: 'update', args:[obj]});
+		if (msg.action === 'replace' || msg.action === 'insert') {
+			var obj = FlasckServices.CentralStore.unpackPayload(self.store, msg.payload);
+			self.postbox.deliver(handler.chan, {from: self._myAddr, method: 'update', args:[obj]});
+		} else if (msg.action === 'remove') {
+			var obj = FlasckServices.CentralStore.unpackPayload(self.store, msg.payload);
+			self.postbox.deliver(handler.chan, {from: self._myAddr, method: 'remove', args:[obj]});
+		} else
+			throw new Error("Cannot handle croset update action: " + msg.payload.action);
 	};
 	ZinikiConn.req.subscribe("croset/" + crosetId + "/get/" + after + "/" + count, zinchandler).send();
 }
