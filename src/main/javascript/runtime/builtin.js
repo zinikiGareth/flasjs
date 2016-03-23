@@ -143,6 +143,11 @@ Assoc = function(k,v,r) { return new _Assoc(k,v,r); }
  * a dedicated CROKEY which can be resolved is a better bet.
  */
 
+var crokeyRange = 62;
+var crokeyFirst = 12;
+var crokeyLast = crokeyRange-crokeyFirst;
+var crokeyMid = Math.floor((crokeyFirst+crokeyLast)/2);
+
 function _Crokey(from, id) {
 	"use strict"
 	if (typeof id !== 'string' && typeof id !== 'undefined')
@@ -155,8 +160,17 @@ function _Crokey(from, id) {
 	} else if (typeof from === 'string') {
 		// it's a hex string
 		this.key = [];
-		for (var i=0;i<from.length;i+=2)
-			this.key[i/2] = parseInt(from.substring(i, i+2), 16);
+		for (var i=0;i<from.length;i++) {
+			var c = from.charCodeAt(i);
+			if (c >= 48 && c <= 57)
+				this.key[i] = c - 48;
+			else if (c >= 65 && c <= 90)
+				this.key[i] = c - 55;
+			else if (c >= 97 && c <= 122)
+				this.key[i] = c - 61;
+			else
+				throw new Error("Invalid char in crokey " + c + " " + from);
+		}
 	} else if (typeof from === 'object' && (from._ctor === 'Crokey' || from._ctor === 'NaturalCrokey')) {
 		// it's another Crokey
 		this.key = from.key;
@@ -164,35 +178,99 @@ function _Crokey(from, id) {
 		throw new Error("Cannot create a Crokey like that");
 }
 
-_Crokey.prototype.firstKey = function(id) {
+_Crokey.prototype.atStart = function(id) {
 	"use strict"
-	if (this.key[0] == 0)
-		throw new Error("We need to handle the very-very-very-beginning difficult case");
-	return new Crokey([Math.floor(this.key[0]/2)], id);
+	var next = this.key[this.key.length-1] - 1;
+	var tmp = null;
+	if (next >= crokeyFirst) {
+		tmp = this.key.slice(0);
+		tmp[tmp.length-1] = next;
+	} else {
+		for (var i=this.key.length-1;i>=0;i--) {
+			if (this.key[i]-1 > crokeyFirst) {
+				tmp = this.key.slice(0);
+				tmp[i]--;
+				for (var j=i+1;j<this.key.length;j++)
+					tmp[j] = crokeyLast;
+				break;
+			}
+			if (tmp == null) {
+				next = this.key[0]-1;
+				if (next < 0)
+					throw new Error("An actual overflow case");
+				tmp = this.key.slice(0);
+				tmp[0] = next;
+				for (var i=1;i<this.key.length;i++)
+					tmp[i] = crokeyLast;
+				tmp[tmp.length] = crokeyLast;
+			}
+		}
+	}
+	return new Crokey(tmp, id);
 }
 
-_Crokey.prototype.lastKey = function(id) {
+_Crokey.prototype.atEnd = function(id) {
 	"use strict"
-	var prev = this.key[0];
-	if (prev > 0xf0) throw new Error("The almost-as-tricky near-the-end case");
-	return new Crokey([prev+8], id);
+	var next = this.key[this.key.length-1] + 1;
+	var tmp = null;
+	if (next < crokeyLast) {
+		tmp = this.key.slice(0);
+		tmp[tmp.length-1] = next;
+	} else {
+		for (var i=this.key.length-1;i>=0;i--) {
+			if (this.key[i]+1 < crokeyLast) {
+				tmp = this.key.slice(0);
+				tmp[i]++;
+				for (var j=i+1;j<this.key.length;j++)
+					tmp[j] = crokeyFirst;
+				break;
+			}
+		}
+		if (tmp == null) {
+			next = this.key[0] + 1;
+			if (next >= crokeyRange)
+				throw new Error("An actual overflow case");
+			tmp = this.key.slice(0);
+			tmp[0] = next;
+			for (var i=1;i<tmp.length;i++)
+				tmp[i] = crokeyFirst;
+			tmp[tmp.length] = crokeyFirst;
+		}
+	}
+	return new Crokey(tmp, id);
 }
 
 _Crokey.prototype.before = function(before, id) {
 	"use strict"
-	var me = [];
-	for (var i=0;i<this.key.length;i++) {
-		// TODO: I think we're missing out the case where "before" expires before after
-		if (this.key[i]+1<before.key[i]) {
-			me.push(Math.floor((this.key[i]+before.key[i])/2));
-			return new Crokey(me, id);
-		}
-		me.push(after[i]);
+	var i=0;
+	var b1 = this.key;
+	var b2 = before.key;
+	for (;i<b1.length && i<b2.length;i++) {
+		if (b1[i] > b2[i])
+			throw new Error("b1 seems bigger than b2");
+		else if (b1[i] < b2[i])
+			break;
 	}
-	// if we get to the end with them seeming identical ...
-	// this may or may not be the right thing to do
-	me.push(0x80);
-	return new Crokey(me, id);
+	var nck;
+	if (i >= b1.length) {
+		if (b2[i] == crokeyFirst)
+			throw new Error("overflow-underflow case");
+		nck = b1.slice(0);
+		nck[i] = Math.floor((crokeyFirst + b2[i])/2);
+	} else if (b2[i] > b1[i]+1) {
+		nck = b1.slice(0);
+		nck[i] = Math.floor((b1[i]+b2[i])/2);
+	} else if (b1.length == i+1 && b2.length == i+1) {
+		nck = b1.slice(0);
+		nck[i+1] = crokeyMid;
+	} else if (b1.length > b2.length) {
+		if (b1[b1.length-1] == crokeyLast)
+			throw new Error("overflow-underflow case");
+		nck = b1.slice(0);
+		nck[b1.length-1] = Math.ceil((b1[b1.length-1]+crokeyLast)/2);
+	} else
+		throw new Error("Create one between " + this + " and " + before + " at " + i);
+	return new Crokey(nck, id);
 }
 
 // return 1 if other is AFTER this, -1 if other is BEFORE this and 0 if they are the same key
@@ -213,10 +291,14 @@ _Crokey.prototype.compare = function(other) {
 _Crokey.prototype.toString = function() {
 	var ret = "";
 	for (var i=0;i<this.key.length;i++) {
-		var hx = this.key[i].toString(16).toUpperCase();
-		while (hx.length < 2)
-			hx = "0" + hx;
-		ret += hx;
+		var hx = this.key[i];
+		if (hx < 10)
+			hx = hx + 48;
+		else if (hx < 36)
+			hx = hx + 55;
+		else
+			hx = hx + 61;
+		ret += String.fromCharCode(hx);
 	}
 	return ret;
 }
@@ -225,7 +307,7 @@ function Crokey(from, id) { return new _Crokey(from, id); }
 
 Crokey.onlyKey = function(id) {
 	"use strict"
-	return new Crokey([0x10], id);
+	return new Crokey([crokeyFirst], id);
 }
 
 function _NaturalCrokey(key, id) {
@@ -315,7 +397,7 @@ _Croset.prototype._append = function(id) {
 		key = Crokey.onlyKey(id);
 	} else {
 		// at end
-		key = this.members[this.members.length-1].lastKey(id);
+		key = this.members[this.members.length-1].atEnd(id);
 	}
 	this.members.push(key);
 	return key;
@@ -343,9 +425,9 @@ _Croset.prototype._insertAt = function(pos, id) {
 		if (this.members.length == 0)
 			k = Crokey.onlyKey(id);
 		else
-			k = this.members[0].firstKey(id);
+			k = this.members[0].atStart(id);
 	} else if (pos == this.members.length) {
-		k = this.members[this.members.length-1].lastKey(id);
+		k = this.members[this.members.length-1].atEnd(id);
 	} else
 		k = this.members[pos-1].before(this.members[pos], id);
 	
