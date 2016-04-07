@@ -114,7 +114,7 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 		this.services[svc] = this.postbox.unique(svcAddr);
 	}
 	var userInit;
-	var userCroset;
+	var userCroset; // not needed ...
 	var kvupdate;
 	// After long deliberation, this is NOT a hack
 	// This is more by way of a proxy or an impedance-matching layer
@@ -128,7 +128,7 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 		contracts[ctr] = new FlasckWrapper.Processor(this, card._contracts[ctr]);
 		if (ctr === 'org.ziniki.Init')
 			userInit = contracts[ctr];
-		else if (ctr == 'org.ziniki.Croset')
+		else if (ctr == 'org.ziniki.Croset') // not really need - see below ...
 			userCroset = contracts[ctr];
 		else if (ctr == 'org.ziniki.Render')
 			throw new Error("Users cannot define " + ctr);
@@ -213,6 +213,7 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 		},
 		service: {} // to store _myaddr
 	}
+	// I think it should be possible to remove this one, since it doesn't do anything anymore
 	contracts['org.ziniki.Croset'] = {
 		process: function(message) {
 			"use strict";

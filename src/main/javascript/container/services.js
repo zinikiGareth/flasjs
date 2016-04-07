@@ -452,8 +452,10 @@ FlasckServices.QueryService.prototype.scan = function(index, type, options, hand
 			throw new Error(msg.error);
 		}
 	    var payload = msg.payload;
-	    if (!payload || !payload[type])
+	    if (!payload || !payload['Crokeys']) {
+	    	console.log("returning because payload = ", payload, " is null or has no type", type);
 	    	return;
+	    }
 		var main = msg.payload._main;
 		var crokeys = { _ctor: 'Crokeys', keys: [] };
 		for (var k in msg.payload) {
