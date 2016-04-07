@@ -19,21 +19,35 @@ FlasckWK.action = function(json) {
 
 FlasckWK.newElement = function(obj) {
 	"use strict";
-	var text = document.createElement(obj.tag);
-	if (obj.id)
-		text.setAttribute("id", obj.id);
+	console.log("newElement called with " + obj.tag + " " + obj.id + " inside " + obj.inside);
+	var elt = document.createElement(obj.tag);
+	if (obj.id) {
+		elt.setAttribute("id", "flasck" + obj.id);
+		FlasckWK.areas[obj.id] = elt;
+	}
 	var inside = FlasckWK.areas[obj.inside];
+	if (!inside) {
+		for (var x in FlasckWK.areas)
+			console.log("Have area " + x);
+	}
 	if (obj.after) {
 		// not yet supported
 		console.log("after not yet supported");
 	} else {
-	 	inside.appendChild(text);
+	 	inside.appendChild(elt);
 	}
+}
+
+FlasckWK.setCSS = function(obj) {
+	"use strict";
+	console.log("want to set css for " + obj.id + " to " + obj.css); 
+	var elt = FlasckWK.areas[obj.id];
+	elt.className = obj.css;
 }
 
 FlasckWK.setText = function(obj) {
 	"use strict";
-	var text = document.getElementById(obj.id);
+	var text = FlasckWK.areas[obj.id];
 	text.innerHTML = '';
 	text.appendChild(document.createTextNode(obj.text));
 }
