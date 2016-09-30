@@ -221,6 +221,14 @@ TextArea.prototype._setText = function(text) {
 	this._mydiv.appendChild(tmp);
 }
 
+TextArea.prototype._insertHTML = function(e) {
+	"use strict";
+	e = FLEval.full(e);
+	if (e === null || e === undefined || e instanceof FLError)
+		e = "";
+	this._mydiv.innerHTML = e.toString();
+}
+
 TextArea.prototype._assignToText = function(e) {
 	"use strict";
 	e = FLEval.full(e);

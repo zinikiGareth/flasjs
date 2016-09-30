@@ -821,19 +821,6 @@ _CrosetMove = function(target, from, to) {
 }
 CrosetMove = function(target, from, to) { return new _CrosetMove(target, from, to); }
 
-ContentAPI = function() {
-}
-
-ContentAPI.upload = function(to, file) {
-	"use strict";
-	var form = new FormData();
-	form.append("file", file);
-	var request = new XMLHttpRequest();
-	request.open("POST", to);
-	request.send(form);
-	// TODO: handle error recovery & transmission issues
-}
-
 _Card = function(explicit, loadId) {
 	"use strict";
 	this._ctor = 'Card';

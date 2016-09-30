@@ -128,8 +128,6 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 		contracts[ctr] = new FlasckWrapper.Processor(this, card._contracts[ctr]);
 		if (ctr === 'org.ziniki.Init')
 			userInit = contracts[ctr];
-		else if (ctr == 'org.ziniki.Croset') // not really need - see below ...
-			userCroset = contracts[ctr];
 		else if (ctr == 'org.ziniki.Render')
 			throw new Error("Users cannot define " + ctr);
 	}
@@ -213,25 +211,6 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 		},
 		service: {} // to store _myaddr
 	}
-	// I think it should be possible to remove this one, since it doesn't do anything anymore
-	contracts['org.ziniki.Croset'] = {
-		process: function(message) {
-			"use strict";
-			/*
-			if (message.method === 'services')
-				this.services(message.from, message.args[0]);
-			else if (message.method === 'state')
-				this.state(message.from, message.args[0]);
-			else if (message.method === 'loadId')
-				this.loadId(message.from, message.args[0]);
-			else if (message.method == 'dispose')
-				this.dispose(message.from);
-			else
-			*/
-				userCroset.process(message);
-		},
-		service: {} // to store _myaddr
-	}
 	contracts['org.ziniki.Render'] = {
 		process: function(message) {
 			"use strict";
@@ -261,8 +240,6 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 		this.ctrmap[ctr] = uq;
 		contracts[ctr].service._myaddr = uq;
 	}
-	if (userCroset)
-		userCroset.service._myaddr = contracts['org.ziniki.Croset'].service._myaddr;
 	this.contractInfo = contracts;
 	this.postbox.deliver(this.initSvc, {from: this.ctrmap['org.ziniki.Init'], method: 'ready', args:[this.ctrmap]});
 }
@@ -325,13 +302,6 @@ FlasckWrapper.prototype.processOne = function(msg, todo) {
 		}
 		var meth = msg.method;
 		if (target._special === 'contract') {
-			// Complete hack to get this code in here somewhere. Use "JSNI" instead, which I think amounts to an "interface" defn
-			if (target._contract === 'org.ziniki.Content') {
-				var sendTo = msg.args.head;
-				var data = msg.args.tail.head;
-				ContentAPI.upload(sendTo, data);
-				return;
-			}
 			var args = [];
 			var l = msg.args;
 			while (l && l._ctor === 'Cons') {
@@ -343,7 +313,6 @@ FlasckWrapper.prototype.processOne = function(msg, todo) {
 				console.log("No service was provided for " + target._contract);
 				return;
 			}
-//			console.log("trying to send", meth, args, "to", addr);
 			this.postbox.deliver(addr, {from: target._myaddr, method: meth, args: args });
 		} else if (target._special === 'object') {
 			var args = FLEval.flattenList(msg.args);
@@ -395,7 +364,7 @@ FlasckWrapper.prototype.processOne = function(msg, todo) {
 			debugger;
 		}
 		if (meth)
-			this.postbox.deliver(this.services['org.ziniki.Croset'], {from: this.contractInfo['org.ziniki.Croset'].service._myaddr, method: meth, args: args });
+			this.postbox.deliver(this.services['org.ziniki.CrosetContract'], {from: this.contractInfo['org.ziniki.CrosetContract'].service._myaddr, method: meth, args: args });
 		todo.push(msg);
 	} else if (msg._ctor === 'CreateCard') {
 		// If the user requests that we make a new card in response to some action, we need to know where to place it

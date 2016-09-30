@@ -258,7 +258,6 @@ FlasckServices.CrosetService = function(postbox) {
 // It possibly is simply enough to say "range", I don't know ...
 
 FlasckServices.CrosetService.prototype.process = function(message) {
-//	console.log("received message", message);
 	"use strict";
 	var meth = this[message.method];
 	if (!meth)
@@ -345,6 +344,58 @@ FlasckServices.CrosetService.prototype.delete = function(crosetId, key, objId) {
 	if (!croset)
 		throw new Error("There is no croset for" + crosetId);
 	ZinikiConn.req.invoke("croset/" + crosetId + "/delete/" + key).send();
+}
+
+
+FlasckServices.ContentService = function(postbox) {
+	this.postbox = postbox;
+//	this.store = FlasckServices.CentralStore.crokeys;
+	return this;
+}
+
+FlasckServices.ContentService.prototype.process = function(message) {
+	"use strict";
+	var meth = this[message.method];
+	if (!meth)
+		throw new Error("There is no method '" + message.method +"'");
+	meth.apply(this, message.args);
+}
+
+FlasckServices.ContentService.prototype.upload = function(to, file) {
+	"use strict";
+	var form = new FormData();
+	form.append("file", file);
+	var request = new XMLHttpRequest();
+	request.open("POST", to);
+	request.send(form);
+	// TODO: handle error recovery & transmission issues
+}
+
+FlasckServices.ContentService.prototype.readHTML = function(cid, h) {
+	"use strict";
+	var self = this;
+	
+	var csStateChange = function(obj) {
+  		if (this.readyState == 4) {
+  			var type = this.getResponseHeader("content-type");
+			console.log("well,", type, this.responseText);
+			self.postbox.deliver(h.chan, {from: self._myAddr, method: 'load', args:[type, this.responseText]});
+  		}
+	}
+	
+	var contentLink = function(msg) {
+		var link = msg.payload["String"][0].value;
+		if (link) {
+            console.log("link = " + link);
+
+            var csXHRr = new XMLHttpRequest();
+            csXHRr.onreadystatechange = csStateChange;
+            csXHRr.open("GET", link, true);
+            csXHRr.send();
+  		}
+	}
+
+	ZinikiConn.req.subscribe("content/" + cid + "/get", contentLink).send();
 }
 
 FlasckServices.PersonaService = function(postbox) {
@@ -530,7 +581,8 @@ FlasckServices.provideAll = function(document, postbox, services) {
 	Flasck.provideService(postbox, services, "org.ziniki.Render", new FlasckServices.RenderService(postbox));
 	Flasck.provideService(postbox, services, "org.ziniki.Credentials", new FlasckServices.CredentialsService(document, postbox));
 	Flasck.provideService(postbox, services, "org.ziniki.KeyValue", new FlasckServices.KeyValueService(postbox));
-	Flasck.provideService(postbox, services, "org.ziniki.Croset", new FlasckServices.CrosetService(postbox));
+	Flasck.provideService(postbox, services, "org.ziniki.CrosetContract", new FlasckServices.CrosetService(postbox));
+	Flasck.provideService(postbox, services, "org.ziniki.ContentContract", new FlasckServices.ContentService(postbox));
 	Flasck.provideService(postbox, services, "org.ziniki.Persona", new FlasckServices.PersonaService(postbox));
 	Flasck.provideService(postbox, services, "org.ziniki.Query", new FlasckServices.QueryService(postbox));
 	Flasck.provideService(postbox, services, "org.ziniki.Yoyo", new FlasckServices.YoyoService(postbox));
