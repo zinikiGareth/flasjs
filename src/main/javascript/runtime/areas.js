@@ -157,12 +157,11 @@ ListArea.prototype._deleteItem = function(key) {
 			return;
 		}
 	}
-	// if we reached the end
-	this._mydiv.appendChild(child._mydiv);
 }
 
 ListArea.prototype._moveItem = function(from, to) {
   	"use strict";
+  	// I believe the semantics of appendChild/insertBefore mean that this is in fact unnecessary ...
 //  	console.log("moving from", from, "to", to);
   	var removeDiv, beforeDiv;
 	for (var i=0;i<this._mydiv.children.length;i++) {

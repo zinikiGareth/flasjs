@@ -476,7 +476,7 @@ _Croset.prototype.memberOrId = function(k) {
 				return x;
 			// otherwise return "just the id"
 			return { _ctor: 'org.ziniki.ID', id: m.id };
-		} else if (m.compare(k) === 0)
+		} else if (m.compare(k) === 0) // surely this should be >
 			break;
 	}
 	throw new Error("No key" + k + "in" + this);

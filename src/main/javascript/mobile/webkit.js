@@ -51,3 +51,25 @@ FlasckWK.setText = function(obj) {
 	text.innerHTML = '';
 	text.appendChild(document.createTextNode(obj.text));
 }
+
+FlasckWK.bindvar = function(obj) {
+	"use strict";
+	var elt = FlasckWK.areas[obj.id];
+	elt[obj.var] = obj.val;
+}
+
+FlasckWK.insertListItem = function(obj) {
+	"use strict";
+	console.log("inserting list item " + obj.child + " into " + obj.id);
+	var la = FlasckWK.areas[obj.id];
+	var child = FlasckWK.areas[obj.child];
+	console.log("crokey = " + child["_crokey"]);
+	for (var i=0;i<la.children.length;i++) {
+		var a = la.children[i];
+		if (child._crokey.localeCompare(a._crokey) < 0) {
+			la.insertBefore(child, a);
+			return;
+		}
+	}
+	la.appendChild(child);
+}
