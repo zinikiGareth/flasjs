@@ -18,17 +18,22 @@ function FLEval() {
 FLEval.head = function(x) {
 //	console.log("head(" + x + ")");
 	try {
-		while (x instanceof FLClosure) {
-	//		console.log("evaluating " + x.fn);
-			if (x.hasOwnProperty('value'))
-				return x.value;
-			var clos = x;
-			if (x.fn instanceof FLClosure)
-			  x.fn = FLEval.head(x.fn);
-			if (!x.fn || !x.fn.apply)
-			  return x.fn;
-			x = clos.value = x.fn.apply(x.obj, x.args);
-	//		console.log("head saw " + x);
+		while (true) {
+			if (x instanceof FLClosure) {
+	//			console.log("evaluating " + x.fn);
+				if (x.hasOwnProperty('value'))
+					return x.value;
+				var clos = x;
+				if (x.fn instanceof FLClosure)
+				  x.fn = FLEval.head(x.fn);
+				if (!x.fn || !x.fn.apply)
+				  return x.fn;
+				x = clos.value = x.fn.apply(x.obj, x.args);
+	//			console.log("head saw " + x);
+			} else if (typeof x === "function" && x.length == 0) {
+				x = x();
+			} else
+				break;
 		}
 	} catch (ex) {
 		return new FLError(ex);
