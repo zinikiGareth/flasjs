@@ -124,9 +124,14 @@ Postbox.prototype.deliver = function(address, message) {
 		throw new Error("There is no process method on" + recip);
 
 	// deliver it directly to the recipient; just not yet.
-	setTimeout(function() {
+	var fn = function() {
 		recip.process(message);
-	}, 0);
+	};
+	// This is for the JSRunner case for FX testing, where setTimeout does not always appear to work
+	if (typeof callJava !== 'undefined')
+		callJava.callAsync({f: fn});
+	else
+		setTimeout(fn, 0);
 }
 
 Postbox.prototype.isLocal = function(addr) {
