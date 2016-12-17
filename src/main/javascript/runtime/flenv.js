@@ -30,7 +30,7 @@ FLEval.head = function(x) {
 				  return x.fn;
 				x = clos.value = x.fn.apply(x.obj, x.args);
 	//			console.log("head saw " + x);
-			} else if (typeof x === "function" && x.length == 0) {
+			} else if (typeof x === "function" && x.length == 0 && !x.iscurry) {
 				x = x();
 			} else
 				break;
@@ -267,7 +267,7 @@ FLEval.curry = function() {
 	for (var i=2;i<arguments.length;i++)
 		have[i-2] = arguments[i];
 	
-	return function() {
+	var ret = function() {
 		// When we get called, "more" arguments will be provided.  This may or may not be enough.
 		// Copy the "already have" arguments and the new arguments into a single array
 		var current = [];
@@ -287,6 +287,10 @@ FLEval.curry = function() {
 				current
 			);
 	};
+	
+	ret.iscurry = true;
+	
+	return ret;
 }
 
 FLEval.isInteger = function(x) {
