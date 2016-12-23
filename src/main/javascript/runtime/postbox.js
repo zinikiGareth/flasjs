@@ -101,7 +101,7 @@ Postbox.prototype.remove = function(address) {
 Postbox.prototype.deliver = function(address, message) {
 	"use strict"
 	if (!address)
-		throw new Error("cannot deliver without a valid address");
+		throw new FLError("cannot deliver without a valid address");
 	if (!message.from || !message.method || !message.args)
 		throw new Error("invalid message - must contain from, method and args" + JSON.stringify(message));
 //	console.log("deliver", message, "to", address);
@@ -111,17 +111,16 @@ Postbox.prototype.deliver = function(address, message) {
 	if (this.name !== pb) {
 		var rpb = this.postboxes[pb];
 		if (!rpb || !rpb.window)
-			throw new Error("I think this should now put things in a queue"); 
+			throw new FLError("I think this should now put things in a queue"); 
 		rpb.window.postMessage({action:'data', from: this.name, to: address, message: message}, "*");
 		return;
 	}
 	var recip = this.recipients[addr];
 	if (!recip) {
-		console.log("There is no registered recipient for ", address);
-		return;
+		return new FLError("There is no registered recipient for " + address);
 	}
 	if (!recip.process)
-		throw new Error("There is no process method on" + recip);
+		throw new FLError("There is no process method on" + recip);
 
 	// deliver it directly to the recipient; just not yet.
 	var fn = function() {

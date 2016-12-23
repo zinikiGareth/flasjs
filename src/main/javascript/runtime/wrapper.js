@@ -285,8 +285,7 @@ FlasckWrapper.prototype.processOne = function(msg, todo) {
 	if (msg._ctor === 'Send') {
 		var target = msg.target;
 		if (target === null || target === undefined) {
-			console.log("cannot have undefined target");
-			return;
+			return new FLError("cannot have undefined target");
 		}
 		if (typeof target === 'string') {
 			target = this.card[target];
@@ -296,9 +295,7 @@ FlasckWrapper.prototype.processOne = function(msg, todo) {
 			}
 		}
 		if (!target._special) {
-			console.log("Target for send is not 'special'", msg.target);
-			debugger;
-			return;
+			return new FLError("Target for send is not 'special'" + msg.target);
 		}
 		var meth = msg.method;
 		if (target._special === 'contract') {
@@ -310,22 +307,18 @@ FlasckWrapper.prototype.processOne = function(msg, todo) {
 			}
 			var addr = target._addr;
 			if (!addr) {
-				console.log("No service was provided for " + target._contract);
-				return;
+				return new FLError("No service was provided for " + target._contract);
 			}
 			this.postbox.deliver(addr, {from: target._myaddr, method: meth, args: args });
 		} else if (target._special === 'object') {
 			var args = FLEval.flattenList(msg.args);
 			var actM = target[meth];
 			if (!actM) {
-				console.log("There is no method " + meth + " on ", target);
-				debugger;
-				return;
+				return new FLError("There is no method " + meth + " on ", target);
 			}
 			return actM.apply(target, args);
 		} else {
-			console.log("Cannot handle special case:", target._special);
-			return;
+			return new FLError("Cannot handle special case: " + target._special);
 		}
 	} else if (msg._ctor === 'Assign') {
 		var into = msg.target;
@@ -360,8 +353,7 @@ FlasckWrapper.prototype.processOne = function(msg, todo) {
 			// This is just a change to the actual object, which should be separately recorded; the Croset does not change
 			break;
 		default:
-			console.log("don't handle", msg);
-			debugger;
+			return new FLError("don't handle" + msg);
 		}
 		if (meth)
 			this.postbox.deliver(this.services['org.ziniki.CrosetContract'], {from: this.contractInfo['org.ziniki.CrosetContract'].service._myaddr, method: meth, args: args });
@@ -389,7 +381,7 @@ FlasckWrapper.prototype.processOne = function(msg, todo) {
 		var val = FLEval.full(msg.value);
 		console.log("Debug:", val);
 	} else
-		throw new Error("The method message " + msg._ctor + " is not supported");
+		return new FLError("The method message " + msg._ctor + " is not supported");
 }
 
 FlasckWrapper.prototype.convertSpecial = function(obj) {
