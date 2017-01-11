@@ -2,6 +2,8 @@
 
 Flasck = {};
 
+Flasck.nextCard = 0;
+
 Flasck.provideService = function(postbox, services, svcName, svc) {
 	var addr = postbox.newAddress();
 	postbox.register(addr, svc);
@@ -79,7 +81,7 @@ Flasck.createCard = function(postbox, inside, cardInfo, services) {
 			throw new Error("Must specify a valid card class object in cardInfo.explicit");
 		
 		// Create a wrapper around the card which is its proto-environment to link back up to the real environment
-		var wrapper = new FlasckWrapper(postbox, myAddr, cardClz, inside);
+		var wrapper = new FlasckWrapper(postbox, myAddr, cardClz, inside, "card_" + (++Flasck.nextCard));
 	
 		// Now create the card and tell the wrapper about it
 		var myCard = cardClz({ wrapper: wrapper });

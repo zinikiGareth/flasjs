@@ -21,7 +21,7 @@ var Area = function(parent, tag, ns) {
 				this._mydiv = this._doc.createElementNS(ns, tag);
 			else
 				this._mydiv = this._doc.createElement(tag);
-			this._mydiv.setAttribute('id', 'uid_'+(uniqid++));
+			this._mydiv.setAttribute('id', this._wrapper.cardId+'_'+(uniqid++));
 			this._mydiv._area = this;
 			this._indiv.appendChild(this._mydiv);
 		}

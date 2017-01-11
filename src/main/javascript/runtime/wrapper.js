@@ -1,8 +1,9 @@
-FlasckWrapper = function(postbox, initSvc, cardClz, inside) {
+FlasckWrapper = function(postbox, initSvc, cardClz, inside, cardId) {
 	this._ctor = 'FlasckWrapper';
 	this.postbox = postbox;
 	this.initSvc = initSvc;
 	this.cardClz = cardClz;
+	this.cardId = cardId;
 	this.ctrmap = {};
 	this.nodeCache = {};
 	this.cardCache = {};
