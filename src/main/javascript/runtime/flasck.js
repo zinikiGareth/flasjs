@@ -51,13 +51,13 @@ Flasck.createCard = function(postbox, inside, cardInfo, services) {
 				postbox.deliver(from, {from: myAddr, method: "state", args: [] });
 				if (cardInfo.loadId)
 					postbox.deliver(from, {from: myAddr, method: "loadId", args: [cardInfo.loadId] });
-				if (contracts['org.ziniki.Render']) {
+				if (contracts['org.flasck.Render']) {
 					// it's not possible to clone a div across boundaries; only do this if we are passing locally
 					// the "in_iframe" case needs to figure its own div
 					var divarg = null;
 					if (cardInfo.mode !== 'remote')
 						divarg = inside;
-					postbox.deliver(contracts['org.ziniki.Render'], {from: myAddr, method: "render", args: [{into: divarg}] }); 
+					postbox.deliver(contracts['org.flasck.Render'], {from: myAddr, method: "render", args: [{into: divarg}] }); 
 				}
 				for (var i=0;i<handle.pending.length;i++) {
 					var msg = handle.pending[i];
@@ -70,7 +70,7 @@ Flasck.createCard = function(postbox, inside, cardInfo, services) {
 				delete handle.pending;
 			}
 		};
-		services['org.ziniki.Init'] = myAddr;
+		services['org.flasck.Init'] = myAddr;
 		postbox.register(myEnd, initService);
 	}
 	

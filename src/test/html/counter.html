@@ -31,7 +31,7 @@ Flasck.provideService(postbox, services, 'org.ziniki.KeyValue', kv);
 kv.store['counter'] = myCounter;
 
 	var handle = Flasck.createCard(postbox, body, { explicit: test.ziniki.CounterCard, mode: 'local'}, services);
-	handle.send('org.ziniki.Init', 'loadId', 'counter');
+	handle.send('org.flasck.Init', 'loadId', 'counter');
   	</script>
   </body>
 </html>

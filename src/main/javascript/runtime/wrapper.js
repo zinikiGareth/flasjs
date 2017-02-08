@@ -127,12 +127,12 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 	var contracts = {};
 	for (var ctr in card._contracts) {
 		contracts[ctr] = new FlasckWrapper.Processor(this, card._contracts[ctr]);
-		if (ctr === 'org.ziniki.Init')
+		if (ctr === 'org.flasck.Init')
 			userInit = contracts[ctr];
-		else if (ctr == 'org.ziniki.Render')
+		else if (ctr == 'org.flasck.Render')
 			throw new Error("Users cannot define " + ctr);
 	}
-	contracts['org.ziniki.Init'] = {
+	contracts['org.flasck.Init'] = {
 		process: function(message) {
 			"use strict";
 			if (message.method === 'services')
@@ -185,19 +185,19 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 					idx = next.indexOf('/');
 					if (idx >= 0)
 						next = next.substring(0, idx);
-					self.postbox.deliver(self.services['org.ziniki.Persona'], {from: self.ctrmap['org.ziniki.Init'], method: 'forApplication', args:[appl, next, handler] });
+					self.postbox.deliver(self.services['org.ziniki.Persona'], {from: self.ctrmap['org.flasck.Init'], method: 'forApplication', args:[appl, next, handler] });
 				} else if (id.substring(0, 9) === 'resource/') {
-					self.postbox.deliver(self.services['org.ziniki.KeyValue'], {from: self.ctrmap['org.ziniki.Init'], method: 'resource', args:[id, handler] });
+					self.postbox.deliver(self.services['org.ziniki.KeyValue'], {from: self.ctrmap['org.flasck.Init'], method: 'resource', args:[id, handler] });
 				} else if (id.substring(0, 6) === 'typed/') {
 					idx = id.indexOf('/', 6);
 					if (idx < 0)
 						throw new Error("Invalid id in typed request: " + id);
 					var type = id.substring(6, idx);
 					id = id.substring(idx+1);
-					self.postbox.deliver(self.services['org.ziniki.KeyValue'], {from: self.ctrmap['org.ziniki.Init'], method: 'typed', args:[type, id, handler] });
+					self.postbox.deliver(self.services['org.ziniki.KeyValue'], {from: self.ctrmap['org.flasck.Init'], method: 'typed', args:[type, id, handler] });
 				} else if (id.substring(0, 12) === 'unprojected/') {
 					id = id.substring(12);
-					self.postbox.deliver(self.services['org.ziniki.KeyValue'], {from: self.ctrmap['org.ziniki.Init'], method: 'unprojected', args:[id, handler] });
+					self.postbox.deliver(self.services['org.ziniki.KeyValue'], {from: self.ctrmap['org.flasck.Init'], method: 'unprojected', args:[id, handler] });
 				} else
 					throw new Error("Cannot understand what you want me load: " + id);
 			}
@@ -212,7 +212,7 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 		},
 		service: {} // to store _myaddr
 	}
-	contracts['org.ziniki.Render'] = {
+	contracts['org.flasck.Render'] = {
 		process: function(message) {
 			"use strict";
 			if (message.method === 'render')
@@ -242,7 +242,7 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 		contracts[ctr].service._myaddr = uq;
 	}
 	this.contractInfo = contracts;
-	this.postbox.deliver(this.initSvc, {from: this.ctrmap['org.ziniki.Init'], method: 'ready', args:[this.ctrmap]});
+	this.postbox.deliver(this.initSvc, {from: this.ctrmap['org.flasck.Init'], method: 'ready', args:[this.ctrmap]});
 }
 
 FlasckWrapper.prototype.dispatchEvent = function(handler, ev) {

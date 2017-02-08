@@ -25,19 +25,19 @@ FlasckHandle.prototype.send = function(ctr, method /* args */) {
 }
 
 FlasckHandle.prototype.redrawInto = function(into) {
-	if (this.channels['org.ziniki.Render']) {
+	if (this.channels['org.flasck.Render']) {
 		var msg = {};
-		if (this.postbox.isLocal(this.channels['org.ziniki.Render']))
+		if (this.postbox.isLocal(this.channels['org.flasck.Render']))
 			msg.into = into;
 		// TODO: it seems the remote case needs something more here, but not quite sure what
 		// might be on the other side
-		this.send('org.ziniki.Render', "render", msg);
+		this.send('org.flasck.Render', "render", msg);
 	}
 }
 
 FlasckHandle.prototype.dispose = function() {
 	this._isDisposed = true;
-	if (this.channels['org.ziniki.Init'])
-		this.send('org.ziniki.Init', 'dispose');
+	if (this.channels['org.flasck.Init'])
+		this.send('org.flasck.Init', 'dispose');
 	this.postbox.remove(this.myAddr);
 }
