@@ -99,7 +99,16 @@ FLEval.method = function(obj, methodName) {
 }
 
 FLEval.tuple = function() { // need to use arguments because it's varargs
-	return new _Tuple(arguments); // defined in builtin
+  "use strict";
+  return new _Tuple(arguments); // defined in builtin
+}
+
+FLEval.octor = function(obj, meth) {
+  "use strict";
+  var args = [];
+  for (var i=2;i<arguments.length;i++)
+	args[i-2] = arguments[i];
+  return obj[meth].apply(obj, args);  
 }
 
 FLEval.flattenList = function(list) {
