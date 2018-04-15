@@ -403,48 +403,4 @@ FLEval.makeEvent = function(ev) {
 	return null;
 }
 
-// should this be in Stdlib?
-
-StdLib = {}
-StdLib.concat = function(l) {
-	var ret = "";
-	while (true) {
-		l = FLEval.head(l);
-		if (l._ctor == 'Cons') {
-			var head = FLEval.full(l.head);
-			ret += head;
-			l = l.tail;
-		} else
-			break;
-	}
-	return ret;
-}
-
-asString = function(any) {
-	if (!any) return "";
-	return any.toString();
-}
-
-append = function(s1, s2) {
-	return FLEval.full(s1) + FLEval.full(s2);
-}
-
-join = function(l, isep) {
-	var ret = "";
-	var sep = "";
-	while (true) {
-		l = FLEval.head(l);
-		if (l._ctor == 'Cons') {
-			var head = FLEval.full(l.head);
-			if (head) {
-				ret += sep + head;
-				sep = isep;
-			}
-			l = l.tail;
-		} else
-			break;
-	}
-	return ret;
-}
-
 FLEval;
