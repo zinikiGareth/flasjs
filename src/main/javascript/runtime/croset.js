@@ -1,5 +1,65 @@
 // Cunning crosets, redux
 
+// TODO: This should be a value object, and we should have fields for clientids, etc.
+// TODO: it needs to be 100% wire-format compatible
+_CrosetChanges = function(changes) {
+  "use strict";
+  this._ctor = 'CrosetChanges';
+  // this._card = undefined;
+  // this._special = undefined;
+  // this._contract = undefined;
+  this.changes = changes;
+}
+
+CrosetChanges = function(v0) {
+  "use strict";
+  return new _CrosetChanges(v0);
+}
+
+_CrosetHandler = function(croset) {
+  "use strict";
+  this._ctor = 'CrosetHandler';
+  // this._card = undefined;
+  this._special = 'handler';
+  this._contract = 'CrosetHandlerContract';
+  this._croset = croset;
+}
+
+_CrosetHandler.prototype.setId = function(id) {
+  "use strict";
+  id = FLEval.full(id);
+  if (id instanceof FLError) {
+    return id;
+  }
+  if (typeof id === 'string') {
+  	// TODO: should we make this a deferred action processed later?
+  	// That seems like overkill but would be consistent with our pineal model
+  	this._croset.id = id;
+  	return null;
+  }
+  return FLEval.error("CrosetHandler.setId: case not handled");
+  
+}
+
+_CrosetHandler.prototype.applyChanges = function(changes) {
+  "use strict";
+  changes = FLEval.full(changes);
+  if (changes instanceof FLError) {
+    return changes;
+  }
+  if (FLEval.isA(changes, 'CrosetChanges')) {
+    this._croset.applyPutUpdate(changes);
+  	return null;
+  }
+  return FLEval.error("CrosetHandler.applyChanges: case not handled");
+  
+}
+
+CrosetHandler = function(croset) {
+  "use strict";
+  return new _CrosetHandler(croset);
+}
+
 _Croset = function(service, id, sortBy) {
 	"use strict";
 	this.service = service;
@@ -7,14 +67,12 @@ _Croset = function(service, id, sortBy) {
 	this.cliId = 1;
 	this.elements = [];
 	this.putState = { start: [] };
+	this.handler = CrosetHandler(this);
 	
 	var self = this;
 	if (id == null) {
-		service.create(function(newId) {
-			self.id = newId;
-		});
+		service.create(this.handler);
 	}
-	
 }
 
 _Croset.prototype.length = function() {
@@ -34,9 +92,8 @@ _Croset.prototype.prepend = function(item) {
 	this.putState.start.splice(0, 0, elt.clientId);
 	if (this.id) {
 		var self = this;
-		this.service.put(this.putState, function(reply) {
-			self.applyPutUpdate(reply);
-		});
+		this.service.put(this.putState);
+//			self.applyPutUpdate(reply);
 	}
 }
 
@@ -58,8 +115,9 @@ _Croset.prototype.makeElement = function(item) {
 	};
 }
 
-_Croset.prototype.applyPutUpdate = function(reply) {
+_Croset.prototype.applyPutUpdate = function(changes) {
 	"use strict";
+	var reply = changes.changes;
 	var cids = reply.cids;
 	for (var ci=0;ci<cids.length;ci++) {
 		var cid = cids[ci].c;
