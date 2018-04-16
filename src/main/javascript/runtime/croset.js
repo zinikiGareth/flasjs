@@ -64,15 +64,21 @@ _Croset = function(service, id, sortBy) {
 	"use strict";
 	this.service = service;
 	this.id = null;
+	this.sortBy = sortBy;
 	this.cliId = 1;
 	this.elements = [];
-	this.putState = { start: [] };
+	if (sortBy)
+		this.putState = { natural: [] };
+	else
+		this.putState = { start: [], end: [] };
 	this.handler = CrosetHandler(this);
 	
 	var self = this;
 	if (id == null) {
 		service.create(this.handler);
 	}
+	// TODO: else ask for a set of rows (which set? the first? do we need another parameter?)
+	// TODO: how many? yet another parameter?
 }
 
 _Croset.prototype.length = function() {
@@ -88,8 +94,13 @@ _Croset.prototype.at = function(pos) {
 _Croset.prototype.prepend = function(item) {
 	"use strict";
 	var elt = this.makeElement(item);
-	this.elements.splice(0, 0, elt);
-	this.putState.start.splice(0, 0, elt.clientId);
+	if (this.sortBy) {
+		this.insertNatural(elt);
+		this.putState.natural.push(item.id);
+	} else {
+		this.elements.splice(0, 0, elt);
+		this.putState.start.splice(0, 0, elt.clientId);
+	}
 	if (this.id) {
 		var self = this;
 		this.service.put(this.putState);
@@ -98,7 +109,33 @@ _Croset.prototype.prepend = function(item) {
 
 _Croset.prototype.append = function(item) {
 	"use strict";
-	this.elements.splice(this.elements.length, 0, this.makeElement(item));
+	var elt = this.makeElement(item);
+	if (this.sortBy) {
+		this.insertNatural(elt);
+		this.putState.natural.push(item.id);
+	} else {
+		this.elements.splice(this.elements.length, 0, elt);
+		this.putState.end.splice(this.putState.end.length, 0, elt.clientId);
+	}
+	if (this.id) {
+		var self = this;
+		this.service.put(this.putState);
+	}
+}
+
+_Croset.prototype.insertNatural = function(elt) {
+	"use strict";
+	var key = this.sortBy(elt.item);
+	// TODO: should we sanity check this?
+	// TODO: we need to consider the "mixed" case of natural+differentiator
+	elt.clientId = elt.serverId = key;
+	for (var i=0;i<this.elements.length;i++) {
+		if (this.elements[i].clientId > key) {
+			this.elements.splice(i, 0, elt);
+			return;
+		}
+	}
+	this.elements.push(elt);
 }
 
 _Croset.prototype.makeElement = function(item) {
