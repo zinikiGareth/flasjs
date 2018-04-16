@@ -93,7 +93,6 @@ _Croset.prototype.prepend = function(item) {
 	if (this.id) {
 		var self = this;
 		this.service.put(this.putState);
-//			self.applyPutUpdate(reply);
 	}
 }
 
@@ -106,8 +105,6 @@ _Croset.prototype.makeElement = function(item) {
 	"use strict";
 	// TODO: handle natural crokey more directly (don't need clientId)
 	var c = this.cliId++;
-	// TODO: make a server request IFF we have an ID for the collection
-	// TODO: request ALL the client ids at once
 	return {
 		clientId: c,
 		serverId: null,
@@ -123,16 +120,27 @@ _Croset.prototype.applyPutUpdate = function(changes) {
 		var cid = cids[ci].c;
 		var idx = this.putState.start.indexOf(cid);
 		if (idx > -1) {
+			this.putState.start.splice(idx, 1);
+		} else {
+			idx = this.putState.end.indexOf(cid);
+			if (idx > -1) {
+				this.putState.end.splice(idx, 1);
+			}
+		}
+		if (idx > -1) { // via any channel
 			for (var j=0;j<this.elements.length;j++)
 				if (this.elements[j].clientId == cid) {
 					this.elements[j].serverId = cids[ci].s; 
 					break;
 				}
-			this.putState.start.splice(idx, 1);
 		}
 	}
 }
 
+
+// TODO: how do we pass the service in from FLAS code?
+// TODO: does this all hang together?  Can I test that sooner?
+// TODO: can I test it all client-side by creating a faux service (of a few dozen rows)?
 Croset = function() { }
 Croset.cro = function(service) {
  	"use strict";
