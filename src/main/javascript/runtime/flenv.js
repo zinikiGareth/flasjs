@@ -12,6 +12,11 @@ FLClosure.prototype.toString = function() {
 	return "Closure[" + this._closure +"]";
 }
 
+function FLRequireObject(refc) {
+	this.refc = refc;
+	console.log("Will need to recover " + refc.id + " of " + refc._ctor);
+}
+
 function FLEval() {
 }
 
@@ -117,13 +122,20 @@ FLEval.octor = function(obj, meth) {
  */
 FLEval._length = function(list) {
     list = FLEval.head(list);
-	if (list == Nil)
+	if (list == Nil || list == NilMap)
 	    return 0;
 	else if (list instanceof _Cons) {
 		if (list._arr)
 			return list._arr.length;
 			
 		var tl = FLEval._length(list.tail);
+		if (tl instanceof FLError)
+			return tl;
+	    return 1 + tl;
+	} else if (list instanceof _Assoc) {
+		if (list._map)
+			return Object.keys(list._map).length;
+		var len = FLEval._length(_Assoc.rest);
 		if (tl instanceof FLError)
 			return tl;
 	    return 1 + tl;
@@ -170,71 +182,67 @@ FLEval.fromWireService = function(addr, obj) {
 	return ret;
 }
 
-// Something coming in off the wire must be one of the following things:
-// A primitive (number, string, etc)
-// An array of strings
-// A flat-ish object (must have _ctor; fields must be primitives; references are via ID - go fetch)
-// [Note: it may also be possible to pass 'handlers' and other specials in a similar way; but this doesn't happen in this direction YET]
-// A crokeys definition
-// A hash (from string to any of the above) 
-// An array of (any of the above including hash)
+/* fromWire has been reworked, but toWire has not (yet).
+ * The definitions are all tested in testWireFormat.html along with the corresponding data/.../....json files
+ * Check there for documentation
+ */
 
-FLEval.fromWire = function(obj, denyOthers) {
+FLEval.fromWire = function(obj) {
 	"use strict"
 	if (!(obj instanceof Object))
 		return obj; // it's a primitive
 	if (obj._ctor) {
-		if (obj._ctor === 'Crokeys') { // an array of crokey hashes - map to a Crokeys object of Crokey objects
-			return FLEval.makeCrokeys(obj.id, obj.keytype, obj.keys); 
-		} else { // a flat-ish object
-			var ret = { _ctor: obj._ctor };
-			for (var x in obj) {
-				if (x[0] === '_')
-					continue;
-				if (obj.hasOwnProperty(x) && obj[x] instanceof Object) {
-					if (obj[x] instanceof Array) {
-						// This is OK if they are all strings
-						var tmp = Nil;
-						var list = obj[x];
-						for (var k=list.length-1;k>=0;k--) {
-							var s = list[k];
-							if (typeof s !== 'string')
-								throw new Error("Field " + x + " is an array that should only contain strings, not " + s);
-							tmp = Cons(s, tmp);
-						}
-						ret[x] = tmp;
-					} else
-						throw new Error("I claim " + x + " is in violation of the wire protocol: " + obj[x]);
-				} else
-					ret[x] = obj[x];
-			}
-			return obj;
+		// handle structs, entities, objects, etc.
+		var spl = obj._ctor.split('.');
+		if (spl.length == 0)
+			return new FLError('no such class ' + obj._ctor);
+			
+		// remove the constructor field
+		delete obj['_ctor'];
+		
+		// get the real class, not the wrapper
+		var pkg = window;
+		for (var i=0;i<spl.length-1;i++) {
+			pkg = pkg[spl[i]];
 		}
-	}
-	if (denyOthers)
-		throw new Error("Wire protocol violation - nested complex objects at " + obj);
-	if (obj instanceof Array) {
+		var bn = spl[spl.length-1];
+		var clz = pkg[bn];
+		if (clz && clz._fromWire)
+			return clz._fromWire(obj);
+		clz = pkg['_' + bn];
+		if (clz && clz instanceof Function) {
+			// turn any nested reference objects into closures to get that object
+			for (var k in obj) {
+				if (obj.hasOwnProperty(k)) {
+					if (obj[k] instanceof Object) {
+						obj[k] = new FLClosure(undefined, FLEval.recoverObject, [obj[k]]);
+					}
+				}
+			}
+			
+			return new clz(obj);
+		}
+		return new FLError('not implemented');
+	} else if (obj instanceof Array) {
 		return Cons.fromArray(obj);
 	} else {
-		// I don't understand this case ... it seems broken
-		// what is coming in that this works?  Is it that old {'x':{type}} thing?
-		// and this just looks like a loop?
-		for (var k in obj)
-			obj = FLEval.fromWire(obj[k]);
-		return obj;
+		// If the object has any members, return a lazy extractor
+		for (var k in obj) {
+			if (obj.hasOwnProperty(k))
+				return Assoc.fromObject(obj); 
+		}
+		
+		// return an empty map
+		return NilMap;
 	}
 }
 
-FLEval.makeCrokeys = function(id, keytype, keys) {
-	var ret = [];
-	for (var i=0;i<keys.length;i++) {
-		if (keytype === 'natural')
-			ret.push(new NaturalCrokey(keys[i].key, keys[i].id));
-		else
-			ret.push(new Crokey(keys[i].key, keys[i].id));
-	}
+FLEval.recoverObject = function(refc) {
+	// We need to do a lot of hard work to get all of this to work,
+	// but the key thing is that we need the system to come to a halt
+	// and go off and recover this object
 	
-	return new Crokeys(id, keytype, ret);
+	return new FLRequireObject(refc);
 }
 
 FLEval.toWire = function(wrapper, obj, dontLoop) {

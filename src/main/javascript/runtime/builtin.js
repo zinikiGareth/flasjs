@@ -147,12 +147,13 @@ _NilMap.prototype.toString = function() {
 
 NilMap = new _NilMap();
 
-_Assoc = function(k,v,r) {
+_Assoc = function(k,v,r,obj) {
 	"use strict"
 	this._ctor = 'Assoc';
 	this.key = k;
 	this.value = v;
 	this.rest = r;
+	this._map = obj;
 	return this;
 }
 
@@ -162,6 +163,30 @@ _Assoc.prototype.toString = function() {
 }
 
 Assoc = function(k,v,r) { return new _Assoc(k,v,r); }
+
+Assoc.fromObject = function(obj) {
+	"use strict"
+	var ret = new _Assoc(undefined, undefined, undefined, obj);
+	return ret;
+}
+
+assoc = function(map, key) {
+	if (map == NilMap)
+		return new FLError(key + " not in map");
+	else if (!(map instanceof _Assoc))
+		return new FLError("not a map");
+
+	if (map._map) {
+		if (map._map[key] === undefined)
+			return new FLError(key + " not in map");
+		else {
+			// TODO: we need to spot objects and arrays and unpack them 
+			return map._map[key];
+		}
+	}	
+	debugger;
+	return new FLError("not implemented")
+}
 
 // Message passing
 
