@@ -38,7 +38,6 @@ _CrosetHandler.prototype.setId = function(id) {
   	return null;
   }
   return FLEval.error("CrosetHandler.setId: case not handled");
-  
 }
 
 _CrosetHandler.prototype.applyChanges = function(changes) {
@@ -52,7 +51,15 @@ _CrosetHandler.prototype.applyChanges = function(changes) {
   	return null;
   }
   return FLEval.error("CrosetHandler.applyChanges: case not handled");
-  
+}
+
+_CrosetHandler.prototype.loadCroset = function(set) {
+  "use strict";
+  // TODO: this needs to process an object in WIRE FORMAT, whatever that is
+  // (or we need to determine that it will be auto-unpacked, in which case we need to handle that correctly)
+  for (var i=0;i<set.length;i++) {
+    this._croset.elements.push(this._croset.makeElement(set[i].id, set[i].key));
+  }
 }
 
 CrosetHandler = function(croset) {
@@ -60,7 +67,7 @@ CrosetHandler = function(croset) {
   return new _CrosetHandler(croset);
 }
 
-_Croset = function(service, id, sortBy) {
+_Croset = function(service, id, version, sortBy, after, windowSize) {
 	"use strict";
 	this.service = service;
 	this.id = null;
@@ -76,9 +83,9 @@ _Croset = function(service, id, sortBy) {
 	var self = this;
 	if (id == null) {
 		service.create(this.handler);
+	} else {
+	    service.get(id, version, after, windowSize, this.handler);
 	}
-	// TODO: else ask for a set of rows (which set? the first? do we need another parameter?)
-	// TODO: how many? yet another parameter?
 }
 
 _Croset.prototype.length = function() {
@@ -89,6 +96,14 @@ _Croset.prototype.length = function() {
 _Croset.prototype.at = function(pos) {
 	"use strict";
 	return this.elements[pos].item;
+}
+
+_Croset.prototype.get = function(key) {
+	"use strict";
+	for (var i=0;i<this.elements.length;i++)
+		if (this.elements[i].serverId == key)
+			return this.elements[i].item;
+	return null;
 }
 
 _Croset.prototype.prepend = function(item) {
@@ -138,38 +153,58 @@ _Croset.prototype.insertNatural = function(elt) {
 	this.elements.push(elt);
 }
 
-_Croset.prototype.makeElement = function(item) {
+_Croset.prototype.makeElement = function(item, serverId) {
 	"use strict";
 	// TODO: handle natural crokey more directly (don't need clientId)
 	var c = this.cliId++;
 	return {
 		clientId: c,
-		serverId: null,
+		serverId: serverId,
 		item: item
 	};
 }
 
 _Croset.prototype.applyPutUpdate = function(changes) {
 	"use strict";
-	var reply = changes.changes;
-	var cids = reply.cids;
-	for (var ci=0;ci<cids.length;ci++) {
-		var cid = cids[ci].c;
-		var idx = this.putState.start.indexOf(cid);
-		if (idx > -1) {
-			this.putState.start.splice(idx, 1);
-		} else {
-			idx = this.putState.end.indexOf(cid);
+	var msg = changes.changes;
+	var cids = msg.cids;
+	if (cids) {
+		for (var ci=0;ci<cids.length;ci++) {
+			var cid = cids[ci].c;
+			var idx = this.putState.start.indexOf(cid);
 			if (idx > -1) {
-				this.putState.end.splice(idx, 1);
+				this.putState.start.splice(idx, 1);
+			} else {
+				idx = this.putState.end.indexOf(cid);
+				if (idx > -1) {
+					this.putState.end.splice(idx, 1);
+				}
+			}
+			if (idx > -1) { // via any channel
+				for (var j=0;j<this.elements.length;j++)
+					if (this.elements[j].clientId == cid) {
+						this.elements[j].serverId = cids[ci].s;
+						break;
+					}
 			}
 		}
-		if (idx > -1) { // via any channel
-			for (var j=0;j<this.elements.length;j++)
-				if (this.elements[j].clientId == cid) {
-					this.elements[j].serverId = cids[ci].s; 
-					break;
-				}
+	}
+	var inserts = msg.inserts;
+	if (inserts) {
+		var ii=0, ei=0;
+		while (ii < inserts.length && ei < this.elements.length) {
+			var io = inserts[ii];
+			var eo = this.elements[ei];
+			if (io.key < eo.serverId) {
+				this.elements.splice(ei, 0, this.makeElement(io.id, io.key));
+				ii++;
+			}
+			ei++;
+		}
+		while (ii < inserts.length) {
+			var io = inserts[ii];
+			this.elements.push(this.makeElement(io.id, io.key));
+			ii++;
 		}
 	}
 }
@@ -177,21 +212,30 @@ _Croset.prototype.applyPutUpdate = function(changes) {
 
 // TODO: how do we pass the service in from FLAS code?
 // TODO: does this all hang together?  Can I test that sooner?
-// TODO: can I test it all client-side by creating a faux service (of a few dozen rows)?
+// TODO: can I test it end-to-end in jasmine by creating a faux service (of a few dozen rows)?
 Croset = function() { }
 Croset.cro = function(service) {
  	"use strict";
-	return new _Croset(service, null, null);
+	return new _Croset(service, null, null, null);
 }
 Croset.natural = function(service, sortBy) {
 	"use strict";
-	return new _Croset(service, null, sortBy);
+	return new _Croset(service, null, null, sortBy);
 }
 Croset.from = function(service, id) {
 	"use strict";
-	return new _Croset(service, id, sortBy);
+	// TODO: if (id is an IDwithVersion) set version here ...
+	return new _Croset(service, id, null, null);
 }
 Croset.naturalFrom = function(service, id, sortBy) {
 	"use strict";
-	return new _Croset(service, id, sortBy);
+	return new _Croset(service, id, null, sortBy);
+}
+Croset.select = function(service, id, after, windowSize) {
+	"use strict";
+	return new _Croset(service, id, null, null, after, windowSize);
+}
+Croset.naturalSelect = function(service, id, sortBy, after, windowSize) {
+	"use strict";
+	return new _Croset(service, id, null, sortBy, after, windowSize);
 }
