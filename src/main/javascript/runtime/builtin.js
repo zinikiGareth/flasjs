@@ -40,11 +40,12 @@ _Nil.prototype.toString = function() {
 Nil = new _Nil();
 
 // Define a cons node by providing (possible closures for) head and tail and setting "_ctor" to "cons"
-_Cons = function(a, l) {
+_Cons = function(a, l, arr) {
 	"use strict"
 	this._ctor = 'Cons';
 	this.head = a;
 	this.tail = l;
+	this._arr = arr;
 	return this;
 }
 
@@ -53,7 +54,34 @@ _Cons.prototype.toString = function() {
 	return 'Cons';
 }
 
-Cons = function(a,b) { return new _Cons(a,b); }
+Cons = function(a,b) { return new _Cons(a,b,undefined); }
+
+Cons.fromArray = function(arr) {
+	"use strict";
+	if (arr.length == 0)
+		return Nil;
+	var ret = new _Cons(undefined, undefined, arr);
+	ret.head = new FLClosure(ret, Cons._extractHead, [ret, 0]);
+	ret.tail = new FLClosure(ret, Cons._extractTail, [ret, 1]);
+	return ret;
+}
+
+Cons._extractHead = function(node, offset) {
+	"use strict";
+	return node.head = this._arr[offset];
+}
+
+Cons._extractTail = function(node, offset) {
+	"use strict";
+	if (offset == this._arr.length)
+		return node.tail = Nil;
+	else {
+		var tail = new _Cons(undefined, undefined, undefined);
+		tail.head = new FLClosure(this, Cons._extractHead, [tail, offset]);
+		tail.tail = new FLClosure(this, Cons._extractTail, [tail, offset+1]);
+		return node.tail = tail;
+	} 
+}
 
 _StackPush = function(h, t) {
 	"use strict";

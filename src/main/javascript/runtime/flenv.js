@@ -111,6 +111,28 @@ FLEval.octor = function(obj, meth) {
   return obj[meth].apply(obj, args);  
 }
 
+/* length is a reserved word in Javascript,
+  so we call it _length instead, and need map it appropriately
+  in code generation
+ */
+FLEval._length = function(list) {
+    list = FLEval.head(list);
+	if (list == Nil)
+	    return 0;
+	else if (list instanceof _Cons) {
+		if (list._arr)
+			return list._arr.length;
+			
+		var tl = FLEval._length(list.tail);
+		if (tl instanceof FLError)
+			return tl;
+	    return 1 + tl;
+	} else {
+		debugger;
+		return new FLError("Not a valid list");
+	}
+}
+
 FLEval.flattenList = function(list) {
 	list = FLEval.full(list);
 	if (list instanceof Array)
@@ -192,11 +214,11 @@ FLEval.fromWire = function(obj, denyOthers) {
 	if (denyOthers)
 		throw new Error("Wire protocol violation - nested complex objects at " + obj);
 	if (obj instanceof Array) {
-		var ret = Nil;
-		for (var k=list.length-1;k>=0;k--)
-			ret = Cons(FLEval.fromWire(obj[k], true), ret);
-		return ret;
+		return Cons.fromArray(obj);
 	} else {
+		// I don't understand this case ... it seems broken
+		// what is coming in that this works?  Is it that old {'x':{type}} thing?
+		// and this just looks like a loop?
 		for (var k in obj)
 			obj = FLEval.fromWire(obj[k]);
 		return obj;
