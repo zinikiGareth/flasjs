@@ -357,7 +357,7 @@ FlasckWrapper.prototype.processOne = function(msg, todo) {
 			return new FLError("don't handle" + msg);
 		}
 		if (meth)
-			this.postbox.deliver(this.services['org.ziniki.CrosetContract'], {from: this.contractInfo['org.ziniki.CrosetContract'].service._myaddr, method: meth, args: args });
+			this.postbox.deliver(this.services['org.ziniki.CrosetService'], {from: this.contractInfo['org.ziniki.CrosetService'].service._myaddr, method: meth, args: args });
 		todo.push(msg);
 	} else if (msg._ctor === 'CreateCard') {
 		// If the user requests that we make a new card in response to some action, we need to know where to place it
