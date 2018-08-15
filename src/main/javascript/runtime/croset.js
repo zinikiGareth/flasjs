@@ -69,6 +69,7 @@ CrosetHandler = function(croset) {
 
 _Croset = function(service, id, version, sortBy, after, windowSize) {
 	"use strict";
+	this._ctor = 'Croset';
 	this.service = service;
 	this.id = null;
 	this.sortBy = sortBy;
@@ -93,9 +94,41 @@ _Croset.prototype.length = function() {
 	return this.elements.length;
 }
 
+/** Get the actual item at a given position */
 _Croset.prototype.at = function(pos) {
 	"use strict";
 	return this.elements[pos].item;
+}
+
+/** Get the croset "key" at a position.  Here, we actually return the whole thing, since
+  * the key is in two parts.
+  */ 
+_Croset.prototype.key = function(pos) {
+	"use strict";
+	return this.elements[pos];
+}
+
+/** Test if one item is before another.
+  * Returns false if they are the same item or neither is in the set
+  * Returns true if the left item is earlier or the right is not in the set
+  * Returns false if the right item is earlier
+  *
+  * This implementation could probably be optimised, given that we allegedly
+  * have in-order-comparable keys, but that depends on having the server
+  * key come back, which we can't guarantee.
+  *
+  * This implementation would then be a fallback.
+  */ 
+_Croset.prototype.before = function(left, right) {
+	if (left == right)
+		return false; // they are equal
+	for (var i=0;i<this.elements.length;i++) {
+		if (left == this.elements[i])
+			return true;
+		else if (right == this.elements[i])
+			return false;
+	}
+	return false; // neither is actually in the set
 }
 
 _Croset.prototype.get = function(key) {
