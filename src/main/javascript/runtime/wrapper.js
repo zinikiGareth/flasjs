@@ -29,7 +29,7 @@ FlasckWrapper.Processor.prototype.process = function(message) {
 		throw new Error("There is no method '" + message.method +"'");
 	var args = [];
 	for (var i=0;i<message.args.length;i++)
-		args.push(FLEval.fromWireService(message.from, message.args[i]));
+		args.push(FLEval.fromWireService(message.from, message.args[i], this.wrapper));
 	var clos = meth.apply(this.service, args);
 	if (clos) {
 		this.wrapper.messageEventLoop(FLEval.full(clos));
@@ -154,9 +154,21 @@ FlasckWrapper.prototype.cardCreated = function(card) {
 					card._contracts[ctr]._addr = serviceMap[ctr];
 			}
 		},
-		state: function(from) {
+		state: function(from, state) {
 			"use strict";
 //			console.log("Setting state");
+			var clos;
+			if (state)
+				; // restore it somehow
+			else
+				// If there is no existing state, call initializers
+				clos = card._onReady();
+				
+			// process anything that comes back
+			if (clos) {
+				self.messageEventLoop(FLEval.full(clos));
+			}
+				
 			// OK ... I claim it's ready now
 			if (userInit && userInit.service.onready) {
 				userInit.process({from: from, method: 'onready', args: []});
@@ -268,7 +280,7 @@ FlasckWrapper.prototype.processMessages = function(msgs, todo) {
 	for (var i=0;i<msgs.length;i++) {
 		var hd = msgs[i];
 		var mo = null;
-//		console.log("Processing message", hd);
+		console.log("Processing message", hd);
 		if (hd._ctor === 'Nil')
 			;
 		else if (hd._ctor === 'Cons')

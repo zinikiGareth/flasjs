@@ -70,6 +70,7 @@ CrosetHandler = function(croset) {
 _Croset = function(service, id, version, sortBy, after, windowSize) {
 	"use strict";
 	this._ctor = 'Croset';
+	this._special = 'object';
 	this.service = service;
 	this.id = null;
 	this.sortBy = sortBy;
@@ -80,13 +81,21 @@ _Croset = function(service, id, version, sortBy, after, windowSize) {
 	else
 		this.putState = { start: [], end: [] };
 	this.handler = CrosetHandler(this);
+}
+
+_Croset.prototype._init = function() {
+	var v0 = FLEval.closure(Cons, this.handler, Nil);
+	var v1 = FLEval.closure(Send, this.service, 'create', v0);
+  	return FLEval.closure(Cons, v1, Nil);
 	
+	/*
 	var self = this;
-	if (id == null) {
+	if (!id) {
 		service.create(this.handler);
 	} else {
 	    service.get(id, version, after, windowSize, this.handler);
 	}
+	*/
 }
 
 _Croset.prototype.length = function() {
@@ -242,11 +251,32 @@ _Croset.prototype.applyPutUpdate = function(changes) {
 	}
 }
 
-
+_Croset.prototype.toWire = function() {
+	return {
+		_ctor: 'Croset'
+	};
+}
 // TODO: how do we pass the service in from FLAS code?
 // TODO: does this all hang together?  Can I test that sooner?
 // TODO: can I test it end-to-end in jasmine by creating a faux service (of a few dozen rows)?
 Croset = function() { }
+/** Read a wire transmission */
+Croset._fromWire = function(env, obj) {
+	debugger;
+	// TODO: rationalize everything in every context so we have a single "environment" thing
+	// with consistent objects and nomenclature
+	// This only works on a card, and one that implements the CrosetService at that
+	var service = env.card._contracts['org.ziniki.CrosetService'];
+	return new _Croset(service, null, null, null);
+}
+/** create a brand new croset here, right now, and tell the service about it.
+  * It will initially be empty, but the service will give it an ID
+  */
+Croset._ctor_create = function(service) {
+ 	"use strict";
+	return new _Croset(service, null, null, null);
+} 
+/** This is out of date and should be replaced with _ctor_create above */
 Croset.cro = function(service) {
  	"use strict";
 	return new _Croset(service, null, null, null);
@@ -255,6 +285,7 @@ Croset.natural = function(service, sortBy) {
 	"use strict";
 	return new _Croset(service, null, null, sortBy);
 }
+/** Croset from says I want to read a croset from an existing ID */
 Croset.from = function(service, id) {
 	"use strict";
 	// TODO: if (id is an IDwithVersion) set version here ...
