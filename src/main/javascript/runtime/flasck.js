@@ -4,6 +4,12 @@ Flasck = {};
 
 Flasck.nextCard = 0;
 
+Flasck.inUnitTest = false;
+
+Flasck.unitTest = function() {
+	Flasck.inUnitTest = true;
+}
+
 Flasck.provideService = function(postbox, services, svcName, svc) {
 	var addr = postbox.newAddress();
 	postbox.register(addr, svc);
@@ -96,6 +102,11 @@ Flasck.createCard = function(postbox, inside, cardInfo, services) {
 	//	console.log("These services are available:", services);
 		
 		wrapper.cardCreated(myCard);
+		
+		if (Flasck.inUnitTest) {
+			handle._mycard = myCard;
+			handle._wrapper = wrapper;
+		}
 	} else if (cardInfo.mode === 'remote') {
 		function connectPB(name, id) {
 			console.log("need to show " + id + " through " + name);

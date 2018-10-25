@@ -263,6 +263,10 @@ FlasckWrapper.prototype.dispatchEvent = function(handler, ev) {
 	this.messageEventLoop(msgs);
 }
 
+FlasckWrapper.prototype.evalAndProcess = function(events) {
+	this.messageEventLoop(FLEval.full(events));
+}
+
 FlasckWrapper.prototype.messageEventLoop = function(flfull) {
 	var msgs = FLEval.flattenList(flfull);
 	var todo = [];
@@ -273,7 +277,6 @@ FlasckWrapper.prototype.messageEventLoop = function(flfull) {
 }
 
 FlasckWrapper.prototype.processMessages = function(msgs, todo) {
-//	console.log("processing messages", msgs);
 	if (!todo)
 		todo = {};
 	var momsgs = [];
