@@ -1,11 +1,11 @@
 const FLContext = require('../../main/javascript/runtime/flcxt');
 const { expect } = require('chai');
 
-var a = function() {
+var a = function(_cxt) {
 	return 42;
 };
 
-var b = function(x) {
+var b = function(_cxt, x) {
 	return x*7;
 };
 

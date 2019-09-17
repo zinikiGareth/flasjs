@@ -11,13 +11,13 @@ FLContext.prototype.closure = function(fn, ...args) {
 
 FLContext.prototype.head = function(obj) {
 	if (obj instanceof FLClosure)
-		obj = obj.eval();
+		obj = obj.eval(this);
 	return obj;
 }
 
 FLContext.prototype.full = function(obj) {
 	if (obj instanceof FLClosure)
-		obj = obj.eval();
+		obj = obj.eval(this);
 	return obj;
 }
 
