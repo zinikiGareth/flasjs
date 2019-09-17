@@ -1,4 +1,4 @@
-if (require) {
+if (typeof(require) !== 'undefined') {
 	const FLClosure = require('./closure');
 }
 
@@ -16,10 +16,12 @@ FLContext.prototype.head = function(obj) {
 }
 
 FLContext.prototype.full = function(obj) {
+	if (obj instanceof FLClosure)
+		obj = obj.eval();
 	return obj;
 }
 
-if (module)
+if (typeof(module) !== 'undefined')
 	module.exports = FLContext;
 else
 	window.FLContext = FLContext;
