@@ -1,0 +1,13 @@
+{
+  "name": "flasjs",
+  "version": "1.0.0",
+  "description": "FLAS JS client library",
+  "dependencies": {},
+  "scripts": {
+    "test": "mocha src/test/unit/*.spec.js"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^5.2.0"
+  }
+}
