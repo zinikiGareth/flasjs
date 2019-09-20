@@ -23,6 +23,10 @@ FLContext.prototype.full = function(obj) {
 
 FLContext.prototype.isA = function(val, ty) {
 	switch (ty) {
+	case 'True':
+		return val === true;
+	case 'False':
+		return val === false;
 	case 'Number':
 		return typeof(val) == 'number';
 	case 'String':

@@ -1,3 +1,11 @@
+True = function(_cxt) {
+	return true;
+}
+
+False = function(_cxt) {
+	return false;
+}
+
 FLBuiltin = function() {
 }
 
