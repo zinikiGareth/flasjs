@@ -1,5 +1,5 @@
 const FLContext = require('../../main/javascript/runtime/flcxt');
-const FLBuiltin = require('../../main/javascript/runtime/builtin');
+const { FLBuiltin } = require('../../main/javascript/runtime/builtin');
 const { expect } = require('chai');
 
 describe('FLBuiltin.plus', () => {

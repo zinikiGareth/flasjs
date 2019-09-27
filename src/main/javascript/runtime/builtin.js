@@ -1,12 +1,25 @@
-True = function(_cxt) {
+const True = function() {
+}
+
+True.eval = function(_cxt) {
 	return true;
 }
 
-False = function(_cxt) {
+const False = function() {
+}
+
+False.eval = function(_cxt) {
 	return false;
 }
 
-FLBuiltin = function() {
+const FLBuiltin = function() {
+}
+
+FLBuiltin.arr_length = function(_cxt, arr) {
+	arr = _cxt.head(arr);
+	if (!Array.isArray(arr))
+		throw new FLError("not an array");
+	return arr.length;
 }
 
 FLBuiltin.plus = function(_cxt, a, b) {
@@ -22,7 +35,9 @@ FLBuiltin.mul = function(_cxt, a, b) {
 }
 
 if (typeof(module) !== 'undefined') {
-	module.exports = FLBuiltin;
+	module.exports = { False, True, FLBuiltin };
 } else {
 	window.FLBuiltin = FLBuiltin;
+	window.True = True;
+	window.False = False;
 }
