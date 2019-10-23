@@ -1,4 +1,4 @@
-FLClosure = function(fn, args) {
+const FLClosure = function(fn, args) {
 	this.fn = fn;
 	args.splice(0,0, null);
 	this.args = args;
@@ -12,4 +12,10 @@ FLClosure.prototype.eval = function(_cxt) {
 
 FLClosure.prototype.toString = function() {
 	return "FLClosure[]";
+}
+
+if (typeof(module) !== 'undefined') {
+	module.exports = FLClosure;
+} else {
+	window.FLClosure = FLClosure;
 }

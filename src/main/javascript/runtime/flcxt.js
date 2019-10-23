@@ -1,5 +1,6 @@
 if (typeof(require) !== 'undefined') {
 	const FLClosure = require('./closure');
+	const FLCurry = require('./curry');
 }
 
 var FLContext = function(env) {
@@ -7,6 +8,10 @@ var FLContext = function(env) {
 
 FLContext.prototype.closure = function(fn, ...args) {
 	return new FLClosure(fn, args);
+}
+
+FLContext.prototype.curry = function(fn, reqd, ...args) {
+	return new FLCurry(fn, reqd, args);
 }
 
 FLContext.prototype.array = function(...args) {
@@ -54,6 +59,17 @@ FLContext.prototype.compare = function(left, right) {
 		return left.message === right.message;
 	} else
 		return false;
+}
+
+FLContext.prototype.field = function(obj, field) {
+// TODO: this probably involves backing documents ...
+	obj = this.full(obj);
+	if (field == "head" && Array.isArray(obj) && obj.length > 0)
+		return obj[0];
+	else if (field == "tail" && Array.isArray(obj) && obj.length > 0)
+		throw new Error("implement field(tail)");
+	else
+		return obj[field];
 }
 
 if (typeof(module) !== 'undefined')
