@@ -21,6 +21,7 @@ FLCurry.prototype.toString = function() {
 	return "FLCurry[" + reqd + "]";
 }
 
+//--EXPORT
 if (typeof(module) !== 'undefined') {
 	module.exports = FLCurry;
 } else {

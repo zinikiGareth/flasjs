@@ -34,6 +34,7 @@ FLBuiltin.mul = function(_cxt, a, b) {
 	return a*b;
 }
 
+//--EXPORT
 if (typeof(module) !== 'undefined') {
 	module.exports = { False, True, FLBuiltin };
 } else {

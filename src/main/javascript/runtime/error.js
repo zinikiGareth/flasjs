@@ -15,6 +15,7 @@ var FLError = function(_cxt, msg) {
 	return new _FLError(msg);
 }
 
+//--EXPORT
 if (typeof(module) !== 'undefined')
 	module.exports = FLError;
 else

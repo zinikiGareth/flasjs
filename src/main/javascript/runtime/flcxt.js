@@ -1,9 +1,8 @@
-if (typeof(require) !== 'undefined') {
-	const FLClosure = require('./closure');
-	const FLCurry = require('./curry');
-}
+const FLClosure = require('./closure');
+const FLCurry = require('./curry');
+//--REQUIRE
 
-var FLContext = function(env) {
+const FLContext = function(env) {
 }
 
 FLContext.prototype.closure = function(fn, ...args) {
@@ -72,6 +71,7 @@ FLContext.prototype.field = function(obj, field) {
 		return obj[field];
 }
 
+//--EXPORT
 if (typeof(module) !== 'undefined')
 	module.exports = FLContext;
 else

@@ -14,6 +14,7 @@ FLClosure.prototype.toString = function() {
 	return "FLClosure[]";
 }
 
+//--EXPORT
 if (typeof(module) !== 'undefined') {
 	module.exports = FLClosure;
 } else {
