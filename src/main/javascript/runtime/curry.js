@@ -18,7 +18,7 @@ FLCurry.prototype.apply = function(_, args) {
 }
 
 FLCurry.prototype.toString = function() {
-	return "FLCurry[" + reqd + "]";
+	return "FLCurry[" + this.reqd + "]";
 }
 
 //--EXPORT
