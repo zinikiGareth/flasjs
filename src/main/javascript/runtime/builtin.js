@@ -28,10 +28,22 @@ FLBuiltin.plus = function(_cxt, a, b) {
 	return a+b;
 }
 
+FLBuiltin.minus = function(_cxt, a, b) {
+	a = _cxt.full(a);
+	b = _cxt.full(b);
+	return a-b;
+}
+
 FLBuiltin.mul = function(_cxt, a, b) {
 	a = _cxt.full(a);
 	b = _cxt.full(b);
 	return a*b;
+}
+
+FLBuiltin.div = function(_cxt, a, b) {
+	a = _cxt.full(a);
+	b = _cxt.full(b);
+	return a/b;
 }
 
 //--EXPORT

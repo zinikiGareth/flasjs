@@ -9,8 +9,24 @@ FLContext.prototype.closure = function(fn, ...args) {
 	return new FLClosure(fn, args);
 }
 
-FLContext.prototype.curry = function(fn, reqd, ...args) {
-	return new FLCurry(fn, reqd, args);
+FLContext.prototype.curry = function(reqd, fn, ...args) {
+	var xcs = {};
+	for (var i=0;i<args.length;i++) {
+		xcs[i+1] = args[i];
+	}
+	return new FLCurry(fn, reqd, xcs);
+}
+
+FLContext.prototype.xcurry = function(reqd, ...args) {
+	var fn;
+	var xcs = {};
+	for (var i=0;i<args.length;i+=2) {
+		if (args[i] == 0)
+			fn = args[i+1];
+		else
+			xcs[args[i]] = args[i+1];
+	}
+	return new FLCurry(fn, reqd, xcs);
 }
 
 FLContext.prototype.array = function(...args) {

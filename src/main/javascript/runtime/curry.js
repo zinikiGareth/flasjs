@@ -1,16 +1,25 @@
-const FLCurry = function(reqd, fn, args) {
+const FLCurry = function(fn, reqd, xcs) {
 	this.fn = fn;
-	this.reqd = reqd;
-	args.splice(0,0, null);
-	this.args = args;
+	this.args = [null];
+	this.missing = [];
+	for (var i=1;i<=reqd;i++) {
+		if (xcs[i])
+			this.args.push(xcs[i]);
+		else {
+			this.args.push(null);
+			this.missing.push(i);
+		}
+	}
 }
 
+// TODO: I think this trashes the current curry; instead it should do things locally and create a new curry if needed.
 FLCurry.prototype.apply = function(_, args) {
 	this.args[0] = args[0];
 	for (var i=1;i<args.length;i++) {
-		this.args.push(args[i]);
+		var m = this.missing.pop();
+		this.args[m] = args[i];
 	}
-	if (this.args.length == this.reqd+1) { // because we have the context
+	if (this.missing.length == 0) {
 		return this.fn.apply(null, this.args);
 	} else {
 		return this;
