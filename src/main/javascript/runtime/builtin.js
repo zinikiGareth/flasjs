@@ -46,6 +46,12 @@ FLBuiltin.div = function(_cxt, a, b) {
 	return a/b;
 }
 
+FLBuiltin.isEqual = function(_cxt, a, b) {
+	a = _cxt.full(a);
+	b = _cxt.full(b);
+	return _cxt.compare(a,b);
+}
+
 //--EXPORT
 if (typeof(module) !== 'undefined') {
 	module.exports = { False, True, FLBuiltin };

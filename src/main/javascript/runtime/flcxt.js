@@ -45,6 +45,11 @@ FLContext.prototype.full = function(obj) {
 	return obj;
 }
 
+FLContext.prototype.isTruthy = function(val) {
+	val = this.full(val);
+	return !!val;
+}
+
 FLContext.prototype.isA = function(val, ty) {
 	switch (ty) {
 	case 'True':
