@@ -46,6 +46,12 @@ FLBuiltin.div = function(_cxt, a, b) {
 	return a/b;
 }
 
+FLBuiltin.concat = function(_cxt, a, b) {
+	a = _cxt.full(a);
+	b = _cxt.full(b);
+	return a + b;
+}
+
 FLBuiltin.isEqual = function(_cxt, a, b) {
 	a = _cxt.full(a);
 	b = _cxt.full(b);

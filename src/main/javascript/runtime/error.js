@@ -4,14 +4,16 @@ class _FLError extends Error {
     	this.name = "FLError";
 	}
 	
-	_compareTo(other) {
-		if (!other instanceof _FLError) return false;
+	_compare(cx, other) {
+		if (!(other instanceof _FLError)) return false;
 		if (other.message != this.message) return false;
 		return true;
 	}
 }
 
-var FLError = function(_cxt, msg) {
+const FLError = {
+}
+FLError.eval = function(_cxt, msg) {
 	return new _FLError(msg);
 }
 

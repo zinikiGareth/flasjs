@@ -51,6 +51,9 @@ FLContext.prototype.isTruthy = function(val) {
 }
 
 FLContext.prototype.isA = function(val, ty) {
+	if (val instanceof Object && 'areYouA' in val) {
+		return val.areYouA(ty);
+	}
 	switch (ty) {
 	case 'True':
 		return val === true;
@@ -77,19 +80,26 @@ FLContext.prototype.compare = function(left, right) {
 		return left.length === right.length;
 	} else if (left instanceof _FLError && right instanceof _FLError) {
 		return left.message === right.message;
+	} else if (left._compare) {
+		return left._compare(this, right);
 	} else
-		return false;
+		return left == right;
 }
 
 FLContext.prototype.field = function(obj, field) {
-// TODO: this probably involves backing documents ...
 	obj = this.full(obj);
 	if (field == "head" && Array.isArray(obj) && obj.length > 0)
 		return obj[0];
 	else if (field == "tail" && Array.isArray(obj) && obj.length > 0)
-		throw new Error("implement field(tail)");
-	else
+		return obj.slice(1);
+	else {
+// TODO: this probably involves backing documents ...
 		return obj[field];
+	}
+}
+
+FLContext.prototype.mockContract = function(contract) {
+	return new MockContract(contract);
 }
 
 //--EXPORT
