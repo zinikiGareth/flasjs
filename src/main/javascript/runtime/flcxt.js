@@ -1,5 +1,6 @@
 const FLClosure = require('./closure');
 const FLCurry = require('./curry');
+const FLMakeSend = require('./makesend');
 //--REQUIRE
 
 const FLContext = function(env) {
@@ -31,6 +32,10 @@ FLContext.prototype.xcurry = function(reqd, ...args) {
 
 FLContext.prototype.array = function(...args) {
 	return args;
+}
+
+FLContext.prototype.mksend = function(meth, obj, cnt) {
+	return new FLMakeSend(meth, obj, cnt);
 }
 
 FLContext.prototype.head = function(obj) {

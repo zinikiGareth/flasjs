@@ -13,6 +13,9 @@ Debug.prototype._compare = function(cx, other) {
 	} else
 		return false;
 }
+Debug.prototype.toString = function() {
+	return "Debug[" + this.msg + "]";
+}
 
 const Send = function() {
 }
@@ -28,6 +31,9 @@ Send.prototype._compare = function(cx, other) {
 		return cx.compare(this.obj, other.obj) && cx.compare(this.meth, other.meth) && cx.compare(this.args, other.args);
 	} else
 		return false;
+}
+Send.prototype.toString = function() {
+	return "Send[" + "]";
 }
 
 //--EXPORT
