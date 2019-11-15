@@ -1,4 +1,5 @@
-const FLCurry = function(fn, reqd, xcs) {
+const FLCurry = function(obj, fn, reqd, xcs) {
+	this.obj = obj;
 	this.fn = fn;
 	this.args = [null];
 	this.missing = [];
@@ -20,7 +21,7 @@ FLCurry.prototype.apply = function(_, args) {
 		this.args[m] = args[i];
 	}
 	if (this.missing.length == 0) {
-		return this.fn.apply(null, this.args);
+		return this.fn.apply(this.obj, this.args);
 	} else {
 		return this;
 	}

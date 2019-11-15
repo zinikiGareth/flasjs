@@ -7,7 +7,11 @@ const FLContext = function(env) {
 }
 
 FLContext.prototype.closure = function(fn, ...args) {
-	return new FLClosure(fn, args);
+	return new FLClosure(null, fn, args);
+}
+
+FLContext.prototype.oclosure = function(fn, obj, ...args) {
+	return new FLClosure(obj, fn, args);
 }
 
 FLContext.prototype.curry = function(reqd, fn, ...args) {
@@ -15,7 +19,7 @@ FLContext.prototype.curry = function(reqd, fn, ...args) {
 	for (var i=0;i<args.length;i++) {
 		xcs[i+1] = args[i];
 	}
-	return new FLCurry(fn, reqd, xcs);
+	return new FLCurry(null, fn, reqd, xcs);
 }
 
 FLContext.prototype.xcurry = function(reqd, ...args) {
@@ -27,7 +31,7 @@ FLContext.prototype.xcurry = function(reqd, ...args) {
 		else
 			xcs[args[i]] = args[i+1];
 	}
-	return new FLCurry(fn, reqd, xcs);
+	return new FLCurry(null, fn, reqd, xcs);
 }
 
 FLContext.prototype.array = function(...args) {
@@ -36,6 +40,13 @@ FLContext.prototype.array = function(...args) {
 
 FLContext.prototype.mksend = function(meth, obj, cnt) {
 	return new FLMakeSend(meth, obj, cnt);
+}
+
+FLContext.prototype.mkacor = function(meth, obj, cnt) {
+	if (cnt == 0)
+		return new FLClosure(obj, meth, []);
+	else
+		return new FLCurry(obj, meth, cnt, {});
 }
 
 FLContext.prototype.head = function(obj) {
