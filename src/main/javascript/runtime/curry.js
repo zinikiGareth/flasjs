@@ -2,6 +2,7 @@ const FLCurry = function(obj, fn, reqd, xcs) {
 	this.obj = obj;
 	this.fn = fn;
 	this.args = [null];
+	this.reqd = reqd;
 	this.missing = [];
 	for (var i=1;i<=reqd;i++) {
 		if (xcs[i])
@@ -25,6 +26,10 @@ FLCurry.prototype.apply = function(_, args) {
 	} else {
 		return this;
 	}
+}
+
+FLCurry.prototype.nfargs = function() {
+	return this.reqd;
 }
 
 FLCurry.prototype.toString = function() {

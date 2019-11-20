@@ -22,11 +22,15 @@ FLBuiltin.arr_length = function(_cxt, arr) {
 	return arr.length;
 }
 
+FLBuiltin.arr_length.nfargs = function() { return 1; }
+
 FLBuiltin.plus = function(_cxt, a, b) {
 	a = _cxt.full(a);
 	b = _cxt.full(b);
 	return a+b;
 }
+
+FLBuiltin.plus.nfargs = function() { return 2; }
 
 FLBuiltin.minus = function(_cxt, a, b) {
 	a = _cxt.full(a);
@@ -34,11 +38,15 @@ FLBuiltin.minus = function(_cxt, a, b) {
 	return a-b;
 }
 
+FLBuiltin.minus.nfargs = function() { return 2; }
+
 FLBuiltin.mul = function(_cxt, a, b) {
 	a = _cxt.full(a);
 	b = _cxt.full(b);
 	return a*b;
 }
+
+FLBuiltin.mul.nfargs = function() { return 2; }
 
 FLBuiltin.div = function(_cxt, a, b) {
 	a = _cxt.full(a);
@@ -46,11 +54,15 @@ FLBuiltin.div = function(_cxt, a, b) {
 	return a/b;
 }
 
+FLBuiltin.div.nfargs = function() { return 2; }
+
 FLBuiltin.concat = function(_cxt, a, b) {
 	a = _cxt.full(a);
 	b = _cxt.full(b);
 	return a + b;
 }
+
+FLBuiltin.concat.nfargs = function() { return 2; }
 
 FLBuiltin.strlen = function(_cxt, str) {
 	str = _cxt.head(str);
@@ -59,11 +71,15 @@ FLBuiltin.strlen = function(_cxt, str) {
 	return str.length;
 }
 
+FLBuiltin.strlen.nfargs = function() { return 1; }
+
 FLBuiltin.isEqual = function(_cxt, a, b) {
 	a = _cxt.full(a);
 	b = _cxt.full(b);
 	return _cxt.compare(a,b);
 }
+
+FLBuiltin.isEqual.nfargs = function() { return 2; }
 
 //--EXPORT
 if (typeof(module) !== 'undefined') {

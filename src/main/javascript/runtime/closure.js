@@ -8,7 +8,12 @@ const FLClosure = function(obj, fn, args) {
 FLClosure.prototype.eval = function(_cxt) {
 	this.args[0] = _cxt;
 	this.obj = _cxt.full(this.obj);
-	this.val = this.fn.apply(this.obj, this.args);
+	var cnt = this.fn.nfargs();
+	this.val = this.fn.apply(this.obj, this.args.slice(0, cnt+1)); // +1 for cxt
+	// handle the case where there are arguments left over
+	if (cnt+1 < this.args.length) {
+		this.val = new FLClosure(this.obj, this.val, this.args.slice(cnt+1));
+	}
 	return this.val;
 }
 
@@ -16,6 +21,8 @@ FLClosure.prototype.apply = function(_, args) {
 	const asfn = this.eval(args[0]);
 	return asfn.apply(null, args);
 }
+
+FLClosure.prototype.nfargs = function() { return 0; }
 
 FLClosure.prototype.toString = function() {
 	return "FLClosure[]";

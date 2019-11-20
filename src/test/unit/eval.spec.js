@@ -4,10 +4,12 @@ const { expect } = require('chai');
 var a = function(_cxt) {
 	return 42;
 };
+a.nfargs = function() { return 0; }
 
 var b = function(_cxt, x) {
 	return x*7;
 };
+b.nfargs = function() { return 1; }
 
 describe('head evaluation', () => {
 	it('can expand a closure', () => {
