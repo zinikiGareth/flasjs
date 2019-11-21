@@ -39,7 +39,10 @@ FLContext.prototype.array = function(...args) {
 }
 
 FLContext.prototype.mksend = function(meth, obj, cnt) {
-	return new FLMakeSend(meth, obj, cnt);
+	if (cnt == 0)
+		return Send.eval(this, obj, meth, []);
+	else
+		return new FLMakeSend(meth, obj, cnt);
 }
 
 FLContext.prototype.mkacor = function(meth, obj, cnt) {
