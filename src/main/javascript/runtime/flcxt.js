@@ -98,7 +98,7 @@ FLContext.prototype.compare = function(left, right) {
 	} else if (Array.isArray(left) && Array.isArray(right)) {
 		// not good enough
 		return left.length === right.length;
-	} else if (left instanceof _FLError && right instanceof _FLError) {
+	} else if (left instanceof FLError && right instanceof FLError) {
 		return left.message === right.message;
 	} else if (left._compare) {
 		return left._compare(this, right);
