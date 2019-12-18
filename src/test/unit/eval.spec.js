@@ -11,6 +11,14 @@ var b = function(_cxt, x) {
 };
 b.nfargs = function() { return 1; }
 
+describe("trivia", () => {
+	it('has a tostring', () => {
+		var cxt = new FLContext(null);
+		var clos = cxt.closure(a);
+		expect(clos.toString()).to.equal("FLClosure[]");
+	});
+});
+
 describe('head evaluation', () => {
 	it('can expand a closure', () => {
 		var cxt = new FLContext(null);

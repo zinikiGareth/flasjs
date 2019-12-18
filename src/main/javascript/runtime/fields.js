@@ -29,6 +29,7 @@ FieldsContainer.prototype.toString = function() {
 }
 
 //--EXPORT
+/* istanbul ignore else */ 
 if (typeof(module) !== 'undefined')
 	module.exports = { FieldsContainer };
 else {

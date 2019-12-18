@@ -37,6 +37,7 @@ FLCurry.prototype.toString = function() {
 }
 
 //--EXPORT
+/* istanbul ignore else */ 
 if (typeof(module) !== 'undefined') {
 	module.exports = FLCurry;
 } else {

@@ -124,6 +124,7 @@ FLContext.prototype.mockContract = function(contract) {
 }
 
 //--EXPORT
+/* istanbul ignore else */ 
 if (typeof(module) !== 'undefined')
 	module.exports = FLContext;
 else

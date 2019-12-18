@@ -29,6 +29,7 @@ FLClosure.prototype.toString = function() {
 }
 
 //--EXPORT
+/* istanbul ignore else */ 
 if (typeof(module) !== 'undefined') {
 	module.exports = FLClosure;
 } else {
