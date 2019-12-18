@@ -3,6 +3,7 @@ const FLCurry = require('./curry');
 const FLMakeSend = require('./makesend');
 //--REQUIRE
 
+/* istanbul ignore next */
 const FLContext = function(env) {
 }
 

@@ -1,3 +1,4 @@
+/* istanbul ignore next */
 const Nil = function() {
 }
 
@@ -5,6 +6,7 @@ Nil.eval = function(_cxt) {
 	return [];
 }
 
+/* istanbul ignore next */
 const Cons = function() {
 }
 
@@ -13,6 +15,7 @@ Cons.eval = function(_cxt, hd, tl) {
 }
 
 //--EXPORTS
+/* istanbul ignore else */
 if (typeof(module) !== 'undefined') {
 	module.exports = { Nil, Cons }
 } else {

@@ -1,3 +1,7 @@
+const FLError = require('./error');
+//--REQUIRE
+
+/* istanbul ignore next */
 const True = function() {
 }
 
@@ -5,6 +9,7 @@ True.eval = function(_cxt) {
 	return true;
 }
 
+/* istanbul ignore next */
 const False = function() {
 }
 
@@ -12,13 +17,14 @@ False.eval = function(_cxt) {
 	return false;
 }
 
+/* istanbul ignore next */
 const FLBuiltin = function() {
 }
 
 FLBuiltin.arr_length = function(_cxt, arr) {
 	arr = _cxt.head(arr);
 	if (!Array.isArray(arr))
-		throw new FLError("not an array");
+		return FLError.eval(_cxt, "not an array");
 	return arr.length;
 }
 
@@ -67,7 +73,7 @@ FLBuiltin.concat.nfargs = function() { return 2; }
 FLBuiltin.strlen = function(_cxt, str) {
 	str = _cxt.head(str);
 	if (typeof(str) != "string")
-		throw new FLError("not a string");
+		return FLError.eval(_cxt, "not a string");
 	return str.length;
 }
 
@@ -82,6 +88,7 @@ FLBuiltin.isEqual = function(_cxt, a, b) {
 FLBuiltin.isEqual.nfargs = function() { return 2; }
 
 //--EXPORT
+/* istanbul ignore else */
 if (typeof(module) !== 'undefined') {
 	module.exports = { False, True, FLBuiltin };
 } else {
