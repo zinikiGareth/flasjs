@@ -1,4 +1,5 @@
 const FLClosure = function(obj, fn, args) {
+	/* istanbul ignore if */
 	if (!fn)
 		throw new Error("must define a function");
 	this.obj = obj;

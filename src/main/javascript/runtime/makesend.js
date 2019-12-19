@@ -1,4 +1,4 @@
-
+const { Send } = require('./messages');
 //--REQUIRE
 
 const FLMakeSend = function(meth, obj, nargs, /* optional */ args) {
@@ -15,7 +15,7 @@ FLMakeSend.prototype.apply = function(cx, args) {
 	var all = this.current.slice();
 	for (var i=1;i<args.length;i++)
 		all.push(args[i]);
-	if (all.length = this.nargs) {
+	if (all.length == this.nargs) {
 		return Send.eval(cx, this.obj, this.meth, all);
 	} else {
 		return new FLMakeSend(this.meth, this.obj, this.nargs, all);
@@ -29,8 +29,9 @@ FLMakeSend.prototype.toString = function() {
 }
 
 //--EXPORT
+/* istanbul ignore next */
 if (typeof(module) !== 'undefined') {
-	module.exports = { FLMakeSend };
+	module.exports = FLMakeSend;
 } else {
 	window.FLMakeSend = FLMakeSend;
 }

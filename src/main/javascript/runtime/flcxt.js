@@ -3,6 +3,7 @@ const FLCurry = require('./curry');
 const FLMakeSend = require('./makesend');
 const FLError = require('./error');
 const MockContract = require('../unittest/mocks');
+const { Debug, Send, Assign } = require('./messages');
 //--REQUIRE
 
 /* istanbul ignore next */
