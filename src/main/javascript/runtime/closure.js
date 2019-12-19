@@ -1,4 +1,6 @@
 const FLClosure = function(obj, fn, args) {
+	if (!fn)
+		throw new Error("must define a function");
 	this.obj = obj;
 	this.fn = fn;
 	args.splice(0,0, null);

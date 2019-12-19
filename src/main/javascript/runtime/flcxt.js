@@ -25,6 +25,14 @@ FLContext.prototype.curry = function(reqd, fn, ...args) {
 	return new FLCurry(null, fn, reqd, xcs);
 }
 
+FLContext.prototype.ocurry = function(reqd, fn, obj, ...args) {
+	var xcs = {};
+	for (var i=0;i<args.length;i++) {
+		xcs[i+1] = args[i];
+	}
+	return new FLCurry(obj, fn, reqd, xcs);
+}
+
 FLContext.prototype.xcurry = function(reqd, ...args) {
 	var fn;
 	var xcs = {};
@@ -54,9 +62,9 @@ FLContext.prototype.mksend = function(meth, obj, cnt) {
 
 FLContext.prototype.mkacor = function(meth, obj, cnt) {
 	if (cnt == 0)
-		return new FLClosure(obj, meth, []);
+		return this.oclosure(meth, obj);
 	else
-		return new FLCurry(obj, meth, cnt, {});
+		return this.ocurry(cnt, meth, obj);
 }
 
 FLContext.prototype.head = function(obj) {

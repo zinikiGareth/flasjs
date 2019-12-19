@@ -42,6 +42,17 @@ describe('currying', () => {
 	});
 });
 
+describe('object currying', () => {
+    // This doesn't really do anything with the object so it is a bit of a fraud ...
+	it('can apply the right number of arguments', () => {
+        var _cxt = new FLContext(null);
+        var fa = _cxt.ocurry(2, f, {}, 7);
+        expect(fa instanceof FLCurry).to.be.true;
+        var applyTo = _cxt.closure(fa, 5);
+        expect(_cxt.full(applyTo)).to.equal(12);
+	});
+});
+
 describe('extended currying', () => {
     it('can pass the second without the first', () => {
         var _cxt = new FLContext(null);
