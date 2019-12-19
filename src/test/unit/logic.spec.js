@@ -12,4 +12,43 @@ describe('basic logic', () => {
 		var _cxt = new FLContext(null);
 		expect(False.eval(_cxt)).to.be.false;
 	});
+
+	it('true isTruthy', () => {
+		var _cxt = new FLContext(null);
+		expect(_cxt.isTruthy(True.eval(_cxt))).to.be.true;
+	});
+
+    it('false is not isTruthy', () => {
+		var _cxt = new FLContext(null);
+		expect(_cxt.isTruthy(False.eval(_cxt))).to.be.false;
+	});
+});
+
+const RandomClass = function() {
+};
+
+RandomClass.prototype.areYouA = function(ty) {
+	return "SomeInterface" == ty;
+}
+
+describe('isA logic', () => {
+	it('knows true is True', () => {
+		var _cxt = new FLContext(null);
+		expect(_cxt.isA(true, 'True')).to.be.true;
+	});
+
+	it('knows false is False', () => {
+		var _cxt = new FLContext(null);
+		expect(_cxt.isA(false, 'False')).to.be.true;
+	});
+	
+	it('can handle interface names', () => {
+		var _cxt = new FLContext(null);
+		expect(_cxt.isA(new RandomClass(), 'SomeInterface')).to.be.true;
+	});
+	
+	it('returns false when in doubt', () => {
+		var _cxt = new FLContext(null);
+		expect(_cxt.isA("fred", 'DOUBT')).to.be.false;
+	});
 });

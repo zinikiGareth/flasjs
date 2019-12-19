@@ -13,40 +13,47 @@ b.nfargs = function() { return 1; }
 
 describe("trivia", () => {
 	it('has a tostring', () => {
-		var cxt = new FLContext(null);
-		var clos = cxt.closure(a);
+		var _cxt = new FLContext(null);
+		var clos = _cxt.closure(a);
 		expect(clos.toString()).to.equal("FLClosure[]");
 	});
 });
 
 describe('head evaluation', () => {
 	it('can expand a closure', () => {
-		var cxt = new FLContext(null);
-		var clos = cxt.closure(a);
-		var val = cxt.head(clos);
+		var _cxt = new FLContext(null);
+		var clos = _cxt.closure(a);
+		var val = _cxt.head(clos);
 		expect(val).to.equal(42);
 	});
 
 	it('can expand a closure with an argument', () => {
-		var cxt = new FLContext(null);
-		var clos = cxt.closure(b, 6);
-		var val = cxt.head(clos);
+		var _cxt = new FLContext(null);
+		var clos = _cxt.closure(b, 6);
+		var val = _cxt.head(clos);
 		expect(val).to.equal(42);
 	});
 });
 
 describe('full evaluation', () => {
 	it('can expand a closure', () => {
-		var cxt = new FLContext(null);
-		var clos = cxt.closure(a);
-		var val = cxt.full(clos);
+		var _cxt = new FLContext(null);
+		var clos = _cxt.closure(a);
+		var val = _cxt.full(clos);
 		expect(val).to.equal(42);
 	});
 
 	it('can expand a closure with an argument', () => {
-		var cxt = new FLContext(null);
-		var clos = cxt.closure(b, 6);
-		var val = cxt.full(clos);
+		var _cxt = new FLContext(null);
+		var clos = _cxt.closure(b, 6);
+		var val = _cxt.full(clos);
 		expect(val).to.equal(42);
+	});
+
+	it('can expand an array of closures', () => {
+		var _cxt = new FLContext(null);
+		var arr = [_cxt.closure(a), _cxt.closure(b, 3)];
+		var val = _cxt.full(arr);
+		expect(val).to.deep.equal([42, 21]);
 	});
 });

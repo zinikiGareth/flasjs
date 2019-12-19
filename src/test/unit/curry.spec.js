@@ -7,6 +7,11 @@ function f(_cxt, a, b) {
 }
 f.nfargs = () => 2;
 
+function sub(_cxt, a, b) {
+    return _cxt.full(a)-_cxt.full(b);
+}
+sub.nfargs = () => 2;
+
 function split(_cxt, f, v) {
     return _cxt.curry(2, f, v);
 }
@@ -37,3 +42,11 @@ describe('currying', () => {
 	});
 });
 
+describe('extended currying', () => {
+    it('can pass the second without the first', () => {
+        var _cxt = new FLContext(null);
+        var sub5 = _cxt.xcurry(2, 0, sub, 2, 5);
+        var calc = _cxt.closure(sub5, 8);
+        expect(_cxt.full(calc)).to.equal(3);
+    });
+});

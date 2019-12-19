@@ -24,7 +24,7 @@ const FLBuiltin = function() {
 FLBuiltin.arr_length = function(_cxt, arr) {
 	arr = _cxt.head(arr);
 	if (!Array.isArray(arr))
-		return FLError.eval(_cxt, "not an array");
+		return _cxt.error("not an array");
 	return arr.length;
 }
 
@@ -73,7 +73,7 @@ FLBuiltin.concat.nfargs = function() { return 2; }
 FLBuiltin.strlen = function(_cxt, str) {
 	str = _cxt.head(str);
 	if (typeof(str) != "string")
-		return FLError.eval(_cxt, "not a string");
+		return _cxt.error("not a string");
 	return str.length;
 }
 

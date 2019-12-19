@@ -1,6 +1,8 @@
 const FLClosure = require('./closure');
 const FLCurry = require('./curry');
 const FLMakeSend = require('./makesend');
+const FLError = require('./error');
+const MockContract = require('../unittest/mocks');
 //--REQUIRE
 
 /* istanbul ignore next */
@@ -39,6 +41,10 @@ FLContext.prototype.array = function(...args) {
 	return args;
 }
 
+FLContext.prototype.error = function(msg) {
+	return FLError.eval(this, msg);
+}
+
 FLContext.prototype.mksend = function(meth, obj, cnt) {
 	if (cnt == 0)
 		return Send.eval(this, obj, meth, []);
@@ -62,6 +68,10 @@ FLContext.prototype.head = function(obj) {
 FLContext.prototype.full = function(obj) {
 	while (obj instanceof FLClosure)
 		obj = obj.eval(this);
+	if (Array.isArray(obj)) {
+		for (var i=0;i<obj.length;i++)
+			obj[i] = this.full(obj[i]);
+	}
 	return obj;
 }
 
@@ -96,8 +106,13 @@ FLContext.prototype.compare = function(left, right) {
 	if (typeof(left) === 'number' || typeof(left) === 'string') {
 		return left === right;
 	} else if (Array.isArray(left) && Array.isArray(right)) {
-		// not good enough
-		return left.length === right.length;
+		if (left.length !== right.length)
+			return false;
+		for (var i=0;i<left.length;i++) {
+			if (!this.compare(left[i], right[i]))
+				return false;
+		}
+		return true;
 	} else if (left instanceof FLError && right instanceof FLError) {
 		return left.message === right.message;
 	} else if (left._compare) {
@@ -110,13 +125,21 @@ FLContext.prototype.compare = function(left, right) {
 
 FLContext.prototype.field = function(obj, field) {
 	obj = this.full(obj);
-	if (field == "head" && Array.isArray(obj) && obj.length > 0)
-		return obj[0];
-	else if (field == "tail" && Array.isArray(obj) && obj.length > 0)
-		return obj.slice(1);
-	else {
-// TODO: this probably involves backing documents ...
-		return obj[field];
+	if (Array.isArray(obj)) {
+		if (field == 'head') {
+			if (obj.length > 0)
+				return obj[0];
+			else
+				return this.error('head(nil)');
+		} else if (field == 'tail') {
+			if (obj.length > 0)
+				return obj.slice(1);
+			else
+				return this.error('tail(nil)');
+		} else
+			return this.error('no function "' + field + "'");
+	} else {
+		throw new Error("NotImplemented - field of backing document");
 	}
 }
 

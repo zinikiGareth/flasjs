@@ -35,7 +35,7 @@ Send.prototype._compare = function(cx, other) {
 Send.prototype.dispatch = function(cx) {
 	var args = this.args.slice();
 	args.splice(0, 0, cx);
-	var ret = this.meth.apply(this.obj, args);
+	var ret = this.obj.methods()[this.meth].apply(this.obj, args);
 	return ret;
 }
 Send.prototype.toString = function() {
@@ -51,9 +51,18 @@ Assign.eval = function(_cxt, obj, slot, expr) {
 	s.expr = expr;
 	return s;
 }
+Assign.prototype._compare = function(cx, other) {
+	if (other instanceof Assign) {
+		return cx.compare(this.obj, other.obj) && cx.compare(this.slot, other.slot) && cx.compare(this.expr, other.expr);
+	} else
+		return false;
+}
 Assign.prototype.dispatch = function(cx) {
 	this.obj.state.set(this.slot, this.expr);
 	return null;
+}
+Assign.prototype.toString = function() {
+	return "Assign[" + "]";
 }
 
 //--EXPORT
