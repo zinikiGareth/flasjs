@@ -4,6 +4,7 @@ const FLMakeSend = require('./makesend');
 const FLError = require('./error');
 const MockContract = require('../unittest/mocks');
 const { Debug, Send, Assign } = require('./messages');
+const { FieldsContainer } = require('./fields');
 //--REQUIRE
 
 /* istanbul ignore next */
@@ -66,6 +67,10 @@ FLContext.prototype.mkacor = function(meth, obj, cnt) {
 		return this.oclosure(meth, obj);
 	else
 		return this.ocurry(cnt, meth, obj);
+}
+
+FLContext.prototype.fields = function() {
+	return new FieldsContainer();
 }
 
 FLContext.prototype.head = function(obj) {
@@ -148,7 +153,9 @@ FLContext.prototype.field = function(obj, field) {
 		} else
 			return this.error('no function "' + field + "'");
 	} else {
-		throw new Error("NotImplemented - field of backing document");
+		// assume it's a fields document with a state object
+		// This is possibly a bogus assumption
+		return obj.state.get(field);
 	}
 }
 

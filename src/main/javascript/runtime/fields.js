@@ -25,7 +25,7 @@ FieldsContainer.prototype._compare = function(cx, other) {
 }
 
 FieldsContainer.prototype.toString = function() {
-	return "Fields[" + this.msg + "]";
+	return "Fields[" + Object.keys(this.dict).length + "]";
 }
 
 //--EXPORT
