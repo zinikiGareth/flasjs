@@ -154,4 +154,5 @@ describe('mksend', () => {
 		var v1 = _cxt.mksend('hello', {}, 2);
 		var v2 = _cxt.closure(v1, 'hello');
 		expect(_cxt.full(v2)).to.be.instanceOf(FLMakeSend);
-	});});
+	});
+});

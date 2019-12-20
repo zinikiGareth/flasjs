@@ -7,8 +7,12 @@ const { Debug, Send, Assign } = require('./messages');
 const { FieldsContainer } = require('./fields');
 //--REQUIRE
 
-/* istanbul ignore next */
 const FLContext = function(env) {
+	this.env = env;
+}
+
+FLContext.prototype.log = function(...args) {
+	this.env.logger.log.apply(this.env.logger, args);
 }
 
 FLContext.prototype.closure = function(fn, ...args) {

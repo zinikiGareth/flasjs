@@ -13,6 +13,10 @@ Debug.prototype._compare = function(cx, other) {
 	} else
 		return false;
 }
+Debug.prototype.dispatch = function(cx) {
+	cx.log(this.msg);
+	return null;
+}
 Debug.prototype.toString = function() {
 	return "Debug[" + this.msg + "]";
 }
