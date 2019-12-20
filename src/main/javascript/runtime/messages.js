@@ -1,5 +1,6 @@
-
+const { MockContract } = require('../unittest/mocks');
 //--REQUIRE
+
 const Debug = function() {
 }
 Debug.eval = function(_cxt, msg) {
@@ -39,8 +40,17 @@ Send.prototype._compare = function(cx, other) {
 Send.prototype.dispatch = function(cx) {
 	var args = this.args.slice();
 	args.splice(0, 0, cx);
-	var ret = this.obj.methods()[this.meth].apply(this.obj, args);
-	return ret;
+	if (this.obj instanceof MockContract) {
+		// TODO: specifying MockContract is obviously over-precise
+		// We need to cater for actual contract implementations when we have them (ie some kind of ZiWSH proxy)
+		// But the code is possibly sufficiently different that we want to keep the cases separate - not sure
+		this.obj.serviceMethod(cx, this.meth, this.args);
+		return [];
+	} else {
+		// assume it is an object with declared methods
+		var ret = this.obj.methods()[this.meth].apply(this.obj, args);
+		return ret;
+	}
 }
 Send.prototype.toString = function() {
 	return "Send[" + "]";
