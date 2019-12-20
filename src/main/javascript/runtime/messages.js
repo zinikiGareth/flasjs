@@ -66,6 +66,7 @@ Assign.prototype.toString = function() {
 }
 
 //--EXPORT
+/* istanbul ignore else */
 if (typeof(module) !== 'undefined')
 	module.exports = { Debug, Send, Assign };
 else {

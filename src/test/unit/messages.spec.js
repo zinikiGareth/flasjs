@@ -32,6 +32,99 @@ describe('debug', () => {
 	});
 });
 
+describe('send', () => {
+	it('has tostring', () => {
+		var _cxt = new FLContext(null);
+		var v1 = Send.eval(_cxt, {}, "fred", []);
+		expect(v1.toString()).to.equal("Send[]");
+	});
+
+	it('is comparable to another Send with the same details', () => {
+		var _cxt = new FLContext(null);
+		var obj = {};
+		var v1 = Send.eval(_cxt, obj, "fred", []);
+		var v2 = Send.eval(_cxt, obj, "fred", []);
+		expect(_cxt.compare(v1, v2)).to.be.true;
+	});
+
+	it('is different to another Send if the message is different', () => {
+		var _cxt = new FLContext(null);
+		var obj = {};
+		var v1 = Send.eval(_cxt, obj, "fred", []);
+		var v2 = Send.eval(_cxt, obj, "bert", []);
+		expect(_cxt.compare(v1, v2)).to.be.false;
+	});
+
+	it('is different to another Send if the object is different', () => {
+		var _cxt = new FLContext(null);
+		var v1 = Send.eval(_cxt, {}, "fred", []);
+		var v2 = Send.eval(_cxt, {}, "fred", []);
+		expect(_cxt.compare(v1, v2)).to.be.false;
+	});
+
+	it('is different to another Send if the arguments are different', () => {
+		var _cxt = new FLContext(null);
+		var obj = {};
+		var v1 = Send.eval(_cxt, obj, "fred", []);
+		var v2 = Send.eval(_cxt, obj, "fred", [42]);
+		expect(_cxt.compare(v1, v2)).to.be.false;
+	});
+
+	it('is different to a Debug', () => {
+		var _cxt = new FLContext(null);
+		var obj = {};
+		var v1 = Send.eval(_cxt, obj, "fred", []);
+		var v2 = Debug.eval(_cxt, "hello, world");
+		expect(_cxt.compare(v1, v2)).to.be.false;
+	});
+});
+
+describe('assign', () => {
+	it('has tostring', () => {
+		var _cxt = new FLContext(null);
+		var v1 = Assign.eval(_cxt, {}, "x", 42);
+		expect(v1.toString()).to.equal("Assign[]");
+	});
+
+	it('is comparable to another Assign with the same details', () => {
+		var _cxt = new FLContext(null);
+		var obj = {};
+		var v1 = Assign.eval(_cxt, obj, "x", 42);
+		var v2 = Assign.eval(_cxt, obj, "x", 42);
+		expect(_cxt.compare(v1, v2)).to.be.true;
+	});
+
+	it('is different to another Assign if the slot is different', () => {
+		var _cxt = new FLContext(null);
+		var obj = {};
+		var v1 = Assign.eval(_cxt, obj, "x", 42);
+		var v2 = Assign.eval(_cxt, obj, "y", 42);
+		expect(_cxt.compare(v1, v2)).to.be.false;
+	});
+
+	it('is different to another Assign if the object is different', () => {
+		var _cxt = new FLContext(null);
+		var v1 = Assign.eval(_cxt, {}, "x", 42);
+		var v2 = Assign.eval(_cxt, {}, "x", 42);
+		expect(_cxt.compare(v1, v2)).to.be.false;
+	});
+
+	it('is different to another Assign if the expr is different', () => {
+		var _cxt = new FLContext(null);
+		var obj = {};
+		var v1 = Send.eval(_cxt, obj, "fred", 42);
+		var v2 = Send.eval(_cxt, obj, "fred", 84);
+		expect(_cxt.compare(v1, v2)).to.be.false;
+	});
+
+	it('is different to a Debug', () => {
+		var _cxt = new FLContext(null);
+		var obj = {};
+		var v1 = Assign.eval(_cxt, obj, "fred", 42);
+		var v2 = Debug.eval(_cxt, "hello, world");
+		expect(_cxt.compare(v1, v2)).to.be.false;
+	});
+});
 
 describe('mksend', () => {
 	it("has tostring", () => {
