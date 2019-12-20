@@ -11,7 +11,9 @@ const Cons = function() {
 }
 
 Cons.eval = function(_cxt, hd, tl) {
-	return ["NotImplemented"];
+	var cp = tl.slice(0);
+	cp.splice(0, 0, hd);
+	return cp;
 }
 
 //--EXPORTS

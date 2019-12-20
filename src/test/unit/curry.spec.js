@@ -5,12 +5,12 @@ const { expect } = require('chai');
 function f(_cxt, a, b) {
     return _cxt.full(a)+_cxt.full(b);
 }
-f.nfargs = () => 2;
+// f.nfargs = () => 2;
 
 function sub(_cxt, a, b) {
     return _cxt.full(a)-_cxt.full(b);
 }
-sub.nfargs = () => 2;
+// sub.nfargs = () => 2;
 
 function split(_cxt, f, v) {
     return _cxt.curry(2, f, v);

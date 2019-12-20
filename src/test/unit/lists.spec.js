@@ -17,11 +17,12 @@ describe('lists', () => {
 		expect(arr.length).to.equal(3);
 	});
 
-// not yet true
-	it.skip('Cons prepends to a list', () => {
+	it('Cons prepends to a list', () => {
 		var _cxt = new FLContext(null);
-		var c = Cons.eval(_cxt);
-		expect(c).to.deep.equal(['NotImplemented']);
+		var nil = Nil.eval(_cxt);
+		var c1 = Cons.eval(_cxt, 12, nil);
+		expect(nil).to.deep.equal([]);
+		expect(c1).to.deep.equal([12]);
 	});
 });
 
