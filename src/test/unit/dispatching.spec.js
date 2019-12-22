@@ -38,12 +38,16 @@ Contract.prototype.name = function() {
 // }
 // Contract.Down.prototype.name.nfargs = function() { return -1; }
 
-// Contract.Up = function() {
-// }
-// Contract.Up.prototype.name = function() {
-//   return 'Contract.Up';
-// }
-// Contract.Up.prototype.name.nfargs = function() { return -1; }
+Contract.Up = function() {
+}
+Contract.Up.prototype.name = function() {
+  return 'Contract.Up';
+}
+Contract.Up.prototype.name.nfargs = function() { return -1; }
+
+Contract.Up.prototype.msg = function(_cxt, _0) {
+}
+Contract.Up.prototype.msg.nfargs = function() { return 1; }
 
 describe('dispatcher', () => {
 	it('can print a debug', () => {
@@ -73,14 +77,36 @@ describe('dispatcher', () => {
     
     it('can Send a message to a mock contract', () => {
         var _cxt = Runner.newContext();
-        var mock = _cxt.mockContract(new Contract());
+        var mock = _cxt.mockContract(new Contract.Up());
         mock.expect("msg", [22]);
         Runner.invoke(_cxt, Send.eval(_cxt, mock, 'msg', [22]));
     });
     
+    it('an expectation must be on a method that exists', () => {
+        var _cxt = Runner.newContext();
+        var mock = _cxt.mockContract(new Contract.Up());
+        try {
+            mock.expect("fred", [22]);
+            assert.fail();
+        } catch (ex) {
+            expect(ex.toString()).to.equal("Error: Contract.Up does not have a method fred");
+        }
+    });
+    
+    it('an expectation must have the right number of parameters', () => {
+        var _cxt = Runner.newContext();
+        var mock = _cxt.mockContract(new Contract.Up());
+        try {
+            mock.expect("msg", []);
+            assert.fail();
+        } catch (ex) {
+            expect(ex.toString()).to.equal("Error: Contract.Up.msg expects 1 parameters, not 0");
+        }
+    });
+    
     it('can Send twice if we up the expectation', () => {
         var _cxt = Runner.newContext();
-        var mock = _cxt.mockContract(new Contract());
+        var mock = _cxt.mockContract(new Contract.Up());
         mock.expect("msg", [22]).allow(2);
         Runner.invoke(_cxt, Send.eval(_cxt, mock, 'msg', [22]));
         Runner.invoke(_cxt, Send.eval(_cxt, mock, 'msg', [22]));
@@ -88,48 +114,48 @@ describe('dispatcher', () => {
     
     it('a mock explodes if it is not expecting a method', () => {
         var _cxt = Runner.newContext();
-        var mock = _cxt.mockContract(new Contract());
+        var mock = _cxt.mockContract(new Contract.Up());
         var send = Send.eval(_cxt, mock, 'msg', [22]);
         try {
             Runner.invoke(_cxt, send);
             /* istanbul ignore next */
             assert.fail("no error thrown");
         } catch (ex) {
-            expect(ex.toString()).to.equal("Error: There are no expectations on Contract for msg");
+            expect(ex.toString()).to.equal("Error: There are no expectations on Contract.Up for msg");
         }
     });
     
     it('a mock explodes if it is not expecting a specific method invocation', () => {
         var _cxt = Runner.newContext();
-        var mock = _cxt.mockContract(new Contract());
-        mock.expect("msg", []);
+        var mock = _cxt.mockContract(new Contract.Up());
+        mock.expect("msg", [86]);
         var send = Send.eval(_cxt, mock, 'msg', [22]);
         try {
             Runner.invoke(_cxt, send);
             /* istanbul ignore next */
             assert.fail("no error thrown");
         } catch (ex) {
-            expect(ex.toString()).to.equal("Error: Unexpected invocation: Contract.msg 22");
+            expect(ex.toString()).to.equal("Error: Unexpected invocation: Contract.Up.msg 22");
         }
     });
 
     it('a mock explodes if it is expecting more arguments', () => {
         var _cxt = Runner.newContext();
-        var mock = _cxt.mockContract(new Contract());
-        mock.expect("msg", [22, 81, 'hello']);
-        var send = Send.eval(_cxt, mock, 'msg', [22, 81]);
+        var mock = _cxt.mockContract(new Contract.Up());
+        mock.expect("msg", [22]);
+        var send = Send.eval(_cxt, mock, 'msg', []);
         try {
             Runner.invoke(_cxt, send);
             /* istanbul ignore next */
             assert.fail("no error thrown");
         } catch (ex) {
-            expect(ex.toString()).to.equal("Error: Unexpected invocation: Contract.msg 22,81");
+            expect(ex.toString()).to.equal("Error: Unexpected invocation: Contract.Up.msg ");
         }
     });
 
     it('a mock explodes if it is expecting a different argument', () => {
         var _cxt = Runner.newContext();
-        var mock = _cxt.mockContract(new Contract());
+        var mock = _cxt.mockContract(new Contract.Up());
         mock.expect("msg", [22]);
         var send = Send.eval(_cxt, mock, 'msg', [81]);
         try {
@@ -137,13 +163,13 @@ describe('dispatcher', () => {
             /* istanbul ignore next */
             assert.fail("no error thrown");
         } catch (ex) {
-            expect(ex.toString()).to.equal("Error: Unexpected invocation: Contract.msg 81");
+            expect(ex.toString()).to.equal("Error: Unexpected invocation: Contract.Up.msg 81");
         }
     });
 
     it('a mock explodes if it has already been called', () => {
         var _cxt = Runner.newContext();
-        var mock = _cxt.mockContract(new Contract());
+        var mock = _cxt.mockContract(new Contract.Up());
         mock.expect("msg", [22]);
         var send = Send.eval(_cxt, mock, 'msg', [22]);
         Runner.invoke(_cxt, send);
@@ -152,7 +178,7 @@ describe('dispatcher', () => {
             /* istanbul ignore next */
             assert.fail("no error thrown");
         } catch (ex) {
-            expect(ex.toString()).to.equal("Error: Contract.msg 22 already invoked (allowed=1; actual=2)");
+            expect(ex.toString()).to.equal("Error: Contract.Up.msg 22 already invoked (allowed=1; actual=2)");
         }
     });
 
