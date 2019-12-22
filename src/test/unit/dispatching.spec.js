@@ -1,7 +1,7 @@
 const FLContext = require('../../main/javascript/runtime/flcxt');
 const Runner = require('../../main/javascript/unittest/runner');
 const { Debug, Send, Assign } = require('../../main/javascript/runtime/messages');
-const { expect, fail } = require('chai');
+const { expect, assert } = require('chai');
 
 var MyObj = function(_cxt) {
     this.state = _cxt.fields();
@@ -93,7 +93,7 @@ describe('dispatcher', () => {
         try {
             Runner.invoke(_cxt, send);
             /* istanbul ignore next */
-            fail("no error thrown");
+            assert.fail("no error thrown");
         } catch (ex) {
             expect(ex.toString()).to.equal("Error: There are no expectations on Contract for msg");
         }
@@ -107,7 +107,7 @@ describe('dispatcher', () => {
         try {
             Runner.invoke(_cxt, send);
             /* istanbul ignore next */
-            fail("no error thrown");
+            assert.fail("no error thrown");
         } catch (ex) {
             expect(ex.toString()).to.equal("Error: Unexpected invocation: Contract.msg 22");
         }
@@ -121,7 +121,7 @@ describe('dispatcher', () => {
         try {
             Runner.invoke(_cxt, send);
             /* istanbul ignore next */
-            fail("no error thrown");
+            assert.fail("no error thrown");
         } catch (ex) {
             expect(ex.toString()).to.equal("Error: Unexpected invocation: Contract.msg 22,81");
         }
@@ -135,7 +135,7 @@ describe('dispatcher', () => {
         try {
             Runner.invoke(_cxt, send);
             /* istanbul ignore next */
-            fail("no error thrown");
+            assert.fail("no error thrown");
         } catch (ex) {
             expect(ex.toString()).to.equal("Error: Unexpected invocation: Contract.msg 81");
         }
@@ -150,7 +150,7 @@ describe('dispatcher', () => {
         try {
             Runner.invoke(_cxt, send);
             /* istanbul ignore next */
-            fail("no error thrown");
+            assert.fail("no error thrown");
         } catch (ex) {
             expect(ex.toString()).to.equal("Error: Contract.msg 22 already invoked (allowed=1; actual=2)");
         }
