@@ -89,7 +89,7 @@ describe('dispatcher', () => {
             mock.expect("fred", [22]);
             assert.fail();
         } catch (ex) {
-            expect(ex.toString()).to.equal("Error: Contract.Up does not have a method fred");
+            expect(ex.toString()).to.equal("Error: EXP\n  Contract.Up does not have a method fred");
         }
     });
     
@@ -100,7 +100,7 @@ describe('dispatcher', () => {
             mock.expect("msg", []);
             assert.fail();
         } catch (ex) {
-            expect(ex.toString()).to.equal("Error: Contract.Up.msg expects 1 parameters, not 0");
+            expect(ex.toString()).to.equal("Error: EXP\n  Contract.Up.msg expects 1 parameters, not 0");
         }
     });
     
@@ -121,7 +121,7 @@ describe('dispatcher', () => {
             /* istanbul ignore next */
             assert.fail("no error thrown");
         } catch (ex) {
-            expect(ex.toString()).to.equal("Error: There are no expectations on Contract.Up for msg");
+            expect(ex.toString()).to.equal("Error: EXP\n  There are no expectations on Contract.Up for msg");
         }
     });
     
@@ -135,7 +135,7 @@ describe('dispatcher', () => {
             /* istanbul ignore next */
             assert.fail("no error thrown");
         } catch (ex) {
-            expect(ex.toString()).to.equal("Error: Unexpected invocation: Contract.Up.msg 22");
+            expect(ex.toString()).to.equal("Error: EXP\n  Unexpected invocation: Contract.Up.msg 22");
         }
     });
 
@@ -149,7 +149,7 @@ describe('dispatcher', () => {
             /* istanbul ignore next */
             assert.fail("no error thrown");
         } catch (ex) {
-            expect(ex.toString()).to.equal("Error: Unexpected invocation: Contract.Up.msg ");
+            expect(ex.toString()).to.equal("Error: EXP\n  Unexpected invocation: Contract.Up.msg ");
         }
     });
 
@@ -163,7 +163,7 @@ describe('dispatcher', () => {
             /* istanbul ignore next */
             assert.fail("no error thrown");
         } catch (ex) {
-            expect(ex.toString()).to.equal("Error: Unexpected invocation: Contract.Up.msg 81");
+            expect(ex.toString()).to.equal("Error: EXP\n  Unexpected invocation: Contract.Up.msg 81");
         }
     });
 
@@ -178,7 +178,7 @@ describe('dispatcher', () => {
             /* istanbul ignore next */
             assert.fail("no error thrown");
         } catch (ex) {
-            expect(ex.toString()).to.equal("Error: Contract.Up.msg 22 already invoked (allowed=1; actual=2)");
+            expect(ex.toString()).to.equal("Error: EXP\n  Contract.Up.msg 22 already invoked (allowed=1; actual=2)");
         }
     });
 

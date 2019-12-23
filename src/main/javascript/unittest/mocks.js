@@ -21,11 +21,11 @@ MockContract.prototype.expect = function(meth, args) {
 	if (!this.expected[meth])
 		this.expected[meth] = [];
 	if (!this.ctr[meth] || !this.ctr[meth].nfargs) {
-		throw new Error(this.ctr.name() + " does not have a method " + meth);
+		throw new Error("EXP\n  " + this.ctr.name() + " does not have a method " + meth);
 	}
 	const expArgs = this.ctr[meth].nfargs();
 	if (args.length != expArgs) {
-		throw new Error(this.ctr.name() + "." + meth + " expects " + expArgs + " parameters, not " + args.length);
+		throw new Error("EXP\n  " + this.ctr.name() + "." + meth + " expects " + expArgs + " parameters, not " + args.length);
 	}
 
 	const exp = new Expectation(args);
@@ -35,7 +35,7 @@ MockContract.prototype.expect = function(meth, args) {
 
 MockContract.prototype.serviceMethod = function(_cxt, meth, args) {
 	if (!this.expected[meth])
-		throw new Error("There are no expectations on " + this.ctr.name() + " for " + meth);
+		throw new Error("EXP\n  There are no expectations on " + this.ctr.name() + " for " + meth);
 	const exp = this.expected[meth];
 	var matched = null;
 	for (var i=0;i<exp.length;i++) {
@@ -45,13 +45,13 @@ MockContract.prototype.serviceMethod = function(_cxt, meth, args) {
 		}
 	}
 	if (!matched) {
-		throw new Error("Unexpected invocation: " + this.ctr.name() + "." + meth + " " + args);
+		throw new Error("EXP\n  Unexpected invocation: " + this.ctr.name() + "." + meth + " " + args);
 	}
 	matched.invoked++;
 	if (matched.invoked > matched.allowed) {
-		throw new Error(this.ctr.name() + "." + meth + " " + args + " already invoked (allowed=" + matched.allowed +"; actual=" + matched.invoked +")");
+		throw new Error("EXP\n  " + this.ctr.name() + "." + meth + " " + args + " already invoked (allowed=" + matched.allowed +"; actual=" + matched.invoked +")");
 	}
-	console.log("Have invocation of", meth, "with", args);
+	_cxt.log("Have invocation of", meth, "with", args);
 }
 
 //--EXPORT
