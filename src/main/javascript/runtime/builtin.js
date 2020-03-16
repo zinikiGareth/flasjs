@@ -18,6 +18,16 @@ False.eval = function(_cxt) {
 }
 
 /* istanbul ignore next */
+const Tuple = function() {
+}
+
+Tuple.eval = function(_cxt, args) {
+	const ret = new Tuple();
+	ret.args = args;
+	return ret;
+}
+
+/* istanbul ignore next */
 const FLBuiltin = function() {
 }
 

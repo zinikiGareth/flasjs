@@ -55,6 +55,17 @@ FLContext.prototype.array = function(...args) {
 	return args;
 }
 
+FLContext.prototype.makeTuple = function(...args) {
+	return Tuple.eval(this, args);
+}
+
+FLContext.prototype.tupleMember = function(tuple, which) {
+	tuple = this.head(tuple);
+	if (!tuple instanceof Tuple)
+		throw "not a tuple: " + tuple;
+	return tuple.args[which];
+}
+
 FLContext.prototype.error = function(msg) {
 	return FLError.eval(this, msg);
 }
