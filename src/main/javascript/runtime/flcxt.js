@@ -2,7 +2,7 @@ const FLClosure = require('./closure');
 const FLCurry = require('./curry');
 const FLMakeSend = require('./makesend');
 const FLError = require('./error');
-const { MockContract } = require('../unittest/mocks');
+const { MockContract, MockAgent } = require('../unittest/mocks');
 const { Debug, Send, Assign } = require('./messages');
 const { FieldsContainer } = require('./fields');
 //--REQUIRE
@@ -175,6 +175,10 @@ FLContext.prototype.field = function(obj, field) {
 
 FLContext.prototype.mockContract = function(contract) {
 	return new MockContract(contract);
+}
+
+FLContext.prototype.mockAgent = function(agent) {
+	return new MockAgent(agent);
 }
 
 //--EXPORT
