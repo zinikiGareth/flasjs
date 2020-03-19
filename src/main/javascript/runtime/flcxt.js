@@ -96,7 +96,11 @@ FLContext.prototype.head = function(obj) {
 
 FLContext.prototype.full = function(obj) {
 	obj = this.head(obj);
-	if (Array.isArray(obj)) {
+	if (obj == null) {
+		// nothing to do
+	} else if (obj._full) {
+		obj._full(this);
+	} else if (Array.isArray(obj)) {
 		for (var i=0;i<obj.length;i++)
 			obj[i] = this.full(obj[i]);
 	}

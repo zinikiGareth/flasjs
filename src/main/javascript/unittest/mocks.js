@@ -70,6 +70,14 @@ MockContract.prototype.assertSatisfied = function(_cxt) {
 }
 
 const MockAgent = function(agent) {
+	this.agent = agent;
+};
+
+MockAgent.prototype.sendTo = function(_cxt, contract, msg, args) {
+	const ctr = this.agent._contracts.contractFor(_cxt, contract);
+	const inv = Array.from(args);
+	inv.splice(0, 0, _cxt);
+	return ctr[msg].apply(ctr, inv);
 };
 
 //--EXPORT

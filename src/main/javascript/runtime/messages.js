@@ -31,6 +31,11 @@ Send.eval = function(_cxt, obj, meth, args) {
 	s.args = args;
 	return s;
 }
+Send.prototype._full = function(cx) {
+	this.obj = cx.full(this.obj);
+	this.meth = cx.full(this.meth);
+	this.args = cx.full(this.args);
+}
 Send.prototype._compare = function(cx, other) {
 	if (other instanceof Send) {
 		return cx.compare(this.obj, other.obj) && cx.compare(this.meth, other.meth) && cx.compare(this.args, other.args);
