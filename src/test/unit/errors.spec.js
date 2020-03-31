@@ -3,7 +3,7 @@ const FLError = require('../../main/javascript/runtime/error');
 const { expect } = require('chai');
 
 describe('error class', () => {
-	var _cxt = new FLContext(null);
+	var _cxt = new FLContext({logger: console});
 	
 	it('can be thrown and caught', () => {
 		try {

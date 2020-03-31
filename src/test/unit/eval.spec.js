@@ -13,7 +13,7 @@ b.nfargs = function() { return 1; }
 
 describe("trivia", () => {
 	it('has a tostring', () => {
-		var _cxt = new FLContext(null);
+        var _cxt = new FLContext({logger: console});
 		var clos = _cxt.closure(a);
 		expect(clos.toString()).to.equal("FLClosure[]");
 	});
@@ -21,14 +21,14 @@ describe("trivia", () => {
 
 describe('head evaluation', () => {
 	it('can expand a closure', () => {
-		var _cxt = new FLContext(null);
+        var _cxt = new FLContext({logger: console});
 		var clos = _cxt.closure(a);
 		var val = _cxt.head(clos);
 		expect(val).to.equal(42);
 	});
 
 	it('can expand a closure with an argument', () => {
-		var _cxt = new FLContext(null);
+        var _cxt = new FLContext({logger: console});
 		var clos = _cxt.closure(b, 6);
 		var val = _cxt.head(clos);
 		expect(val).to.equal(42);
@@ -37,21 +37,21 @@ describe('head evaluation', () => {
 
 describe('full evaluation', () => {
 	it('can expand a closure', () => {
-		var _cxt = new FLContext(null);
+        var _cxt = new FLContext({logger: console});
 		var clos = _cxt.closure(a);
 		var val = _cxt.full(clos);
 		expect(val).to.equal(42);
 	});
 
 	it('can expand a closure with an argument', () => {
-		var _cxt = new FLContext(null);
+        var _cxt = new FLContext({logger: console});
 		var clos = _cxt.closure(b, 6);
 		var val = _cxt.full(clos);
 		expect(val).to.equal(42);
 	});
 
 	it('can expand an array of closures', () => {
-		var _cxt = new FLContext(null);
+        var _cxt = new FLContext({logger: console});
 		var arr = [_cxt.closure(a), _cxt.closure(b, 3)];
 		var val = _cxt.full(arr);
 		expect(val).to.deep.equal([42, 21]);

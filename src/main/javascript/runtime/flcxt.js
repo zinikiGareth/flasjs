@@ -4,16 +4,15 @@ const FLMakeSend = require('./makesend');
 const FLError = require('./error');
 const { MockContract, MockAgent } = require('../unittest/mocks');
 const { Debug, Send, Assign } = require('./messages');
-const { FieldsContainer } = require('./fields');
+const { EvalContext, FieldsContainer } = require('../../resources/ziwsh');
 //--REQUIRE
 
 const FLContext = function(env) {
-	this.env = env;
+	EvalContext.call(this, env);
 }
 
-FLContext.prototype.log = function(...args) {
-	this.env.logger.log.apply(this.env.logger, args);
-}
+FLContext.prototype = new EvalContext();
+FLContext.prototype.constructor = FLContext;
 
 FLContext.prototype.closure = function(fn, ...args) {
 	return new FLClosure(null, fn, args);
@@ -82,10 +81,6 @@ FLContext.prototype.mkacor = function(meth, obj, cnt) {
 		return this.oclosure(meth, obj);
 	else
 		return this.ocurry(cnt, meth, obj);
-}
-
-FLContext.prototype.fields = function() {
-	return new FieldsContainer();
 }
 
 FLContext.prototype.head = function(obj) {

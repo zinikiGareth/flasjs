@@ -19,7 +19,7 @@ split.nfargs = () => 2;
 
 describe("trivia", () => {
 	it('has a tostring', () => {
-		var cxt = new FLContext(null);
+        var cxt = new FLContext({logger: console});
 		var clos = cxt.curry(2, f);
 		expect(clos.toString()).to.equal("FLCurry[2]");
 	});
@@ -27,7 +27,7 @@ describe("trivia", () => {
 
 describe('currying', () => {
 	it('can apply the right number of arguments', () => {
-        var _cxt = new FLContext(null);
+        var _cxt = new FLContext({logger: console});
         var fa = _cxt.curry(2, f, 7);
         expect(fa instanceof FLCurry).to.be.true;
         var applyTo = _cxt.closure(fa, 5);
@@ -35,7 +35,7 @@ describe('currying', () => {
 	});
 
     it('can be overapplied and have the rest left over', () => {
-        var _cxt = new FLContext(null);
+        var _cxt = new FLContext({logger: console});
         var fa = _cxt.closure(split, f, 6);
         var fb = _cxt.closure(fa, 3);
         expect(_cxt.full(fb)).to.equal(9);
@@ -45,7 +45,7 @@ describe('currying', () => {
 describe('object currying', () => {
     // This doesn't really do anything with the object so it is a bit of a fraud ...
 	it('can apply the right number of arguments', () => {
-        var _cxt = new FLContext(null);
+        var _cxt = new FLContext({logger: console});
         var fa = _cxt.ocurry(2, f, {}, 7);
         expect(fa instanceof FLCurry).to.be.true;
         var applyTo = _cxt.closure(fa, 5);
@@ -55,7 +55,7 @@ describe('object currying', () => {
 
 describe('extended currying', () => {
     it('can pass the second without the first', () => {
-        var _cxt = new FLContext(null);
+        var _cxt = new FLContext({logger: console});
         var sub5 = _cxt.xcurry(2, 0, sub, 2, 5);
         var calc = _cxt.closure(sub5, 8);
         expect(_cxt.full(calc)).to.equal(3);
