@@ -7,8 +7,8 @@ const { Debug, Send, Assign } = require('./messages');
 const { EvalContext, FieldsContainer } = require('../../resources/ziwsh');
 //--REQUIRE
 
-const FLContext = function(env) {
-	EvalContext.call(this, env);
+const FLContext = function(env, broker) {
+	EvalContext.call(this, env, broker);
 }
 
 FLContext.prototype = new EvalContext();
@@ -173,7 +173,9 @@ FLContext.prototype.field = function(obj, field) {
 }
 
 FLContext.prototype.mockContract = function(contract) {
-	return new MockContract(contract);
+	const ret = new MockContract(contract);
+	this.broker.register(contract.name(), ret);
+	return ret;
 }
 
 FLContext.prototype.mockAgent = function(agent) {

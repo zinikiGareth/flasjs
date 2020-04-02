@@ -1,3 +1,4 @@
+const { SimpleBroker } = require('../../resources/ziwsh');
 const FLContext = require('../runtime/flcxt');
 const FLError = require('../runtime/error');
 //--REQUIRE
@@ -36,7 +37,7 @@ UTRunner.newContext = function(logger) {
 	if (logger) {
 		this.logger = logger;
 	}
-	return new FLContext(this);
+	return new FLContext(this, new SimpleBroker());
 }
 
 //--EXPORT
