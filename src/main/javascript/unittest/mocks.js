@@ -1,3 +1,6 @@
+const { IdempotentHandler } = require('../../resources/ziwsh');
+//--REQUIRE
+
 const Expectation = function(args) {
 	this.args = args;
 	this.allowed = 1;
@@ -17,9 +20,13 @@ const proxyMe = function(self, meth) {
 const MockContract = function(ctr) {
 	this.ctr = ctr;
 	this.expected = {};
+	this.methodNames = {};
 	var ms = ctr.methods();
 	for (var i in ms) {
-		this[ms[i]] = proxyMe(this, ms[i]);
+		this.methodNames[ms[i]] = this[ms[i]] = proxyMe(this, ms[i]);
+	}
+	this.methods = function() {
+		return this.methodNames;
 	}
 };
 
@@ -44,8 +51,10 @@ MockContract.prototype.expect = function(meth, args) {
 }
 
 MockContract.prototype.serviceMethod = function(_cxt, meth, args) {
+	const ih = args[args.length-1];
+	args = args.slice(0, args.length-1);
 	if (!this.expected[meth])
-		throw new Error("EXP\n  There are no expectations on " + this.ctr.name() + " for " + meth);
+		throw new Error("There are no expectations on " + this.ctr.name() + " for " + meth);
 	const exp = this.expected[meth];
 	var matched = null;
 	for (var i=0;i<exp.length;i++) {
@@ -55,11 +64,11 @@ MockContract.prototype.serviceMethod = function(_cxt, meth, args) {
 		}
 	}
 	if (!matched) {
-		throw new Error("EXP\n  Unexpected invocation: " + this.ctr.name() + "." + meth + " " + args);
+		throw new Error("Unexpected invocation: " + this.ctr.name() + "." + meth + " " + args);
 	}
 	matched.invoked++;
 	if (matched.invoked > matched.allowed) {
-		throw new Error("EXP\n  " + this.ctr.name() + "." + meth + " " + args + " already invoked (allowed=" + matched.allowed +"; actual=" + matched.invoked +")");
+		throw new Error(this.ctr.name() + "." + meth + " " + args + " already invoked (allowed=" + matched.allowed +"; actual=" + matched.invoked +")");
 	}
 	_cxt.log("Have invocation of", meth, "with", args);
 }
@@ -90,10 +99,54 @@ MockAgent.prototype.sendTo = function(_cxt, contract, msg, args) {
 	return ctr[msg].apply(ctr, inv);
 };
 
+const ExplodingIdempotentHandler = function(cx) {
+	this.cx = cx;
+	this.successes = { expected: 0, actual: 0 };
+	this.failures = [];
+};
+
+ExplodingIdempotentHandler.prototype = new IdempotentHandler();
+ExplodingIdempotentHandler.prototype.constructor = ExplodingIdempotentHandler;
+
+ExplodingIdempotentHandler.prototype.success = function(cx) {
+    cx.log("success");
+};
+
+ExplodingIdempotentHandler.prototype.failure = function(cx, msg) {
+	cx.log("failure: " + msg);
+	for (var i=0;i<this.failures.length;i++) {
+		const f = this.failures[i];
+		if (f.msg === msg) {
+			f.actual++;
+			return;
+		}
+	}
+	this.failures.push({msg, expected: 0, actual: 1});
+};
+
+ExplodingIdempotentHandler.prototype.expectFailure = function(msg) {
+	this.cx.log("expect failure: " + msg);
+	this.failures.push({msg, expected: 1, actual: 0});
+};
+
+ExplodingIdempotentHandler.prototype.assertSatisfied = function() {
+	var msg = "";
+    for (var i=0;i<this.failures.length;i++) {
+		const f = this.failures[i];
+		if (f.expected === 0) {
+			msg += "  failure: unexpected IH failure: " + f.msg;
+		} else if (f.expected != f.actual) {
+			msg += "  failure: " + f.msg + " (expected: " + f.expected + ", actual: " + f.actual +")\n";
+		}
+	}
+	if (msg)
+		throw new Error("HANDLERS\n" + msg);
+};
+
 //--EXPORT
 /* istanbul ignore else */ 
 if (typeof(module) !== 'undefined')
-	module.exports = { MockContract, MockAgent, Expectation };
+	module.exports = { MockContract, MockAgent, Expectation, ExplodingIdempotentHandler };
 else {
 	window.MockContract = MockContract;
 	window.MockAgent = MockAgent;

@@ -2,7 +2,7 @@ const FLClosure = require('./closure');
 const FLCurry = require('./curry');
 const FLMakeSend = require('./makesend');
 const FLError = require('./error');
-const { MockContract, MockAgent } = require('../unittest/mocks');
+const { MockContract, MockAgent, ExplodingIdempotentHandler } = require('../unittest/mocks');
 const { Debug, Send, Assign } = require('./messages');
 const { EvalContext, FieldsContainer } = require('../../resources/ziwsh');
 //--REQUIRE
@@ -180,6 +180,11 @@ FLContext.prototype.mockContract = function(contract) {
 
 FLContext.prototype.mockAgent = function(agent) {
 	return new MockAgent(agent);
+}
+
+FLContext.prototype.explodingHandler = function() {
+	const ret = new ExplodingIdempotentHandler(this);
+	return ret;
 }
 
 //--EXPORT

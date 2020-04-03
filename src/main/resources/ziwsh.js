@@ -342,11 +342,11 @@ const LoggingIdempotentHandler = function() {
 LoggingIdempotentHandler.prototype = new IdempotentHandler();
 LoggingIdempotentHandler.prototype.constructor = LoggingIdempotentHandler;
 
-IdempotentHandler.prototype.success = function(cx) {
+LoggingIdempotentHandler.prototype.success = function(cx) {
     cx.log("success");
 };
 
-IdempotentHandler.prototype.failure = function(cx, msg) {
+LoggingIdempotentHandler.prototype.failure = function(cx, msg) {
     cx.log("failure: " + msg);
 };
 

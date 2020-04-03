@@ -1,4 +1,4 @@
-const { MockContract } = require('../unittest/mocks');
+const { IdempotentHandler } = require('../../resources/ziwsh');
 //--REQUIRE
 
 const Debug = function() {
@@ -24,11 +24,12 @@ Debug.prototype.toString = function() {
 
 const Send = function() {
 }
-Send.eval = function(_cxt, obj, meth, args) {
+Send.eval = function(_cxt, obj, meth, args, handle) {
 	const s = new Send();
 	s.obj = obj;
 	s.meth = meth;
 	s.args = args;
+	s.handle = handle;
 	return s;
 }
 Send.prototype._full = function(cx) {
@@ -45,17 +46,13 @@ Send.prototype._compare = function(cx, other) {
 Send.prototype.dispatch = function(cx) {
 	var args = this.args.slice();
 	args.splice(0, 0, cx);
-	if (this.obj instanceof MockContract) {
-		// TODO: specifying MockContract is obviously over-precise
-		// We need to cater for actual contract implementations when we have them (ie some kind of ZiWSH proxy)
-		// But the code is possibly sufficiently different that we want to keep the cases separate - not sure
-		this.obj.serviceMethod(cx, this.meth, this.args);
-		return [];
+	if (this.handle) {
+		args.splice(args.length, 0, this.handle);
 	} else {
-		// assume it is an object with declared methods
-		var ret = this.obj.methods()[this.meth].apply(this.obj, args);
-		return ret;
+		args.splice(args.length, 0, new IdempotentHandler());
 	}
+	var ret = this.obj.methods()[this.meth].apply(this.obj, args);
+	return ret;
 }
 Send.prototype.toString = function() {
 	return "Send[" + "]";
