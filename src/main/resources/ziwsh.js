@@ -275,8 +275,8 @@ EvalContext.prototype.log = function(...args) {
 }
 
 EvalContext.prototype.registerContract = function(name, ctr) {
-	if (!this.env.contracts[name])
-		this.env.contracts[name] = ctr;
+	if (this.broker && !this.broker.contracts[name])
+		this.broker.contracts[name] = ctr;
 }
 
 EvalContext.prototype.structNamed = function(name) {
