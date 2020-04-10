@@ -187,6 +187,11 @@ FLContext.prototype.explodingHandler = function() {
 	return ret;
 }
 
+FLContext.prototype.mockHandler = function(contract) {
+	const ret = new MockHandler(contract);
+	return ret;
+}
+
 //--EXPORT
 /* istanbul ignore else */ 
 if (typeof(module) !== 'undefined')
