@@ -69,11 +69,11 @@ FLContext.prototype.error = function(msg) {
 	return FLError.eval(this, msg);
 }
 
-FLContext.prototype.mksend = function(meth, obj, cnt) {
+FLContext.prototype.mksend = function(meth, obj, cnt, handler) {
 	if (cnt == 0)
-		return Send.eval(this, obj, meth, []);
+		return Send.eval(this, obj, meth, [], handler);
 	else
-		return new FLMakeSend(meth, obj, cnt);
+		return new FLMakeSend(meth, obj, cnt, handler);
 }
 
 FLContext.prototype.mkacor = function(meth, obj, cnt) {

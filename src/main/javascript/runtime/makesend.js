@@ -1,14 +1,12 @@
 const { Send } = require('./messages');
 //--REQUIRE
 
-const FLMakeSend = function(meth, obj, nargs, /* optional */ args) {
+const FLMakeSend = function(meth, obj, nargs, handler) {
 	this.meth = meth;
 	this.obj = obj;
 	this.nargs = nargs;
-	if (args)
-		this.current = args;
-	else
-		this.current = [];
+	this.current = [];
+	this.handler = handler;
 }
 
 FLMakeSend.prototype.apply = function(cx, args) {
