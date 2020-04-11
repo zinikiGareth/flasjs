@@ -6,6 +6,7 @@ const FLError = require('../runtime/error');
 const UTRunner = function(logger) {
 	this.logger = logger;
 	this.contracts = {};
+	this.structs = {};
 	this.broker = new SimpleBroker(logger, this, this.contracts);
 }
 UTRunner.prototype.assertSameValue = function(_cxt, e, a) {

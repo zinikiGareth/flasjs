@@ -1,6 +1,9 @@
 const { IdempotentHandler } = require('../../resources/ziwsh');
 //--REQUIRE
 
+const BoundVar = function() {
+}
+
 const Expectation = function(args) {
 	this.args = args;
 	this.allowed = 1;
@@ -169,10 +172,11 @@ MockHandler.prototype.assertSatisfied = MockContract.prototype.assertSatisfied;
 //--EXPORT
 /* istanbul ignore else */ 
 if (typeof(module) !== 'undefined')
-	module.exports = { MockContract, MockHandler, MockAgent, Expectation, ExplodingIdempotentHandler };
+	module.exports = { MockContract, MockHandler, MockAgent, Expectation, BoundVar, ExplodingIdempotentHandler };
 else {
 	window.MockContract = MockContract;
 	window.MockHandler = MockHandler;
 	window.MockAgent = MockAgent;
 	window.Expectation = Expectation;
+	window.BoundVar = BoundVar;
 }
