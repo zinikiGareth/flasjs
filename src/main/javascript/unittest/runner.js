@@ -26,6 +26,7 @@ UTRunner.prototype.send = function(_cxt, target, contract, msg, args) {
 	handleMessages(_cxt, reply);
 }
 const handleMessages = function(_cxt, msg) {
+	msg = _cxt.full(msg);
 	if (!msg || msg instanceof FLError)
 		return;
 	else if (msg instanceof Array) {
