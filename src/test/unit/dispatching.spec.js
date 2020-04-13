@@ -38,7 +38,11 @@ Contract.prototype.msg = function(_cxt, _0) {
 Contract.prototype.msg.nfargs = function() { return 1; }
 
 describe('dispatcher', () => {
-    var runner = new Runner(console);
+    var runner
+
+    beforeEach(() => {
+        runner = new Runner(console);
+    });
 
 	it('can print a debug', () => {
         var logger = { text:'', log : function(msg) { this.text += msg; }};
@@ -125,10 +129,11 @@ describe('dispatcher', () => {
         var mock = _cxt.mockContract(new Contract(_cxt));
         var svc = _cxt.broker.require('Contract');
         const eih = _cxt.explodingHandler();
-        eih.expectFailure("There are no expectations on Contract for msg");
         var send = Send.eval(_cxt, svc, 'msg', [22], eih);
         runner.invoke(_cxt, send);
         eih.assertSatisfied();
+        expect(runner.errors.length).to.equal(1);
+        expect(runner.errors[0].message).to.equal("There are no expectations on Contract for msg");
     });
     
     it('a mock explodes if it is not expecting a specific method invocation', () => {
@@ -137,10 +142,11 @@ describe('dispatcher', () => {
         mock.expect("msg", [86]);
         var svc = _cxt.broker.require('Contract');
         const eih = _cxt.explodingHandler();
-        eih.expectFailure("Unexpected invocation: Contract.msg 22");
         var send = Send.eval(_cxt, svc, 'msg', [22], eih);
         runner.invoke(_cxt, send);
         eih.assertSatisfied();
+        expect(runner.errors.length).to.equal(1);
+        expect(runner.errors[0].message).to.equal("Unexpected invocation: Contract.msg 22");
     });
 
     it('a mock explodes if it is expecting more arguments', () => {
@@ -149,10 +155,11 @@ describe('dispatcher', () => {
         mock.expect("msg", [22]);
         var svc = _cxt.broker.require('Contract');
         const eih = _cxt.explodingHandler();
-        eih.expectFailure("Unexpected invocation: Contract.msg ");
         var send = Send.eval(_cxt, svc, 'msg', [], eih);
         runner.invoke(_cxt, send);
         eih.assertSatisfied();
+        expect(runner.errors.length).to.equal(1);
+        expect(runner.errors[0].message).to.equal("Unexpected invocation: Contract.msg ");
     });
 
     it('a mock explodes if it is expecting a different argument', () => {
@@ -161,10 +168,11 @@ describe('dispatcher', () => {
         mock.expect("msg", [22]);
         var svc = _cxt.broker.require('Contract');
         const eih = _cxt.explodingHandler();
-        eih.expectFailure("Unexpected invocation: Contract.msg 81");
         var send = Send.eval(_cxt, svc, 'msg', [81], eih);
         runner.invoke(_cxt, send);
         eih.assertSatisfied();
+        expect(runner.errors.length).to.equal(1);
+        expect(runner.errors[0].message).to.equal("Unexpected invocation: Contract.msg 81");
     });
 
     it('a mock explodes if it has already been called', () => {
@@ -173,11 +181,12 @@ describe('dispatcher', () => {
         mock.expect("msg", [22]);
         var svc = _cxt.broker.require('Contract');
         const eih = _cxt.explodingHandler();
-        eih.expectFailure("Contract.msg 22 already invoked (allowed=1; actual=2)");
         var send = Send.eval(_cxt, svc, 'msg', [22], eih);
         runner.invoke(_cxt, send);
         runner.invoke(_cxt, send);
         eih.assertSatisfied();
+        expect(runner.errors.length).to.equal(1);
+        expect(runner.errors[0].message).to.equal("Contract.msg 22 already invoked (allowed=1; actual=2)");
     });
 
     it('Assign can change a value', () => {

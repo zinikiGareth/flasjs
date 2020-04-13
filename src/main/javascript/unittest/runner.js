@@ -8,6 +8,10 @@ const UTRunner = function(logger) {
 	this.contracts = {};
 	this.structs = {};
 	this.broker = new SimpleBroker(logger, this, this.contracts);
+	this.errors = [];
+}
+UTRunner.prototype.error = function(err) {
+	this.errors.push(err);
 }
 UTRunner.prototype.assertSameValue = function(_cxt, e, a) {
 	e = _cxt.full(e);
@@ -18,29 +22,35 @@ UTRunner.prototype.assertSameValue = function(_cxt, e, a) {
 }
 UTRunner.prototype.invoke = function(_cxt, inv) {
 	inv = _cxt.full(inv);
-	handleMessages(_cxt, inv);
+	this.handleMessages(_cxt, inv);
 }
 UTRunner.prototype.send = function(_cxt, target, contract, msg, args) {
 	var reply = target.sendTo(_cxt, contract, msg, args);
 	reply = _cxt.full(reply);
-	handleMessages(_cxt, reply);
+	this.handleMessages(_cxt, reply);
 }
-const handleMessages = function(_cxt, msg) {
+UTRunner.prototype.handleMessages = function(_cxt, msg) {
+	if (this.errors.length != 0)
+		throw this.errors[0];
 	msg = _cxt.full(msg);
 	if (!msg || msg instanceof FLError)
 		return;
 	else if (msg instanceof Array) {
 		for (var i=0;i<msg.length;i++) {
-			handleMessages(_cxt, msg[i]);
+			this.handleMessages(_cxt, msg[i]);
 		}
 	} else if (msg) {
 		var ret = msg.dispatch(_cxt);
 		if (ret)
-			handleMessages(_cxt, ret);
+			this.handleMessages(_cxt, ret);
 	}
 }
 UTRunner.prototype.newContext = function() {
 	return new FLContext(this, this.broker);
+}
+UTRunner.prototype.checkAtEnd = function() {
+	if (this.errors.length > 0)
+		throw this.errors[0];
 }
 
 //--EXPORT
