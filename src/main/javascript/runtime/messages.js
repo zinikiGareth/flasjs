@@ -81,14 +81,28 @@ Assign.prototype.dispatch = function(cx) {
 }
 Assign.prototype.toString = function() {
 	return "Assign[" + "]";
+};
+
+const ResponseWithMessages = function(cx, obj, msgs) {
+	this.obj = obj;
+	this.msgs = msgs;
+}
+ResponseWithMessages.prototype._full = function(cx) {
+	this.obj = cx.full(this.obj);
+	this.msgs = cx.full(this.msgs);
+}
+ResponseWithMessages.response = function(cx, rwm) {
+	rwm = cx.full(rwm);
+	return rwm.obj;
 }
 
 //--EXPORT
 /* istanbul ignore else */
 if (typeof(module) !== 'undefined')
-	module.exports = { Debug, Send, Assign };
+	module.exports = { Debug, Send, Assign, ResponseWithMessages };
 else {
 	window.Debug = Debug;
 	window.Send = Send;
 	window.Assign = Assign;
+	window.ResponseWithMessages = ResponseWithMessages;
 }
