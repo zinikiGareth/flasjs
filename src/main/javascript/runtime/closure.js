@@ -9,6 +9,8 @@ const FLClosure = function(obj, fn, args) {
 }
 
 FLClosure.prototype.eval = function(_cxt) {
+	if (this.val)
+		return this.val;
 	this.args[0] = _cxt;
 	this.obj = _cxt.full(this.obj);
 	var cnt = this.fn.nfargs();

@@ -7,6 +7,7 @@ const UTRunner = function(logger) {
 	this.logger = logger;
 	this.contracts = {};
 	this.structs = {};
+	this.objects = {};
 	this.broker = new SimpleBroker(logger, this, this.contracts);
 	this.errors = [];
 }

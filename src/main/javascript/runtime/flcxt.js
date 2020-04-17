@@ -83,6 +83,16 @@ FLContext.prototype.mkacor = function(meth, obj, cnt) {
 		return this.ocurry(cnt, meth, obj);
 }
 
+FLContext.prototype.makeStatic = function(clz, meth) {
+	const oc = this.objectNamed(clz);
+	const ocm = oc[meth];
+	const ret = function(...args) {
+		return ocm.apply(null, args);
+	};
+	ret.nfargs = ocm.nfargs;
+	return ret;
+}
+
 FLContext.prototype.head = function(obj) {
 	while (obj instanceof FLClosure)
 		obj = obj.eval(this);
