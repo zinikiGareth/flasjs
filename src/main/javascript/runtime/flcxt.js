@@ -3,7 +3,7 @@ const FLCurry = require('./curry');
 const FLMakeSend = require('./makesend');
 const FLError = require('./error');
 const { MockContract, MockAgent, ExplodingIdempotentHandler } = require('../unittest/mocks');
-const { Debug, Send, Assign } = require('./messages');
+const { Debug, Send, Assign, ResponseWithMessages } = require('./messages');
 const { EvalContext, FieldsContainer } = require('../../resources/ziwsh');
 //--REQUIRE
 
@@ -180,6 +180,16 @@ FLContext.prototype.field = function(obj, field) {
 		// This is possibly a bogus assumption
 		return obj.state.get(field);
 	}
+}
+
+FLContext.prototype.storeMock = function(value) {
+	value = this.full(value);
+	if (value instanceof ResponseWithMessages) {
+		// because this is a test operation, we can assume that env is a UTRunner
+		this.env.handleMessages(this, ResponseWithMessages.messages(this, value));
+		return ResponseWithMessages.response(this, value);
+	} else
+		return value;
 }
 
 FLContext.prototype.mockContract = function(contract) {
