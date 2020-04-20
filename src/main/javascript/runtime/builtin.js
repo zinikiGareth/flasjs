@@ -97,6 +97,12 @@ FLBuiltin.isEqual = function(_cxt, a, b) {
 
 FLBuiltin.isEqual.nfargs = function() { return 2; }
 
+FLBuiltin._prod_state = function(_cxt, sh, v) {
+	return "not yet";
+}
+
+FLBuiltin._prod_state.nfargs = function() { return 2; }
+
 //--EXPORT
 /* istanbul ignore else */
 if (typeof(module) !== 'undefined') {

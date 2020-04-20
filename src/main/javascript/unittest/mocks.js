@@ -125,6 +125,13 @@ MockAgent.prototype.sendTo = function(_cxt, contract, msg, args) {
 	return ctr[msg].apply(ctr, inv);
 };
 
+const MockCard = function(card) {
+	this.card = card;
+};
+
+MockCard.prototype = new MockAgent();
+MockCard.prototype.constructor = MockCard;
+
 const ExplodingIdempotentHandler = function(cx) {
 	this.cx = cx;
 	this.successes = { expected: 0, actual: 0 };
@@ -195,11 +202,12 @@ MockHandler.prototype.assertSatisfied = MockContract.prototype.assertSatisfied;
 //--EXPORT
 /* istanbul ignore else */ 
 if (typeof(module) !== 'undefined')
-	module.exports = { MockContract, MockHandler, MockAgent, Expectation, BoundVar, ExplodingIdempotentHandler };
+	module.exports = { MockContract, MockHandler, MockAgent, MockCard, Expectation, BoundVar, ExplodingIdempotentHandler };
 else {
 	window.MockContract = MockContract;
 	window.MockHandler = MockHandler;
 	window.MockAgent = MockAgent;
+	window.MockCard = MockCard;
 	window.Expectation = Expectation;
 	window.BoundVar = BoundVar;
 }

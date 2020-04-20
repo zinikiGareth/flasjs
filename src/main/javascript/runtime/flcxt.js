@@ -2,7 +2,7 @@ const FLClosure = require('./closure');
 const FLCurry = require('./curry');
 const FLMakeSend = require('./makesend');
 const FLError = require('./error');
-const { MockContract, MockAgent, ExplodingIdempotentHandler } = require('../unittest/mocks');
+const { MockContract, MockAgent, MockCard, ExplodingIdempotentHandler } = require('../unittest/mocks');
 const { Debug, Send, Assign, ResponseWithMessages } = require('./messages');
 const { EvalContext, FieldsContainer } = require('../../resources/ziwsh');
 //--REQUIRE
@@ -182,6 +182,18 @@ FLContext.prototype.field = function(obj, field) {
 	}
 }
 
+FLContext.prototype.handleEvent = function(card, event) {
+	const en = event.constructor.name;
+	const handler = card._events()[en];
+	var reply = [];
+	if (handler) {
+		reply = handler.call(card, this, event);
+	}
+	// When we have properly figured out message dispatch, we should handle the messages here ...
+	// But for now ...
+	return reply;
+}
+
 FLContext.prototype.storeMock = function(value) {
 	value = this.full(value);
 	if (value instanceof ResponseWithMessages) {
@@ -200,6 +212,10 @@ FLContext.prototype.mockContract = function(contract) {
 
 FLContext.prototype.mockAgent = function(agent) {
 	return new MockAgent(agent);
+}
+
+FLContext.prototype.mockCard = function(card) {
+	return new MockCard(card);
 }
 
 FLContext.prototype.explodingHandler = function() {
