@@ -33,12 +33,14 @@ UTRunner.prototype.send = function(_cxt, target, contract, msg, args) {
 	var reply = target.sendTo(_cxt, contract, msg, args);
 	reply = _cxt.full(reply);
 	this.handleMessages(_cxt, reply);
+	this.updateCard(_cxt, target);
 }
 UTRunner.prototype.event = function(_cxt, target, event) {
 	// TODO: when we have templates, this should indirect as an event through the DIV & its event handler
 	var reply = _cxt.handleEvent(target.card, event);
 	reply = _cxt.full(reply);
 	this.handleMessages(_cxt, reply);
+	this.updateCard(_cxt, target);
 }
 UTRunner.prototype.match = function(_cxt, target, what, selector, contains, expected) {
 	if (!target || !target.card || !target.card._currentDiv) {
@@ -70,6 +72,12 @@ UTRunner.prototype.handleMessages = function(_cxt, msg) {
 		if (ret)
 			this.handleMessages(_cxt, ret);
 	}
+}
+UTRunner.prototype.updateCard = function(_cxt, card) {
+	if (!(card instanceof MockCard))
+		return;
+	if (card.card._updateDisplay)
+		card.card._updateDisplay(_cxt);
 }
 UTRunner.prototype.newContext = function() {
 	return new FLContext(this, this.broker);

@@ -133,8 +133,12 @@ const MockCard = function(cx, card) {
 	this.card.renderInto(cx, newdiv);
 };
 
-MockCard.prototype = new MockAgent();
-MockCard.prototype.constructor = MockCard;
+MockCard.prototype.sendTo = function(_cxt, contract, msg, args) {
+	const ctr = this.card._contracts.contractFor(_cxt, contract);
+	const inv = Array.from(args);
+	inv.splice(0, 0, _cxt);
+	return ctr[msg].apply(ctr, inv);
+};
 
 const ExplodingIdempotentHandler = function(cx) {
 	this.cx = cx;
