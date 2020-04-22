@@ -125,8 +125,12 @@ MockAgent.prototype.sendTo = function(_cxt, contract, msg, args) {
 	return ctr[msg].apply(ctr, inv);
 };
 
-const MockCard = function(card) {
+const MockCard = function(cx, card) {
 	this.card = card;
+	const newdiv = document.createElement("div");
+	newdiv.setAttribute("id", cx.nextDocumentId());
+	document.body.appendChild(newdiv);
+	this.card.renderInto(cx, newdiv);
 };
 
 MockCard.prototype = new MockAgent();

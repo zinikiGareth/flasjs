@@ -10,6 +10,10 @@ const UTRunner = function(logger) {
 	this.objects = {};
 	this.broker = new SimpleBroker(logger, this, this.contracts);
 	this.errors = [];
+	this.nextDivId = 1;
+}
+UTRunner.prototype.clear = function() {
+	document.body.innerHTML = '';
 }
 UTRunner.prototype.error = function(err) {
 	this.errors.push(err);
@@ -35,6 +39,21 @@ UTRunner.prototype.event = function(_cxt, target, event) {
 	var reply = _cxt.handleEvent(target.card, event);
 	reply = _cxt.full(reply);
 	this.handleMessages(_cxt, reply);
+}
+UTRunner.prototype.match = function(_cxt, target, what, selector, contains, expected) {
+	if (!target || !target.card || !target.card._currentDiv) {
+		throw Error("MATCH\nThe card has no rendered content");
+	}
+	var actual = target.card._currentDiv.innerText.trim();
+	actual = actual.replace(/\n/g, ' ');
+	actual = actual.replace(/ +/, ' ');
+	if (contains) {
+		if (!actual.includes(expected))
+			throw new Error("MATCH\n  expected to contain: " + expected + "\n  actual:   " + actual);
+	} else {
+		if (actual != expected)
+			throw new Error("MATCH\n  expected: " + expected + "\n  actual:   " + actual);
+	}
 }
 UTRunner.prototype.handleMessages = function(_cxt, msg) {
 	if (this.errors.length != 0)
