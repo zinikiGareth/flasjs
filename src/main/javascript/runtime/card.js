@@ -13,6 +13,12 @@ FLCard.prototype._renderInto = function(_cxt, div) {
         }
     }
     this._currentDiv = div;
+    if (this._eventClasses) {
+        const evcs = this._eventClasses();
+        for (var i in evcs) {
+            _cxt.attachEventToCard(this, evcs[i]);
+        }
+    }
 }
 
 FLCard.prototype._updateContent = function(_cxt, field, value) {
