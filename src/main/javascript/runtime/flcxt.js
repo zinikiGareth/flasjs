@@ -193,14 +193,30 @@ FLContext.prototype.handleEvent = function(card, event) {
 	if (handler) {
 		reply = handler.call(card, this, event);
 	}
-	// When we have properly figured out message dispatch, we should handle the messages here ...
-	// But for now ...
-	return reply;
+	this.handleMessages(reply);
+	if (card._updateDisplay)
+		card._updateDisplay(this);
+}
+
+FLContext.prototype.handleMessages = function(msg) {
+	msg = this.full(msg);
+	if (!msg || msg instanceof FLError)
+		return;
+	else if (msg instanceof Array) {
+		for (var i=0;i<msg.length;i++) {
+			this.handleMessages(msg[i]);
+		}
+	} else if (msg) {
+		var ret = msg.dispatch(this);
+		if (ret)
+			this.handleMessages(ret);
+	}
 }
 
 FLContext.prototype.localCard = function(cardClz, elt) {
 	const card = new cardClz(cx);
 	card._renderInto(cx, document.getElementById(elt));
+	return card;
 }
 
 FLContext.prototype.storeMock = function(value) {

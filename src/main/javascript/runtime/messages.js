@@ -76,6 +76,11 @@ Assign.eval = function(_cxt, obj, slot, expr) {
 	s.expr = expr;
 	return s;
 }
+Assign.prototype._full = function(cx) {
+	this.obj = cx.full(this.obj);
+	this.slot = cx.full(this.slot);
+	this.expr = cx.full(this.expr);
+}
 Assign.prototype._compare = function(cx, other) {
 	if (other instanceof Assign) {
 		return cx.compare(this.obj, other.obj) && cx.compare(this.slot, other.slot) && cx.compare(this.expr, other.expr);
