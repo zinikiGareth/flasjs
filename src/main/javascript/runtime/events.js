@@ -8,6 +8,7 @@ const ClickEvent = function() {
 }
 ClickEvent.prototype = new Event();
 ClickEvent.prototype.constructor = ClickEvent;
+ClickEvent._eventName = 'click';
 
 ClickEvent.eval = function(cx) {
     return new ClickEvent();
