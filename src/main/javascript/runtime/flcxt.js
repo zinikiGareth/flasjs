@@ -198,6 +198,11 @@ FLContext.prototype.handleEvent = function(card, event) {
 	return reply;
 }
 
+FLContext.prototype.localCard = function(cardClz, elt) {
+	const card = new cardClz(cx);
+	card._renderInto(cx, document.getElementById(elt));
+}
+
 FLContext.prototype.storeMock = function(value) {
 	value = this.full(value);
 	if (value instanceof ResponseWithMessages) {
