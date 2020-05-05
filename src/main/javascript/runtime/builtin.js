@@ -107,6 +107,12 @@ FLBuiltin._prod_state = function(_cxt, mock, v) {
 
 FLBuiltin._prod_state.nfargs = function() { return 2; }
 
+FLBuiltin._underlying = function(_cxt, mock) {
+	return mock._underlying(_cxt);
+}
+
+FLBuiltin._underlying.nfargs = function() { return 1; }
+
 //--EXPORT
 /* istanbul ignore else */
 if (typeof(module) !== 'undefined') {
