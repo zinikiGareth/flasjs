@@ -13,8 +13,15 @@ FLCard.prototype._renderInto = function(_cxt, div) {
         }
     }
     this._currentDiv = div;
-    if (this._eventClasses) {
-        const evcs = this._eventClasses();
+    if (this._eventHandlers) {
+        this._attachHandlers(_cxt, div, this._template);
+        this._attachHandlers(_cxt, div, "_"); // unbound ones
+    }
+}
+
+FLCard.prototype._attachHandlers = function(_cxt, div, key) {
+    const evcs = this._eventHandlers()[key];
+    if (evcs) {
         for (var i in evcs) {
             _cxt.attachEventToCard(this, evcs[i]);
         }
