@@ -191,7 +191,7 @@ FLContext.prototype.attachEventToCard = function(card, eventClz) {
 	const div = card._currentDiv;
 	div.addEventListener(eventName, () => {
 		console.log("js event " + eventName + " on " + div);
-		const ecx = env.newContext();
+		const ecx = this.env.newContext();
 		ecx.handleEvent(card, eventClz.eval(ecx));
 	});
 }

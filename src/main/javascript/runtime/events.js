@@ -1,12 +1,12 @@
 
 //--REQUIRE
 
-const Event = function() {
+const FLEvent = function() {
 }
 
 const ClickEvent = function() {
 }
-ClickEvent.prototype = new Event();
+ClickEvent.prototype = new FLEvent();
 ClickEvent.prototype.constructor = ClickEvent;
 ClickEvent._eventName = 'click';
 
@@ -16,6 +16,11 @@ ClickEvent.eval = function(cx) {
 
 ClickEvent.prototype.areYouA = function(name) {
     return name == "ClickEvent" || name == "Event";
+}
+
+ClickEvent.prototype._makeJSEvent = function (_cxt) {
+    const ev = new Event("click");
+    return ev;
 }
 
 //--EXPORT
