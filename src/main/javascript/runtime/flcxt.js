@@ -192,8 +192,7 @@ FLContext.prototype.attachEventToCard = function(card, handlerInfo) {
 	if (handlerInfo.type)
 		div = div.querySelector("[data-flas-" + handlerInfo.type + "='" + handlerInfo.slot + "']");
 	if (div) {
-		div.addEventListener(eventName, () => {
-			console.log("js event " + eventName + " on " + div);
+		div.addEventListener(eventName, ev => {
 			const ecx = this.env.newContext();
 			ecx.handleEvent(card, handlerInfo.handler, handlerInfo.event.eval(ecx));
 		});

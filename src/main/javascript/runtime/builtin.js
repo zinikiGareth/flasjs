@@ -72,6 +72,13 @@ FLBuiltin.div = function(_cxt, a, b) {
 
 FLBuiltin.div.nfargs = function() { return 2; }
 
+FLBuiltin.not = function(_cxt, a) {
+	a = _cxt.full(a);
+	return !a;
+}
+
+FLBuiltin.not.nfargs = function() { return 1; }
+
 FLBuiltin.concat = function(_cxt, a, b) {
 	a = _cxt.full(a);
 	b = _cxt.full(b);
