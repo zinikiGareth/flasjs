@@ -206,7 +206,7 @@ FLContext.prototype.handleEvent = function(card, handler, event) {
 	}
 	this.handleMessages(reply);
 	if (card._updateDisplay)
-		card._updateDisplay(this);
+		card._updateDisplay(this, card._renderTree);
 }
 
 FLContext.prototype.handleMessages = function(msg) {
