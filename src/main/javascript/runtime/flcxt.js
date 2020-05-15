@@ -188,7 +188,7 @@ FLContext.prototype.nextDocumentId = function() {
 
 FLContext.prototype.attachEventToCard = function(card, handlerInfo) {
 	const eventName = handlerInfo.event._eventName;
-	var div = card._currentDiv;
+	var div = card._currentDiv();
 	if (handlerInfo.type)
 		div = div.querySelector("[data-flas-" + handlerInfo.type + "='" + handlerInfo.slot + "']");
 	if (div) {
