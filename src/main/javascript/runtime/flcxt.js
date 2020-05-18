@@ -186,15 +186,15 @@ FLContext.prototype.nextDocumentId = function() {
 	return "flaselt_" + (this.env.nextDivId++);
 }
 
-FLContext.prototype.attachEventToCard = function(card, handlerInfo) {
+FLContext.prototype.attachEventToCard = function(card, handlerInfo, div, wrapper) {
 	const eventName = handlerInfo.event._eventName;
-	var div = card._currentDiv();
-	if (handlerInfo.type)
-		div = div.querySelector("[data-flas-" + handlerInfo.type + "='" + handlerInfo.slot + "']");
 	if (div) {
 		div.addEventListener(eventName, ev => {
 			const ecx = this.env.newContext();
-			ecx.handleEvent(card, handlerInfo.handler, handlerInfo.event.eval(ecx));
+			const fev = handlerInfo.event.eval(ecx);
+			const evt = new FLEventSourceTrait(div, wrapper.value);
+			fev["EventSource"] = evt;
+			ecx.handleEvent(card, handlerInfo.handler, fev);
 		});
 	}
 }

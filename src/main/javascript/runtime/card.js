@@ -19,8 +19,8 @@ FLCard.prototype._renderInto = function(_cxt, div) {
         }
     }
     if (this._eventHandlers) {
-        this._attachHandlers(_cxt, div, this._template);
-        this._attachHandlers(_cxt, div, "_"); // unbound ones
+        this._attachHandlers(_cxt, div, this._template, this);
+        this._attachHandlers(_cxt, div, "_", this); // unbound ones
     }
 }
 
@@ -31,11 +31,14 @@ FLCard.prototype._currentDiv = function(cx) {
         return this._containedIn;
 }
 
-FLCard.prototype._attachHandlers = function(_cxt, div, key) {
+FLCard.prototype._attachHandlers = function(_cxt, div, key, source) {
     const evcs = this._eventHandlers()[key];
     if (evcs) {
         for (var i in evcs) {
-            _cxt.attachEventToCard(this, evcs[i]);
+            var handlerInfo = evcs[i];
+            if (handlerInfo.type)
+                div = div.querySelector("[data-flas-" + handlerInfo.type + "='" + handlerInfo.slot + "']");
+            _cxt.attachEventToCard(this, handlerInfo, div, { value: source });
         }
     }
 }
@@ -103,12 +106,13 @@ FLCard.prototype._updateTemplate = function(_cxt, _renderTree, type, field, fn, 
 FLCard.prototype._addItem = function(_cxt, _renderTree, parent, template, fn, value, _tc) {
     var div = template.content.cloneNode(true);
     var ncid = _cxt.nextDocumentId();
-    div.firstElementChild.id = ncid;
+    div = div.firstElementChild;
+    div.id = ncid;
     _renderTree._id = ncid;
     parent.appendChild(div);
     fn.call(this, _cxt, _renderTree, value, _tc);
     if (this._eventHandlers) {
-        this._attachHandlers(_cxt, div, template.id);
+        this._attachHandlers(_cxt, div, template.id, value);
     }
 }
 

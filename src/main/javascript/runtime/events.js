@@ -4,6 +4,11 @@
 const FLEvent = function() {
 }
 
+const FLEventSourceTrait = function(elt, source) {
+    this.elt = elt;
+    this.source = source;
+}
+
 const ClickEvent = function() {
 }
 ClickEvent.prototype = new FLEvent();
@@ -26,7 +31,9 @@ ClickEvent.prototype._makeJSEvent = function (_cxt) {
 //--EXPORT
 /* istanbul ignore else */
 if (typeof(module) !== 'undefined')
-	module.exports = { ClickEvent };
+	module.exports = { FLEvent, FLEventSourceTrait, ClickEvent };
 else {
+	window.FLEvent = FLEvent;
+	window.FLEventSourceTrait = FLEventSourceTrait;
 	window.ClickEvent = ClickEvent;
 }
