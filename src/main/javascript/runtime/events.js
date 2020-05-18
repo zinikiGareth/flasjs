@@ -9,6 +9,16 @@ const FLEventSourceTrait = function(elt, source) {
     this.source = source;
 }
 
+FLEvent.prototype._eventSource = function(cx, tih) {
+    return this.EventSource.source;
+}
+
+FLEvent.prototype.methods = function() {
+    return {
+        _eventSource: FLEvent.prototype._eventSource
+    };
+}
+
 const ClickEvent = function() {
 }
 ClickEvent.prototype = new FLEvent();

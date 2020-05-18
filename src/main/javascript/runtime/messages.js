@@ -88,8 +88,16 @@ Assign.prototype._compare = function(cx, other) {
 		return false;
 }
 Assign.prototype.dispatch = function(cx) {
-	this.obj.state.set(this.slot, this.expr);
-	return null;
+	// it's possible that obj is a send or something so consider dispatching it first
+	var msgs = null;
+	var target = this.obj;
+	if (target.dispatch) {
+		// TODO: I feel this *could* return a RWM, but it currently doesn't
+		var rwm = this.obj.dispatch(cx);
+		target = rwm;
+	}
+	target.state.set(this.slot, this.expr);
+	return msgs;
 }
 Assign.prototype.toString = function() {
 	return "Assign[" + "]";
