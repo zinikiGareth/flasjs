@@ -192,7 +192,7 @@ FLContext.prototype.attachEventToCard = function(card, handlerInfo, div, wrapper
 	if (div) {
 		var id1 = this.evid++;
 		this.env.logger.log("adding handler " + id1 + " to " + div.id + " for " + eventName);
-		div.addEventListener(eventName, ev => {
+		var handler = ev => {
 			this.env.logger.log("firing handler " + id1 + " to " + div.id + " for " + eventName);
 			const ecx = this.env.newContext();
 			const fev = handlerInfo.event.eval(ecx);
@@ -201,8 +201,11 @@ FLContext.prototype.attachEventToCard = function(card, handlerInfo, div, wrapper
 			ecx.handleEvent(card, handlerInfo.handler, fev);
 			ev.stopPropagation();
 			ev.preventDefault();
-		});
+		};
+		div.addEventListener(eventName, handler);
+		return handler;
 	}
+	return null;
 }
 
 FLContext.prototype.handleEvent = function(card, handler, event) {
