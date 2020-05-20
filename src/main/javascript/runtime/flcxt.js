@@ -9,7 +9,6 @@ const { EvalContext, FieldsContainer } = require('../../resources/ziwsh');
 
 const FLContext = function(env, broker) {
 	EvalContext.call(this, env, broker);
-	this.evid = 1;
 }
 
 FLContext.prototype = new EvalContext();
@@ -190,7 +189,7 @@ FLContext.prototype.nextDocumentId = function() {
 FLContext.prototype.attachEventToCard = function(card, handlerInfo, div, wrapper) {
 	const eventName = handlerInfo.event._eventName;
 	if (div) {
-		var id1 = this.evid++;
+		var id1 = this.env.evid++;
 		this.env.logger.log("adding handler " + id1 + " to " + div.id + " for " + eventName);
 		var handler = ev => {
 			this.env.logger.log("firing handler " + id1 + " to " + div.id + " for " + eventName);

@@ -20,7 +20,7 @@ FLCard.prototype._renderInto = function(_cxt, div) {
     }
     // attach the default handlers to the card
     if (this._eventHandlers) {
-        this._attachHandlers(_cxt, this._renderTree, div, "_", 1, this); // unbound ones
+        this._attachHandlers(_cxt, this._renderTree, div, "_", null, 1, this); // unbound ones
     }
 }
 
@@ -31,19 +31,27 @@ FLCard.prototype._currentDiv = function(cx) {
         return this._containedIn;
 }
 
-FLCard.prototype._attachHandlers = function(_cxt, rt, div, key, option, source) {
+FLCard.prototype._attachHandlers = function(_cxt, rt, div, key, field, option, source) {
     const evcs = this._eventHandlers()[key];
     if (evcs) {
         for (var i in evcs) {
             var ldiv = div;
             var handlerInfo = evcs[i];
+            if (!handlerInfo.slot) {
+                if (field)
+                    continue;
+            } else {
+                if (field != handlerInfo.slot)
+                    continue;
+            }
             if (handlerInfo.option && handlerInfo.option != option)
                 continue;
-            if (handlerInfo.type)
-                ldiv = div.querySelector("[data-flas-" + handlerInfo.type + "='" + handlerInfo.slot + "']");
+            // if (handlerInfo.type)
+            //     ldiv = div.querySelector("[data-flas-" + handlerInfo.type + "='" + handlerInfo.slot + "']");
             if (rt && rt.handlers) {
                 for (var i=0;i<rt.handlers.length;i++) {
                     var rh = rt.handlers[i];
+                    _cxt.env.logger.log("removing event listener from " + ldiv.id + " for " + rh.hi.event._eventName);
                     ldiv.removeEventListener(rh.hi.event._eventName, rh.eh);
                 }
                 delete rt.handlers;
@@ -74,7 +82,7 @@ FLCard.prototype._updateContent = function(_cxt, rt, templateName, field, option
     node.innerHTML = '';
     node.appendChild(document.createTextNode(value));
     if (this._eventHandlers) {
-        this._attachHandlers(_cxt, rt[field], div, templateName, option, source);
+        this._attachHandlers(_cxt, rt[field], node, templateName, field, option, source);
     }
 }
 
@@ -136,7 +144,7 @@ FLCard.prototype._addItem = function(_cxt, rt, parent, template, fn, value, _tc)
     parent.appendChild(div);
     fn.call(this, _cxt, rt, value, _tc);
     if (this._eventHandlers) {
-        this._attachHandlers(_cxt, rt, div, template.id, null, value);
+        this._attachHandlers(_cxt, rt, div, template.id, null, null, value);
     }
 }
 

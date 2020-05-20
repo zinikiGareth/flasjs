@@ -10,6 +10,7 @@ const JSEnv = function(broker) {
 	else
 		this.broker = new SimpleBroker(this, this, this.contracts);
 	this.nextDivId = 1;
+	this.evid = 1;
 }
 
 JSEnv.prototype.clear = function() {
