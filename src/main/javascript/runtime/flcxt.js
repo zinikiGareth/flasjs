@@ -272,6 +272,10 @@ FLContext.prototype.mockHandler = function(contract) {
 	return ret;
 }
 
+FLContext.prototype.newdiv = function(cnt) {
+	this.env.newdiv(cnt);
+}
+
 //--EXPORT
 /* istanbul ignore else */ 
 if (typeof(module) !== 'undefined')
