@@ -185,26 +185,117 @@ FLCard.prototype._updateContainer = function(_cxt, _renderTree, field, value, fn
     if (!node.id) {
         var ncid = _cxt.nextDocumentId();
         node.id = ncid;
-        _renderTree[field] = { _id: ncid };
+        _renderTree[field] = { _id: ncid, children: [] };
     }
     var crt = _renderTree[field];
-    // TODO: this is the "perfect" case but this is not the *test* for the perfect case
-    if (value && node.children.length == value.length) {
+    if (!value) {
+        node.innerHTML = ''; // clear it out
+        crt.children = [];
+        return;
+    }
+    var sw = this.diffLists(crt.children, value);
+    if (sw === true) {
         for (var i=0;i<value.length;i++) {
-        	fn.call(this, _cxt, _renderTree[field].children[i], node, node.children[i], value[i]);
+            crt.children[i].value = value[i];
+        	fn.call(this, _cxt, crt.children[i], node, node.children[i], value[i]);
+        }
+    } else if (sw.op === 'addtoend') {
+        for (var i=crt.children.length;i<value.length;i++) {
+            var e = value[i];
+            var rt  = {value: e};
+            crt.children.push(rt);
+            fn.call(this, _cxt, rt, node, null, e);
+        }
+    } else if (sw.op === 'add') {
+        for (var i=0;i<sw.additions.length;i++) {
+            var ai = sw.additions[i];
+            var e = ai.value;
+            var rt  = {value: e};
+            crt.children.push(rt);
+            fn.call(this, _cxt, rt, node, null, e);
+            if (ai.where < node.childElementCount-1)
+                node.insertBefore(node.lastElementChild, node.children[ai.where]);
+        }
+    } else if (sw.op === 'removefromend') {
+        crt.children.splice(value.length);
+        while (value.length < node.childElementCount) {
+            node.lastChild.remove();
+        }
+    } else if (sw.op === 'remove') {
+        for (var i=0;i<sw.removals.length;i++) {
+            var ri = sw.removals[i];
+            crt.children.splice(ri.where, 1);
+            node.children[ri.where].remove();
         }
     } else {
-		node.innerHTML = '';
-		if (!value)
-			return;
-		_renderTree[field].children = [];
-		for (var i=0;i<value.length;i++) {
-			var e = value[i];
-			var rt  = {};
-			_renderTree[field].children.push(rt);
-			fn.call(this, _cxt, rt, node, null, e);
-		}
+        throw new Error("not handled: " + sw.op);
     }
+}
+
+/** This is provided with a list of RenderTree child and a new list of values.
+ * We are not given any guarantees about either, but we need to figure out what, if anything has changed.
+ * If nothing has changed (at the top level) return true;
+ * otherwise, return a hash that contains:
+ *  op - the broad-brush action to perform
+ *    addtoend - there are new entries to add to the end
+ *    add - there are new entries but they may go anywhere (see additions)
+ *    removefromend - the final few elements need to be removed
+ *    remove - remove the specified entries
+ *    disaster - it's a complete disaster but some nodes are recoverable: remove everything but be ready to paste them back
+ * additions - for add, a list of position and value for new values in reverse order for easy insertion
+ */
+FLCard.prototype.diffLists = function(rtc, list) {
+    var ret = { additions: [], removals: [] };
+    var added = false, removed = false;
+    outer:
+    for (var i=0,j=0;i<rtc.length && j<list.length;) {
+        if (rtc[i].value == list[j]) {
+            i++, j++
+        } else {
+            // try skipping forward through rtc; if you find it mark it "removed" (the rtc[i] has been removed)
+            for (var k=i+1;k<rtc.length;k++) {
+                if (list[j] == rtc[k].value) {
+                    ret.removals.unshift({where: i});
+                    i = k+1;
+                    j++;
+                    removed = true;
+                    continue outer;
+                }
+            }
+            // try skipping forward through list; if you find an existing one mark this value "added" (there is no current rtc[i] for it)
+            for (var k=j+1;k<list.length;k++) {
+                if (list[k] == rtc[i].value) {
+                    ret.additions.unshift({where: i, value: list[j]});
+                    j = k+1;
+                    i++;
+                    added = true;
+                    continue outer;
+                }
+            }
+            // the list item has been added and the existing item has been removed
+            added = removed = true;
+            i++, j++;
+        }
+    }
+    if ((added || list.length > rtc.length) && (removed || list.length < rtc.length)) {
+        ret.op = "disaster";
+    } else if (added) {
+        ret.op = "add";
+        while (j < list.length) {
+            ret.additions.unshift({ where: i++, value: list[j++] });
+        }
+    } else if (removed) {
+        ret.op = "remove";
+        while (i < rtc.length) {
+            ret.removals.unshift({ where: i++ });
+        }
+    } else if (list.length > rtc.length) {
+        ret.op = "addtoend";
+    } else if (list.length < rtc.length) {
+        ret.op = "removefromend";
+    } else
+        return true; // nothing appears to have changed
+    return ret;
 }
 
 //--EXPORT
