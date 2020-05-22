@@ -193,21 +193,31 @@ FLCard.prototype._updateContainer = function(_cxt, _renderTree, field, value, fn
         crt.children = [];
         return;
     }
-    var sw = this.diffLists(crt.children, value);
+    var self = this;
+    var cb = {
+        insert: function(rtc, ni, v) {
+        	fn.call(self, _cxt, rtc, node, ni, v);
+        }
+    };
+    this.updateList(node, crt.children, value, cb);
+}
+
+FLCard.prototype.updateList = function(parent, rts, values, cb) {
+    var sw = this.diffLists(rts, values);
     if (sw === true) {
-        for (var i=0;i<value.length;i++) {
-        	fn.call(this, _cxt, crt.children[i], node, node.children[i], value[i]);
+        for (var i=0;i<values.length;i++) {
+        	cb.insert(rts[i], parent.children[i], values[i]);
         }
     } else if (sw.op === 'addtoend') {
         // update the ones that were already there
-        for (var i=0;i<crt.children.length;i++) {
-        	fn.call(this, _cxt, crt.children[i], node, node.children[i], value[i]);
+        for (var i=0;i<rts.length;i++) {
+        	cb.insert(rts[i], parent.children[i], values[i]);
         }
-        for (var i=crt.children.length;i<value.length;i++) {
-            var e = value[i];
+        for (var i=rts.length;i<values.length;i++) {
+            var e = values[i];
             var rt  = {value: e};
-            crt.children.push(rt);
-            fn.call(this, _cxt, rt, node, null, e);
+            rts.push(rt);
+            cb.insert(rt, null, e);
         }
     } else if (sw.op === 'add') {
         var done = [];
@@ -215,57 +225,57 @@ FLCard.prototype._updateContainer = function(_cxt, _renderTree, field, value, fn
             var ai = sw.additions[i];
             var e = ai.value;
             var rt  = {value: e};
-            crt.children.splice(ai.where, 0, rt);
-            fn.call(this, _cxt, rt, node, null, e);
-            if (ai.where < node.childElementCount-1)
-                node.insertBefore(node.lastElementChild, node.children[ai.where]);
+            rts.splice(ai.where, 0, rt);
+            cb.insert(rt, null, e);
+            if (ai.where < parent.childElementCount-1)
+                parent.insertBefore(parent.lastElementChild, parent.children[ai.where]);
             done.push(ai.where);
         }
-        for (var i=0;i<value.length;i++) {
+        for (var i=0;i<values.length;i++) {
             if (!done.includes(i))
-        	    fn.call(this, _cxt, crt.children[i], node, node.children[i], value[i]);
+        	cb.insert(rts[i], parent.children[i], values[i]);
         }
     } else if (sw.op === 'removefromend') {
-        crt.children.splice(value.length);
-        while (value.length < node.childElementCount) {
-            node.lastChild.remove();
+        rts.splice(values.length);
+        while (values.length < parent.childElementCount) {
+            parent.lastChild.remove();
         }
         // update the rest
-        for (var i=0;i<value.length;i++) {
-        	fn.call(this, _cxt, crt.children[i], node, node.children[i], value[i]);
+        for (var i=0;i<values.length;i++) {
+        	cb.insert(rts[i], parent.children[i], values[i]);
         }
     } else if (sw.op === 'remove') {
         for (var i=0;i<sw.removals.length;i++) {
             var ri = sw.removals[i];
-            crt.children.splice(ri.where, 1);
-            node.children[ri.where].remove();
+            rts.splice(ri.where, 1);
+            parent.children[ri.where].remove();
         }
         // update the rest
-        for (var i=0;i<value.length;i++) {
-        	fn.call(this, _cxt, crt.children[i], node, node.children[i], value[i]);
+        for (var i=0;i<values.length;i++) {
+        	cb.insert(rts[i], parent.children[i], values[i]);
         }
     } else if (sw.op === 'disaster') {
         // There are any number of sub-cases here but basically we have a "current" map of value index to field id
         // We detach everything we already have from the parent and save it by node id (and copy off the existing rtc array)
         // We then go through the values and either pull back and update or insert a new value, updating the rtc as we go
         var map = {};
-        while (node.firstElementChild) {
-            var nd = node.removeChild(node.firstElementChild);
-            var rtc = crt.children.shift();
+        while (parent.firstElementChild) {
+            var nd = parent.removeChild(parent.firstElementChild);
+            var rtc = rts.shift();
             map[nd.id] = { nd, rtc };
         }
         console.log("disaster map", sw.mapping, map);
-        for (var i=0;i<value.length;i++) {
+        for (var i=0;i<values.length;i++) {
             if (sw.mapping[i]) { // it was already there
                 var tmp = map[sw.mapping[i]];
-                node.appendChild(tmp.nd);
-                crt.children.push(tmp.rtc);
+                parent.appendChild(tmp.nd);
+                rts.push(tmp.rtc);
                 delete map[sw.mapping[i]];
             } else { // add it
-                var e = value[i];
+                var e = values[i];
                 var rt  = {value: e};
-                crt.children.push(rt);
-                fn.call(this, _cxt, rt, node, null, e);
+                rts.push(rt);
+                cb.insert(rt, null, e);
             }
         }
     } else {
