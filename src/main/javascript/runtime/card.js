@@ -196,10 +196,13 @@ FLCard.prototype._updateContainer = function(_cxt, _renderTree, field, value, fn
     var sw = this.diffLists(crt.children, value);
     if (sw === true) {
         for (var i=0;i<value.length;i++) {
-            crt.children[i].value = value[i];
         	fn.call(this, _cxt, crt.children[i], node, node.children[i], value[i]);
         }
     } else if (sw.op === 'addtoend') {
+        // update the ones that were already there
+        for (var i=0;i<crt.children.length;i++) {
+        	fn.call(this, _cxt, crt.children[i], node, node.children[i], value[i]);
+        }
         for (var i=crt.children.length;i<value.length;i++) {
             var e = value[i];
             var rt  = {value: e};
@@ -207,25 +210,63 @@ FLCard.prototype._updateContainer = function(_cxt, _renderTree, field, value, fn
             fn.call(this, _cxt, rt, node, null, e);
         }
     } else if (sw.op === 'add') {
+        var done = [];
         for (var i=0;i<sw.additions.length;i++) {
             var ai = sw.additions[i];
             var e = ai.value;
             var rt  = {value: e};
-            crt.children.push(rt);
+            crt.children.splice(ai.where, 0, rt);
             fn.call(this, _cxt, rt, node, null, e);
             if (ai.where < node.childElementCount-1)
                 node.insertBefore(node.lastElementChild, node.children[ai.where]);
+            done.push(ai.where);
+        }
+        for (var i=0;i<value.length;i++) {
+            if (!done.includes(i))
+        	    fn.call(this, _cxt, crt.children[i], node, node.children[i], value[i]);
         }
     } else if (sw.op === 'removefromend') {
         crt.children.splice(value.length);
         while (value.length < node.childElementCount) {
             node.lastChild.remove();
         }
+        // update the rest
+        for (var i=0;i<value.length;i++) {
+        	fn.call(this, _cxt, crt.children[i], node, node.children[i], value[i]);
+        }
     } else if (sw.op === 'remove') {
         for (var i=0;i<sw.removals.length;i++) {
             var ri = sw.removals[i];
             crt.children.splice(ri.where, 1);
             node.children[ri.where].remove();
+        }
+        // update the rest
+        for (var i=0;i<value.length;i++) {
+        	fn.call(this, _cxt, crt.children[i], node, node.children[i], value[i]);
+        }
+    } else if (sw.op === 'disaster') {
+        // There are any number of sub-cases here but basically we have a "current" map of value index to field id
+        // We detach everything we already have from the parent and save it by node id (and copy off the existing rtc array)
+        // We then go through the values and either pull back and update or insert a new value, updating the rtc as we go
+        var map = {};
+        while (node.firstElementChild) {
+            var nd = node.removeChild(node.firstElementChild);
+            var rtc = crt.children.shift();
+            map[nd.id] = { nd, rtc };
+        }
+        console.log("disaster map", sw.mapping, map);
+        for (var i=0;i<value.length;i++) {
+            if (sw.mapping[i]) { // it was already there
+                var tmp = map[sw.mapping[i]];
+                node.appendChild(tmp.nd);
+                crt.children.push(tmp.rtc);
+                delete map[sw.mapping[i]];
+            } else { // add it
+                var e = value[i];
+                var rt  = {value: e};
+                crt.children.push(rt);
+                fn.call(this, _cxt, rt, node, null, e);
+            }
         }
     } else {
         throw new Error("not handled: " + sw.op);
@@ -245,19 +286,23 @@ FLCard.prototype._updateContainer = function(_cxt, _renderTree, field, value, fn
  * additions - for add, a list of position and value for new values in reverse order for easy insertion
  */
 FLCard.prototype.diffLists = function(rtc, list) {
-    var ret = { additions: [], removals: [] };
+    var ret = { additions: [], removals: [], mapping: {} };
     var added = false, removed = false;
+    var used = {};
     outer:
-    for (var i=0,j=0;i<rtc.length && j<list.length;) {
+    for (var i=0,j=0;i<rtc.length && j<list.length;j++) {
         if (rtc[i].value == list[j]) {
-            i++, j++
+            ret.mapping[j] = rtc[i]._id;
+            used[i] = true;
+            i++;
         } else {
             // try skipping forward through rtc; if you find it mark it "removed" (the rtc[i] has been removed)
             for (var k=i+1;k<rtc.length;k++) {
                 if (list[j] == rtc[k].value) {
+                    ret.mapping[j] = rtc[k]._id;
+                    used[k] = true;
                     ret.removals.unshift({where: i});
                     i = k+1;
-                    j++;
                     removed = true;
                     continue outer;
                 }
@@ -265,20 +310,42 @@ FLCard.prototype.diffLists = function(rtc, list) {
             // try skipping forward through list; if you find an existing one mark this value "added" (there is no current rtc[i] for it)
             for (var k=j+1;k<list.length;k++) {
                 if (list[k] == rtc[i].value) {
+                    ret.mapping[k] = rtc[i]._id;
                     ret.additions.unshift({where: i, value: list[j]});
-                    j = k+1;
-                    i++;
                     added = true;
                     continue outer;
                 }
             }
             // the list item has been added and the existing item has been removed
+            // it's a disaster so try and find the value backwards if we can
+            for (var k=i-1;k>=0;k--) {
+                if (used[k])
+                    continue;
+                if (list[j] == rtc[k].value) {
+                    // we found it going backwards
+                    ret.mapping[j] = rtc[k]._id;
+                    used[k] = true;
+                    break;
+                }
+            }
             added = removed = true;
-            i++, j++;
+            i++;
         }
     }
-    if ((added || list.length > rtc.length) && (removed || list.length < rtc.length)) {
+    if ((added || j < list.length) && (removed || i < rtc.length)) {
         ret.op = "disaster";
+        while (j < list.length) {
+            for (var k=0;k<rtc.length;k++) {
+                if (used[k])
+                    continue;
+                if (rtc[k].value == list[j]) {
+                    ret.mapping[j] = rtc[k]._id;
+                    used[k] = true;
+                    break;
+                }
+            }
+            j++;
+        }
     } else if (added) {
         ret.op = "add";
         while (j < list.length) {
