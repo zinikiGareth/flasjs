@@ -8,6 +8,8 @@ FLObject.prototype._addItem = FLCard.prototype._addItem;
 FLObject.prototype._updateContent = FLCard.prototype._updateContent;
 FLObject.prototype._updateContainer = FLCard.prototype._updateContainer;
 FLObject.prototype._updateStyle = FLCard.prototype._updateStyle;
+FLObject.prototype._updateList = FLCard.prototype._updateList;
+FLObject.prototype._diffLists = FLCard.prototype._diffLists;
 
 
 //--EXPORT

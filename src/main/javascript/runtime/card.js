@@ -117,10 +117,12 @@ FLCard.prototype._updateTemplate = function(_cxt, _renderTree, type, field, fn, 
     const node = div.querySelector("[data-flas-" + type + "='" + field + "']");
     if (node != null) {
         var crt;
+        var create = false;
         if (!node.id) {
             var ncid = _cxt.nextDocumentId();
             node.id = ncid;
             crt = _renderTree[field] = { _id: ncid };
+            create = true;
         } else
             crt = _renderTree[field];
         node.innerHTML = '';
@@ -129,28 +131,16 @@ FLCard.prototype._updateTemplate = function(_cxt, _renderTree, type, field, fn, 
         var t = document.getElementById(templateName);
         if (t != null) {
             if (Array.isArray(value)) {
-                var create = false;
                 var chn;
                 if (!crt.children) {
-                    chn = crt.children = [];
-                    create = true;
-                } else {
-                    chn = crt.children;
-                    elts = node.children;
+                    crt.children = [];
                 }
-                for (var i=0;i<value.length;i++) {
-                    var rt;
-                    var curr;
-                    if (create) {
-                        rt  = {};
-                        chn.push(rt);
-                        curr = null;
-                    } else {
-                        rt = chn[i];
-                        curr = elts[i];
+                var card = this;
+                this._updateList(node, crt.children, value, {
+                    insert: function (rtc, ni, v) {
+                        card._addItem(_cxt, rtc, node, ni, t, fn, v, _tc);
                     }
-                    this._addItem(_cxt, rt, node, curr, t, fn, value[i], _tc);
-                }
+                });
             } else {
                 if (crt.single) { // updating
                     this._addItem(_cxt, crt.single, node, node.firstElementChild, t, fn, value, _tc);
@@ -193,17 +183,16 @@ FLCard.prototype._updateContainer = function(_cxt, _renderTree, field, value, fn
         crt.children = [];
         return;
     }
-    var self = this;
-    var cb = {
+    var card = this;
+    this._updateList(node, crt.children, value, {
         insert: function(rtc, ni, v) {
-        	fn.call(self, _cxt, rtc, node, ni, v);
+        	fn.call(card, _cxt, rtc, node, ni, v);
         }
-    };
-    this.updateList(node, crt.children, value, cb);
+    });
 }
 
-FLCard.prototype.updateList = function(parent, rts, values, cb) {
-    var sw = this.diffLists(rts, values);
+FLCard.prototype._updateList = function(parent, rts, values, cb) {
+    var sw = this._diffLists(rts, values);
     if (sw === true) {
         for (var i=0;i<values.length;i++) {
         	cb.insert(rts[i], parent.children[i], values[i]);
@@ -295,7 +284,7 @@ FLCard.prototype.updateList = function(parent, rts, values, cb) {
  *    disaster - it's a complete disaster but some nodes are recoverable: remove everything but be ready to paste them back
  * additions - for add, a list of position and value for new values in reverse order for easy insertion
  */
-FLCard.prototype.diffLists = function(rtc, list) {
+FLCard.prototype._diffLists = function(rtc, list) {
     var ret = { additions: [], removals: [], mapping: {} };
     var added = false, removed = false;
     var used = {};
@@ -308,7 +297,7 @@ FLCard.prototype.diffLists = function(rtc, list) {
         } else {
             // try skipping forward through rtc; if you find it mark it "removed" (the rtc[i] has been removed)
             for (var k=i+1;k<rtc.length;k++) {
-                if (list[j] == rtc[k].value) {
+                if (list[j] === rtc[k].value) {
                     ret.mapping[j] = rtc[k]._id;
                     used[k] = true;
                     ret.removals.unshift({where: i});
@@ -319,7 +308,7 @@ FLCard.prototype.diffLists = function(rtc, list) {
             }
             // try skipping forward through list; if you find an existing one mark this value "added" (there is no current rtc[i] for it)
             for (var k=j+1;k<list.length;k++) {
-                if (list[k] == rtc[i].value) {
+                if (list[k] === rtc[i].value) {
                     ret.mapping[k] = rtc[i]._id;
                     ret.additions.unshift({where: i, value: list[j]});
                     added = true;
