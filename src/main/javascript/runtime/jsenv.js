@@ -4,7 +4,9 @@ const { SimpleBroker } = require('../../resources/ziwsh');
 
 const JSEnv = function(broker) {
 	this.logger = console;
-	this.contracts = [];
+	this.contracts = {};
+	this.structs = {};
+	this.objects = {};
 	if (broker != null)
 		this.broker = broker;
 	else
