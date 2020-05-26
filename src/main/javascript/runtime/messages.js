@@ -60,7 +60,7 @@ Send.prototype.dispatch = function(cx) {
 	} else {
 		args.splice(args.length, 0, new IdempotentHandler());
 	}
-	var ret = this.obj.methods()[this.meth].apply(this.obj, args);
+	var ret = this.obj._methods()[this.meth].apply(this.obj, args);
 	return ret;
 }
 Send.prototype.toString = function() {

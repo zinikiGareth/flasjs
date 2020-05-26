@@ -13,7 +13,7 @@ FLEvent.prototype._eventSource = function(cx, tih) {
     return this.EventSource.source;
 }
 
-FLEvent.prototype.methods = function() {
+FLEvent.prototype._methods = function() {
     return {
         _eventSource: FLEvent.prototype._eventSource
     };

@@ -7,7 +7,7 @@ var MyContract = function() {
 MyContract.prototype.name = function() {
     return 'MyContract';
 }
-MyContract.prototype.methods = function() {
+MyContract.prototype._methods = function() {
     return [];
 }
 

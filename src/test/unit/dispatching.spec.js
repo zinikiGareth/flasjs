@@ -18,7 +18,7 @@ MyObj.msg = function(_cxt, val) {
     return _cxt.array(v1);
 }
 
-MyObj.prototype.methods = function() {
+MyObj.prototype._methods = function() {
     return {
         "msg": MyObj.msg
     };
@@ -30,7 +30,7 @@ Contract = function(cx) {
 Contract.prototype.name = function() {
   return 'Contract';
 }
-Contract.prototype.methods = function() {
+Contract.prototype._methods = function() {
     return ['msg'];
 }
 Contract.prototype.msg = function(_cxt, _0) {
