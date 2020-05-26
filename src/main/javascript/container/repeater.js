@@ -1,4 +1,5 @@
 const { IdempotentHandler } = require('../../resources/ziwsh');
+const { Send } = require('../runtime/messages');
 //--REQUIRE
 
 const CallMe = function(cx) {
@@ -18,7 +19,7 @@ const ContainerRepeater = function() {
 }
 
 ContainerRepeater.prototype.callMe = function(cx, callback) {
-    cx.log("hello, world");
+    return Send.eval(cx, callback, "call", []);
 }
 
 //--EXPORT

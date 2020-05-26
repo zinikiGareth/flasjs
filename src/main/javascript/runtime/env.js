@@ -1,5 +1,5 @@
 const FLContext = require('./flcxt');
-const { CallMe, Repeater } = require('../container/repeater');
+const { CallMe, Repeater, ContainerRepeater } = require('../container/repeater');
 const FLError = require('../runtime/error');
 //--REQUIRE
 
