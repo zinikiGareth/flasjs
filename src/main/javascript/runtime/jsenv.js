@@ -1,27 +1,15 @@
-const FLContext = require('./flcxt');
+const CommonEnv = require('./env');
 const { SimpleBroker } = require('../../resources/ziwsh');
 //--REQUIRE
 
 const JSEnv = function(broker) {
-	this.logger = console;
-	this.contracts = {};
-	this.structs = {};
-	this.objects = {};
-	if (broker != null)
-		this.broker = broker;
-	else
-		this.broker = new SimpleBroker(this, this, this.contracts);
-	this.nextDivId = 1;
-	this.evid = 1;
+	if (broker == null)
+		broker = new SimpleBroker(this, this, {});
+	CommonEnv.call(this, console, broker);
 }
 
-JSEnv.prototype.clear = function() {
-	document.body.innerHTML = '';
-}
-
-JSEnv.prototype.newContext = function() {
-	return new FLContext(this, this.broker);
-}
+JSEnv.prototype = new CommonEnv();
+JSEnv.prototype.constructor = JSEnv;
 
 //--EXPORT
 /* istanbul ignore next */

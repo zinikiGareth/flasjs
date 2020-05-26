@@ -3,7 +3,7 @@ const Runner = require('../../main/javascript/unittest/runner');
 const { expect } = require('chai');
 
 describe('runner', () => {
-    var runner = new Runner();
+    var runner = new Runner(console);
 
 	it('can create a new context', () => {
         var _cxt = runner.newContext();

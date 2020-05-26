@@ -229,6 +229,9 @@ SimpleBroker.prototype.register = function(clz, svc) {
 
 SimpleBroker.prototype.require = function(clz) {
     const ctr = this.contracts[clz];
+    if (ctr == null) {
+        throw Error("undefined contract " + clz);
+    }
     var svc = this.services[clz];
     if (svc == null) {
         if (this.server != null)
