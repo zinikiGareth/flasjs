@@ -99,6 +99,13 @@ FLContext.prototype.head = function(obj) {
 	return obj;
 }
 
+FLContext.prototype.spine = function(obj) {
+	obj = this.head(obj);
+	if (Array.isArray(obj))
+		return obj;
+	throw Error("We need to evaluate the spine of the array without worrying about the elements");
+}
+
 FLContext.prototype.full = function(obj) {
 	obj = this.head(obj);
 	if (obj == null) {

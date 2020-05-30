@@ -18,15 +18,17 @@ const FLCurry = function(obj, fn, reqd, xcs) {
 FLCurry.prototype.apply = function(_, args) {
 	var _cxt = args[0];
 	this.args[0] = _cxt;
+	var miss = this.missing.slice(0);
+	var as = this.args.slice(0);
 	for (var i=1;i<args.length;i++) {
-		var m = this.missing.pop();
-		this.args[m] = args[i];
+		var m = miss.pop();
+		as[m] = args[i];
 	}
-	if (this.missing.length == 0) {
-		this.obj = _cxt.full(this.obj);
-		return this.fn.apply(this.obj, this.args);
+	if (miss.length == 0) {
+		var obj = _cxt.full(this.obj);
+		return this.fn.apply(obj, as);
 	} else {
-		return this;
+		return new FLCurry(this.obj, this.fn, this.reqd, as);
 	}
 }
 
