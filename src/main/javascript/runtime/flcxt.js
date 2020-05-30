@@ -246,7 +246,19 @@ FLContext.prototype.handleMessages = function(msg) {
 FLContext.prototype.localCard = function(cardClz, elt) {
 	const card = new cardClz(cx);
 	card._renderInto(cx, document.getElementById(elt));
+	var lc = this.findContractOnCard(card, "Lifecycle");
+	if (lc && lc.init) {
+		var msgs = lc.init(this);
+		this.handleMessages(msgs);
+	}
 	return card;
+}
+
+FLContext.prototype.findContractOnCard = function(card, ctr) {
+	for (var ce in Object.getOwnPropertyDescriptors(card._contracts)) {
+		if (card._contracts[ce][ctr])
+			return card._contracts[ce][ctr];
+	}
 }
 
 FLContext.prototype.storeMock = function(value) {
