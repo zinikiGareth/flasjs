@@ -2,6 +2,7 @@
 //--REQUIRE
 
 const ContractStore = function(_cxt) {
+    this.env = _cxt.env;
     this.recorded = {};
     this.toRequire = {};
 }
@@ -17,8 +18,9 @@ ContractStore.prototype.contractFor = function(_cxt, name) {
     return ret;
 }
 
-ContractStore.prototype.require = function(_cxt, name, ctr) {
-    this.toRequire[name] = _cxt.broker.require(ctr);
+ContractStore.prototype.require = function(_cxt, name, clz) {
+    const ctr = _cxt.broker.contracts[clz];
+    this.toRequire[name] = proxy(_cxt, ctr, new DispatcherInvoker(this.env, _cxt.broker.require(clz)));
 }
 
 ContractStore.prototype.required = function(_cxt, name) {
@@ -26,6 +28,17 @@ ContractStore.prototype.required = function(_cxt, name) {
     if (!ret)
         throw new Error("There is no provided contract for var " + name);
     return ret;
+}
+
+const DispatcherInvoker = function(env, call) {
+    this.env = env;
+    this.call = call;
+}
+
+DispatcherInvoker.prototype.invoke = function(meth, args) {
+    // The context has been put as args 0; use it but pull it out
+    // The handler will already have been patched in here, so pull it back out
+    this.env.queueMessages(args[0], Send.eval(args[0], this.call, meth, args.slice(1, args.length-1), args[args.length-1]));
 }
 
 //--EXPORT

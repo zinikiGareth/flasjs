@@ -223,24 +223,9 @@ FLContext.prototype.handleEvent = function(card, handler, event) {
 	if (handler) {
 		reply = handler.call(card, this, event);
 	}
-	this.handleMessages(reply);
+	this.env.queueMessages(reply);
 	if (card._updateDisplay)
 		card._updateDisplay(this, card._renderTree);
-}
-
-FLContext.prototype.handleMessages = function(msg) {
-	msg = this.full(msg);
-	if (!msg || msg instanceof FLError)
-		return;
-	else if (msg instanceof Array) {
-		for (var i=0;i<msg.length;i++) {
-			this.handleMessages(msg[i]);
-		}
-	} else if (msg) {
-		var ret = msg.dispatch(this);
-		if (ret)
-			this.handleMessages(ret);
-	}
 }
 
 FLContext.prototype.localCard = function(cardClz, elt) {
@@ -249,7 +234,7 @@ FLContext.prototype.localCard = function(cardClz, elt) {
 	var lc = this.findContractOnCard(card, "Lifecycle");
 	if (lc && lc.init) {
 		var msgs = lc.init(this);
-		this.handleMessages(msgs);
+		this.env.queueMessages(this, msgs);
 	}
 	return card;
 }
@@ -265,7 +250,7 @@ FLContext.prototype.storeMock = function(value) {
 	value = this.full(value);
 	if (value instanceof ResponseWithMessages) {
 		// because this is a test operation, we can assume that env is a UTRunner
-		this.env.handleMessages(this, ResponseWithMessages.messages(this, value));
+		this.env.queueMessages(this, ResponseWithMessages.messages(this, value));
 		return ResponseWithMessages.response(this, value);
 	} else
 		return value;

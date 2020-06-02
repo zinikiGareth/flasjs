@@ -17,6 +17,7 @@ const CommonEnv = function(logger, broker) {
     this.cards = [];
     this.contracts["CallMe"] = CallMe;
     this.contracts["Repeater"] = Repeater;
+    this.queue = [];
     broker.register("Repeater", new ContainerRepeater());
 }
 
@@ -24,20 +25,37 @@ CommonEnv.prototype.clear = function() {
 	document.body.innerHTML = '';
 }
 
+CommonEnv.prototype.queueMessages = function(_cxt, msg) {
+    this.queue.push(msg);
+    var self = this;
+    setTimeout(() => self.dispatchMessages(_cxt), 0);
+}
+
+CommonEnv.prototype.dispatchMessages = function(_cxt) {
+    while (this.queue.length > 0) {
+        var more = this.queue.shift();
+        this.logger.log("processing queue item ", more, " remaining: ", this.queue.length);
+        while (more && (!Array.isArray(more) || more.length > 0)) {
+            this.logger.log("more =", more);
+            more = this.handleMessages(_cxt, more);
+        }
+    }
+}
+
 CommonEnv.prototype.handleMessages = function(_cxt, msg) {
-	if (this.errors.length != 0)
-		throw this.errors[0];
-	msg = _cxt.full(msg);
+    msg = _cxt.full(msg);
 	if (!msg || msg instanceof FLError)
-		return;
+        return;
 	else if (msg instanceof Array) {
-		for (var i=0;i<msg.length;i++) {
-			this.handleMessages(_cxt, msg[i]);
-		}
+        var ret = [];
+        for (var i=0;i<msg.length;i++) {
+            var m = this.handleMessages(_cxt, msg[i]);
+            if (m && (!Array.isArray(m) || m.length > 0))
+                ret.push(m);
+        }
+        return ret;
 	} else if (msg) {
-		var ret = msg.dispatch(_cxt);
-		if (ret)
-			this.handleMessages(_cxt, ret);
+		return msg.dispatch(_cxt);
 	}
 }
 
