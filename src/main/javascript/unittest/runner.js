@@ -16,7 +16,7 @@ UTRunner.prototype.error = function(err) {
 UTRunner.prototype.handleMessages = function(_cxt, msg) {
 	if (this.errors.length != 0)
 		throw this.errors[0];
-	CommonEnv.prototype.handleMessages.call(this, _cxt, msg);
+	return CommonEnv.prototype.handleMessages.call(this, _cxt, msg);
 }
 UTRunner.prototype.assertSameValue = function(_cxt, e, a) {
 	e = _cxt.full(e);
@@ -59,6 +59,7 @@ UTRunner.prototype.event = function(_cxt, target, zone, event) {
 		div = this.findDiv(_cxt, target.card._renderTree, zone, 0);
 	if (div) {
 		div.dispatchEvent(event._makeJSEvent(_cxt));
+		this.dispatchMessages(_cxt);
 	}
 }
 UTRunner.prototype.findDiv = function(_cxt, rt, zone, pos) {

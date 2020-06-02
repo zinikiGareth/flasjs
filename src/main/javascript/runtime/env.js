@@ -34,9 +34,7 @@ CommonEnv.prototype.queueMessages = function(_cxt, msg) {
 CommonEnv.prototype.dispatchMessages = function(_cxt) {
     while (this.queue.length > 0) {
         var more = this.queue.shift();
-        this.logger.log("processing queue item ", more, " remaining: ", this.queue.length);
         while (more && (!Array.isArray(more) || more.length > 0)) {
-            this.logger.log("more =", more);
             more = this.handleMessages(_cxt, more);
         }
     }

@@ -3,7 +3,7 @@ const FLCurry = require('./curry');
 const FLMakeSend = require('./makesend');
 const FLError = require('./error');
 const { MockContract, MockAgent, MockCard, ExplodingIdempotentHandler } = require('../unittest/mocks');
-const { Debug, Send, Assign, ResponseWithMessages } = require('./messages');
+const { Debug, Send, Assign, ResponseWithMessages, UpdateDisplay } = require('./messages');
 const { EvalContext, FieldsContainer } = require('../../resources/ziwsh');
 //--REQUIRE
 
@@ -223,9 +223,8 @@ FLContext.prototype.handleEvent = function(card, handler, event) {
 	if (handler) {
 		reply = handler.call(card, this, event);
 	}
-	this.env.queueMessages(reply);
-	if (card._updateDisplay)
-		card._updateDisplay(this, card._renderTree);
+	reply.push(new UpdateDisplay(this, card));
+	this.env.queueMessages(this, reply);
 }
 
 FLContext.prototype.localCard = function(cardClz, elt) {
@@ -249,8 +248,9 @@ FLContext.prototype.findContractOnCard = function(card, ctr) {
 FLContext.prototype.storeMock = function(value) {
 	value = this.full(value);
 	if (value instanceof ResponseWithMessages) {
-		// because this is a test operation, we can assume that env is a UTRunner
 		this.env.queueMessages(this, ResponseWithMessages.messages(this, value));
+		// because this is a test operation, we dispatch the messages immediately
+		this.env.dispatchMessages(this);
 		return ResponseWithMessages.response(this, value);
 	} else
 		return value;

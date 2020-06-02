@@ -122,13 +122,25 @@ ResponseWithMessages.messages = function(cx, rwm) {
 	return rwm.msgs;
 }
 
+const UpdateDisplay = function(cx, card) {
+	this.card = card;
+}
+UpdateDisplay.prototype.dispatch = function(cx) {
+	if (this.card._updateDisplay)
+		this.card._updateDisplay(cx, this.card._renderTree);
+}
+UpdateDisplay.prototype.toString = function() {
+	return "UpdateDisplay";
+}
+
 //--EXPORT
 /* istanbul ignore else */
 if (typeof(module) !== 'undefined')
-	module.exports = { Debug, Send, Assign, ResponseWithMessages };
+	module.exports = { Debug, Send, Assign, ResponseWithMessages, UpdateDisplay };
 else {
 	window.Debug = Debug;
 	window.Send = Send;
 	window.Assign = Assign;
 	window.ResponseWithMessages = ResponseWithMessages;
+	window.UpdateDisplay = UpdateDisplay;
 }
