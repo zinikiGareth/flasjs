@@ -103,6 +103,47 @@ FLBuiltin.concat = function(_cxt, a, b) {
 
 FLBuiltin.concat.nfargs = function() { return 2; }
 
+FLBuiltin.nth = function(_cxt, n, list) {
+	n = _cxt.full(n);
+	if (typeof(n) != 'number')
+		return new FLError("no matching case");
+	list = _cxt.spine(list);
+	if (!Array.isArray(list))
+		return new FLError("no matching case");
+	if (n < 0 || n >= list.length)
+		return new FLError("out of bounds");
+	return list[n];
+}
+
+FLBuiltin.nth.nfargs = function() { return 2; }
+
+FLBuiltin.append = function(_cxt, list, elt) {
+	list = _cxt.spine(list);
+	if (!Array.isArray(list))
+		return new FLError("no matching case");
+	var cp = list.slice(0);
+	cp.push(elt);
+	return cp;
+}
+
+FLBuiltin.append.nfargs = function() { return 2; }
+
+FLBuiltin.replace = function(_cxt, list, n, elt) {
+	n = _cxt.full(n);
+	if (typeof(n) != 'number')
+		return new FLError("no matching case");
+	list = _cxt.spine(list);
+	if (!Array.isArray(list))
+		return new FLError("no matching case");
+	if (n < 0 || n >= list.length)
+		return new FLError("out of bounds");
+	var cp = list.slice(0);
+	cp[n] = elt;
+	return cp;
+}
+
+FLBuiltin.replace.nfargs = function() { return 3; }
+
 FLBuiltin.concatLists = function(_cxt, list) {
 	list = _cxt.spine(list);
 	var ret = [];
