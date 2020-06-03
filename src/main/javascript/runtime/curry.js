@@ -5,7 +5,7 @@ const FLCurry = function(obj, fn, reqd, xcs) {
 	this.reqd = reqd;
 	this.missing = [];
 	for (var i=1;i<=reqd;i++) {
-		if (xcs[i])
+		if (i in xcs)
 			this.args.push(xcs[i]);
 		else {
 			this.args.push(null);
