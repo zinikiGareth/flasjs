@@ -11,7 +11,10 @@ const Cons = function() {
 }
 
 Cons.eval = function(_cxt, hd, tl) {
-	var cp = _cxt.spine(tl).slice(0);
+	var cp = _cxt.spine(tl);
+	if (cp instanceof FLError)
+		return cp;
+	cp = cp.slice(0);
 	cp.splice(0, 0, hd);
 	return cp;
 }
