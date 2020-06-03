@@ -34,9 +34,9 @@ FLCard.prototype._currentDiv = function(cx) {
 FLCard.prototype._attachHandlers = function(_cxt, rt, div, key, field, option, source) {
     const evcs = this._eventHandlers()[key];
     if (evcs) {
-        for (var i in evcs) {
+        for (var ej=0;ej<evcs.length;ej++) {
             var ldiv = div;
-            var handlerInfo = evcs[i];
+            var handlerInfo = evcs[ej];
             if (!handlerInfo.slot) {
                 if (field)
                     continue;
