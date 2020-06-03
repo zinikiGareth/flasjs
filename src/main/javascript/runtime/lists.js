@@ -1,4 +1,6 @@
-/* istanbul ignore next */
+const FLError = require('./error');
+//--REQUIRE
+
 const Nil = function() {
 }
 
