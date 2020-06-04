@@ -247,6 +247,13 @@ FLContext.prototype.findContractOnCard = function(card, ctr) {
 	}
 }
 
+FLContext.prototype.needsUpdate = function(card) {
+	if (typeof this.updateCards === 'undefined')
+		throw Error("cannot update when not in event loop");
+	if (!this.updateCards.includes(card))
+		this.updateCards.push(card);
+}
+
 FLContext.prototype.storeMock = function(value) {
 	value = this.full(value);
 	if (value instanceof ResponseWithMessages) {

@@ -32,12 +32,16 @@ CommonEnv.prototype.queueMessages = function(_cxt, msg) {
 }
 
 CommonEnv.prototype.dispatchMessages = function(_cxt) {
+    var set = [];
+    _cxt.updateCards = set;
     while (this.queue.length > 0) {
         var more = this.queue.shift();
         while (more && (!Array.isArray(more) || more.length > 0)) {
             more = this.handleMessages(_cxt, more);
         }
     }
+    delete _cxt.updateCards;
+    set.forEach(card => card._updateDisplay(_cxt, card._renderTree));
 }
 
 CommonEnv.prototype.handleMessages = function(_cxt, msg) {
