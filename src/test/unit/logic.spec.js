@@ -27,7 +27,7 @@ describe('basic logic', () => {
 const RandomClass = function() {
 };
 
-RandomClass.prototype._areYouA = function(ty) {
+RandomClass.prototype._areYouA = function(cx, ty) {
 	return "SomeInterface" == ty;
 }
 

@@ -29,7 +29,7 @@ ClickEvent.eval = function(cx) {
     return new ClickEvent();
 }
 
-ClickEvent.prototype._areYouA = function(name) {
+ClickEvent.prototype._areYouA = function(cx, name) {
     return name == "ClickEvent" || name == "Event";
 }
 

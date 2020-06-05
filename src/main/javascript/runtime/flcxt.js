@@ -128,7 +128,7 @@ FLContext.prototype.isTruthy = function(val) {
 
 FLContext.prototype.isA = function(val, ty) {
 	if (val instanceof Object && '_areYouA' in val) {
-		return val._areYouA(ty);
+		return val._areYouA(this, ty);
 	}
 	switch (ty) {
 	case 'Any':
