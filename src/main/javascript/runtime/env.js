@@ -47,7 +47,7 @@ CommonEnv.prototype.dispatchMessages = function(_cxt) {
 CommonEnv.prototype.handleMessages = function(_cxt, msg) {
     msg = _cxt.full(msg);
 	if (!msg || msg instanceof FLError)
-        return;
+        return [];
 	else if (msg instanceof Array) {
         var ret = [];
         for (var i=0;i<msg.length;i++) {
