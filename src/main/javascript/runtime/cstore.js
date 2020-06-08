@@ -20,7 +20,10 @@ ContractStore.prototype.contractFor = function(_cxt, name) {
 
 ContractStore.prototype.require = function(_cxt, name, clz) {
     const ctr = _cxt.broker.contracts[clz];
-    this.toRequire[name] = proxy(_cxt, ctr, new DispatcherInvoker(this.env, _cxt.broker.require(clz)));
+    const di = new DispatcherInvoker(this.env, _cxt.broker.require(clz));
+    const px = proxy(_cxt, ctr, di);
+    px._areYouA = function(cx, ty) { return ty === "Repeater"; }
+    this.toRequire[name] = px;
 }
 
 ContractStore.prototype.required = function(_cxt, name) {

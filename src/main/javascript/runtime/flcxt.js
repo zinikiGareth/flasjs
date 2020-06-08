@@ -14,6 +14,10 @@ const FLContext = function(env, broker) {
 FLContext.prototype = new EvalContext();
 FLContext.prototype.constructor = FLContext;
 
+FLContext.prototype.addAll = function(ret, arr) {
+	this.env.addAll(ret, arr);
+}
+
 FLContext.prototype.closure = function(fn, ...args) {
 	return new FLClosure(null, fn, args);
 }
