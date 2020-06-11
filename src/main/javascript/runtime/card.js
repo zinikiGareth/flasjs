@@ -149,7 +149,11 @@ FLCard.prototype._updateTemplate = function(_cxt, _renderTree, type, field, fn, 
                     this._addItem(_cxt, rt, node, null, t, fn, value, _tc);
                 }
             }
+        } else {
+            _cxt.log("there is no template " + templateName);
         }
+    } else {
+        _cxt.log("there is no '" + type + "' called '" + field + "' in " + _renderTree._id);
     }
 }
 
