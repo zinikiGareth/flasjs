@@ -186,7 +186,7 @@ describe('dispatcher', () => {
         runner.invoke(_cxt, send);
         eih.assertSatisfied();
         expect(runner.errors.length).to.equal(1);
-        expect(runner.errors[0].message).to.equal("Contract.msg 22 already invoked (allowed=1; actual=2)");
+        expect(runner.errors[0].message).to.equal("Contract.msg 22 already invoked (allowed=1; actual=1)");
     });
 
     it('Assign can change a value', () => {
