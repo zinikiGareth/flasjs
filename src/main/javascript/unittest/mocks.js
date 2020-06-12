@@ -117,6 +117,24 @@ MockContract.prototype.assertSatisfied = function(_cxt) {
 		throw new Error("UNUSED\n" + msg);
 }
 
+const MockFLObject = function(obj) {
+	this.obj = obj;
+}
+
+MockFLObject.prototype._currentDiv = function() {
+	if (this.div)
+		return this.div;
+	else
+		throw Error("You must render the object first");
+}
+
+MockFLObject.prototype._currentRenderTree = function() {
+	if (this.rt)
+		return this.rt.result.single;
+	else
+		throw Error("You must render the object first");
+}
+
 const MockAgent = function(agent) {
 	this.agent = agent;
 };
@@ -142,6 +160,14 @@ MockCard.prototype.sendTo = function(_cxt, contract, msg, args) {
 	inv.splice(0, 0, _cxt);
 	return ctr[msg].apply(ctr, inv);
 };
+
+MockCard.prototype._currentDiv = function() {
+	return this.card._currentDiv();
+}
+
+MockCard.prototype._currentRenderTree = function() {
+	return this.card._renderTree;
+}
 
 MockCard.prototype._underlying = function(_cxt) {
 	return this.card;
@@ -217,9 +243,10 @@ MockHandler.prototype.assertSatisfied = MockContract.prototype.assertSatisfied;
 //--EXPORT
 /* istanbul ignore else */ 
 if (typeof(module) !== 'undefined')
-	module.exports = { MockContract, MockHandler, MockAgent, MockCard, Expectation, BoundVar, ExplodingIdempotentHandler };
+	module.exports = { MockContract, MockFLObject, MockHandler, MockAgent, MockCard, Expectation, BoundVar, ExplodingIdempotentHandler };
 else {
 	window.MockContract = MockContract;
+	window.MockFLObject = MockFLObject;
 	window.MockHandler = MockHandler;
 	window.MockAgent = MockAgent;
 	window.MockCard = MockCard;

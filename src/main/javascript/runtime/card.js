@@ -31,6 +31,10 @@ FLCard.prototype._currentDiv = function(cx) {
         return this._containedIn;
 }
 
+FLCard.prototype._currentRenderTree = function() {
+    return this._renderTree;
+}
+
 FLCard.prototype._attachHandlers = function(_cxt, rt, div, key, field, option, source) {
     const evcs = this._eventHandlers()[key];
     if (evcs) {
@@ -70,7 +74,7 @@ FLCard.prototype._attachHandlers = function(_cxt, rt, div, key, field, option, s
 FLCard.prototype._updateContent = function(_cxt, rt, templateName, field, option, source, value) {
     // In general, everything should already be fully evaluated, but we do allow expressions in templates
     value = _cxt.full(value);
-    if (!value)
+    if (typeof value === 'undefined' || value == null)
         value = '';
     var div = document.getElementById(rt._id);
     const node = div.querySelector("[data-flas-content='" + field + "']");

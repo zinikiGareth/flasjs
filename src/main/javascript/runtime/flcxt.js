@@ -266,15 +266,21 @@ FLContext.prototype.needsUpdate = function(card) {
 		this.updateCards.push(card);
 }
 
-FLContext.prototype.storeMock = function(value) {
+FLContext.prototype.storeMock = function(name, value) {
 	value = this.full(value);
 	if (value instanceof ResponseWithMessages) {
 		this.env.queueMessages(this, ResponseWithMessages.messages(this, value));
 		// because this is a test operation, we dispatch the messages immediately
 		this.env.dispatchMessages(this);
-		return ResponseWithMessages.response(this, value);
+		value = ResponseWithMessages.response(this, value);
+	}
+	if (value instanceof FLObject) {
+		var mock = new MockFLObject(value);
+		this.env.mocks[name] = mock;
+		this.env.cards.push(mock);
 	} else
-		return value;
+		this.env.mocks[name] = value;
+	return value;
 }
 
 FLContext.prototype.mockContract = function(contract) {
@@ -287,8 +293,8 @@ FLContext.prototype.mockAgent = function(agent) {
 	return this.env.mockAgent(this, agent);
 }
 
-FLContext.prototype.mockCard = function(card) {
-	return this.env.mockCard(this, card);
+FLContext.prototype.mockCard = function(name, card) {
+	return this.env.mockCard(this, name, card);
 }
 
 FLContext.prototype.explodingHandler = function() {
