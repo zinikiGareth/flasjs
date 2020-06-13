@@ -145,6 +145,8 @@ FLContext.prototype.isA = function(val, ty) {
 	switch (ty) {
 	case 'Any':
 		return true;
+	case 'Boolean':
+		return val === true || val === false;
 	case 'True':
 		return val === true;
 	case 'False':

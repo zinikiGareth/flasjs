@@ -52,9 +52,12 @@ CommonEnv.prototype.handleMessages = function(_cxt, msg) {
 
 CommonEnv.prototype.handleMessagesWith = function(_cxt, msg, ret) {
     msg = _cxt.full(msg);
-	if (!msg || msg instanceof FLError)
+    if (!msg)
         return [];
-	else if (msg instanceof Array) {
+    else if (msg instanceof FLError) {
+        this.logger.log(msg);
+        return [];
+    } else if (msg instanceof Array) {
         for (var i=0;i<msg.length;i++) {
             this.handleMessagesWith(_cxt, msg[i], ret);
         }
