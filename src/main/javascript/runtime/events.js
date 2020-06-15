@@ -38,6 +38,13 @@ ClickEvent.prototype._makeJSEvent = function (_cxt) {
     return ev;
 }
 
+ClickEvent.prototype._field_source = function (_cxt, ev) {
+    return this.EventSource.source;
+}
+ClickEvent.prototype._field_source.nfargs = function () {
+    return 0;
+}
+
 //--EXPORT
 /* istanbul ignore else */
 if (typeof(module) !== 'undefined')
