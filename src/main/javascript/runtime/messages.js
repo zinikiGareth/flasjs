@@ -1,4 +1,5 @@
 const { IdempotentHandler } = require('../../resources/ziwsh');
+const { AssignItem } = require('./lists');
 //--REQUIRE
 
 const Debug = function() {
@@ -109,6 +110,47 @@ Assign.prototype.dispatch = function(cx) {
 }
 Assign.prototype.toString = function() {
 	return "Assign[" + "]";
+};
+
+const AssignCons = function() {
+}
+AssignCons.eval = function(_cxt, obj, expr) {
+	const s = new AssignCons();
+	s.obj = obj;
+	s.expr = expr;
+	return s;
+}
+AssignCons.prototype._full = function(cx) {
+	this.obj = cx.full(this.obj);
+	this.expr = cx.full(this.expr);
+}
+AssignCons.prototype._compare = function(cx, other) {
+	if (other instanceof AssignCons) {
+		return cx.compare(this.obj, other.obj) && cx.compare(this.expr, other.expr);
+	} else
+		return false;
+}
+AssignCons.prototype.dispatch = function(cx) {
+	// it's possible that obj is a send or something so consider dispatching it first
+	var msgs = [];
+	var target = this.obj;
+	if (target.dispatch) {
+		// TODO: I feel this *could* return a RWM, but it currently doesn't
+		var rwm = this.obj.dispatch(cx);
+		target = rwm;
+	}
+	if (!(target instanceof AssignItem)) {
+		throw Error("No, it needs to be an Item");
+	}
+	if (this.expr instanceof ResponseWithMessages) {
+		msgs.unshift(ResponseWithMessages.messages(cx, this.expr));
+		this.expr = ResponseWithMessages.response(cx, this.expr);
+	}
+	target.set(this.expr);
+	return msgs;
+}
+AssignCons.prototype.toString = function() {
+	return "AssignCons[" + "]";
 };
 
 const ResponseWithMessages = function(cx, obj, msgs) {

@@ -117,6 +117,20 @@ FLBuiltin.nth = function(_cxt, n, list) {
 
 FLBuiltin.nth.nfargs = function() { return 2; }
 
+FLBuiltin.item = function(_cxt, n, list) {
+	n = _cxt.full(n);
+	if (typeof(n) != 'number')
+		return new FLError("no matching case");
+	list = _cxt.spine(list);
+	if (!Array.isArray(list))
+		return new FLError("no matching case");
+	if (n < 0 || n >= list.length)
+		return new FLError("out of bounds");
+	return new AssignItem(list, n);
+}
+
+FLBuiltin.item.nfargs = function() { return 2; }
+
 FLBuiltin.append = function(_cxt, list, elt) {
 	list = _cxt.spine(list);
 	if (!Array.isArray(list))

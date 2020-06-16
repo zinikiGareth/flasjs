@@ -1,4 +1,5 @@
 const FLError = require('./error');
+const { Assign } = require('./messages');
 //--REQUIRE
 
 const Nil = function() {
@@ -36,10 +37,23 @@ Cons.eval = function(_cxt, hd, tl) {
 	return cp;
 }
 
+const AssignItem = function(list, n) {
+	this.list = list;
+	this.n = n;
+}
+
+AssignItem.prototype._field_head = function() {
+	return this.list[this.n];
+}
+
+AssignItem.prototype.set = function(obj) {
+	this.list[this.n] = obj;
+}
+
 //--EXPORTS
 /* istanbul ignore else */
 if (typeof(module) !== 'undefined') {
-	module.exports = { Nil, Cons }
+	module.exports = { Nil, Cons, AssignItem }
 } else {
 	window.Nil = Nil;
 	window.Cons = Cons;
