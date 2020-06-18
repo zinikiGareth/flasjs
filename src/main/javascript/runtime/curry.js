@@ -1,4 +1,6 @@
 const FLCurry = function(obj, fn, reqd, xcs) {
+	if (fn == null)
+		throw Error("fn cannot be null");
 	this.obj = obj;
 	this.fn = fn;
 	this.xcs = xcs;
