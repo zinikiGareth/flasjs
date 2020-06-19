@@ -162,10 +162,16 @@ ResponseWithMessages.prototype._full = function(cx) {
 	this.msgs = cx.full(this.msgs);
 }
 ResponseWithMessages.response = function(cx, rwm) {
-	return rwm.obj;
+	if (rwm instanceof ResponseWithMessages)
+		return rwm.obj;
+	else
+		return rwm;
 }
 ResponseWithMessages.messages = function(cx, rwm) {
-	return rwm.msgs;
+	if (rwm instanceof ResponseWithMessages)
+		return rwm.msgs;
+	else
+		return null;
 }
 
 const UpdateDisplay = function(cx, card) {
