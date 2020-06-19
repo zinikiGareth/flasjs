@@ -41,7 +41,7 @@ FLCard.prototype._attachHandlers = function(_cxt, rt, div, key, field, option, s
         if (rt && rt.handlers) {
             for (var i=0;i<rt.handlers.length;i++) {
                 var rh = rt.handlers[i];
-                _cxt.env.logger.log("removing event listener from " + div.id + " for " + rh.hi.event._eventName);
+                // _cxt.env.logger.log("removing event listener from " + div.id + " for " + rh.hi.event._eventName);
                 div.removeEventListener(rh.hi.event._eventName, rh.eh);
             }
             delete rt.handlers;
