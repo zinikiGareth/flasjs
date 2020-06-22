@@ -16,6 +16,7 @@ Debug.prototype._compare = function(cx, other) {
 		return false;
 }
 Debug.prototype.dispatch = function(cx) {
+	this.msg = cx.full(this.msg);
 	cx.log(this.msg);
 	return null;
 }

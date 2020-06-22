@@ -302,6 +302,17 @@ FLBuiltin.dispatch = function(_cxt, msgs) {
 }
 FLBuiltin.dispatch.nfargs = function() { return 1; }
 
+FLBuiltin.show = function(_cxt, val) {
+	val = _cxt.full(val);
+	return _cxt.show(val);
+}
+FLBuiltin.show.nfargs = function() { return 1; }
+
+FLBuiltin.expr = function(_cxt, val) {
+	return _cxt.show(val);
+}
+FLBuiltin.expr.nfargs = function() { return 1; }
+
 //--EXPORT
 /* istanbul ignore else */
 if (typeof(module) !== 'undefined') {

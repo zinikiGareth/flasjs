@@ -313,6 +313,12 @@ FLContext.prototype.newdiv = function(cnt) {
 	this.env.newdiv(cnt);
 }
 
+// show value or expr depending on whether individual nodes are evaluated or not
+FLContext.prototype.show = function(val) {
+// HACK !  We should map it into a string repn properly
+	return "" + val;
+}
+
 //--EXPORT
 /* istanbul ignore else */ 
 if (typeof(module) !== 'undefined')
