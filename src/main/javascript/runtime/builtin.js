@@ -56,6 +56,13 @@ FLBuiltin.minus = function(_cxt, a, b) {
 
 FLBuiltin.minus.nfargs = function() { return 2; }
 
+FLBuiltin.unaryMinus = function(_cxt, a) {
+	a = _cxt.full(a);
+	return -a;
+}
+
+FLBuiltin.unaryMinus.nfargs = function() { return 1; }
+
 FLBuiltin.mul = function(_cxt, a, b) {
 	a = _cxt.full(a);
 	b = _cxt.full(b);
