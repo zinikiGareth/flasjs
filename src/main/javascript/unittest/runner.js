@@ -7,6 +7,7 @@ const UTRunner = function(logger) {
 	CommonEnv.call(this, logger, new SimpleBroker(logger, this, {}));
 	this.errors = [];
 	this.mocks = {};
+	this.cards = [];
 }
 
 UTRunner.prototype = new CommonEnv();
