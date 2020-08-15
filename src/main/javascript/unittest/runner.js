@@ -4,10 +4,11 @@ const { MockCard, MockFLObject } = require('./mocks');
 //--REQUIRE
 
 const UTRunner = function(logger) {
+	if (!logger)
+		logger = console.log;
 	CommonEnv.call(this, logger, new SimpleBroker(logger, this, {}));
 	this.errors = [];
 	this.mocks = {};
-	this.cards = [];
 }
 
 UTRunner.prototype = new CommonEnv();

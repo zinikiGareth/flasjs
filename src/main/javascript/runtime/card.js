@@ -94,11 +94,11 @@ FLCard.prototype._updateContent = function(_cxt, rt, templateName, field, option
 FLCard.prototype._updateStyle = function(_cxt, rt, templateName, type, field, option, source, constant, ...rest) {
     var styles = '';
     if (constant)
-        styles = constant;
+        styles = _cxt.full(constant);
     var evconds = [];
     for (var i=0;i<rest.length;i+=2) {
         if (_cxt.isTruthy(rest[i])) {
-            styles += ' ' + rest[i+1];
+            styles += ' ' + _cxt.full(rest[i+1]);
             evconds.push(true);
         } else {
             evconds.push(false);

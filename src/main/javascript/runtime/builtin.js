@@ -214,7 +214,7 @@ FLBuiltin.drop = function(_cxt, quant, list) {
 }
 FLBuiltin.drop.nfargs = function() { return 2; }
 
-FLBuiltin.concatMany = function(_cxt, ...rest) {
+FLBuiltin.concatMany = function(_cxt, rest) {
 	var ret = "";
 	for (var i=0;i<rest.length;i++) {
 		var tmp = _cxt.full(rest[i]);
@@ -226,6 +226,7 @@ FLBuiltin.concatMany = function(_cxt, ...rest) {
 	}
 	return ret;
 }
+FLBuiltin.concatMany.nfargs = function() { return 1; }
 
 FLBuiltin.strlen = function(_cxt, str) {
 	str = _cxt.head(str);

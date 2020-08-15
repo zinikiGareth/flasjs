@@ -1,4 +1,5 @@
 const FLContext = require('./flcxt');
+const { FLBuiltin } = require('./builtin');
 const { CallMe, Repeater, ContainerRepeater } = require('../container/repeater');
 const { Random } = require('./random');
 const FLError = require('../runtime/error');
@@ -11,6 +12,7 @@ const CommonEnv = function(logger, broker) {
     this.structs = {};
     this.objects = {};
     this.objects['Random'] = Random;
+    this.objects['FLBuiltin'] = FLBuiltin;
     this.logger = logger;
     this.broker = broker;
 	this.nextDivId = 1;
