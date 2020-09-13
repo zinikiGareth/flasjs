@@ -19,10 +19,11 @@ const CommonEnv = function(logger, broker) {
 	this.divSince = this.nextDivId;
 	this.evid = 1;
     this.cards = [];
-    this.contracts["CallMe"] = CallMe;
-    this.contracts["Repeater"] = Repeater;
     this.queue = [];
-    broker.register("Repeater", new ContainerRepeater());
+}
+
+CommonEnv.prototype.makeReady = function() {
+    this.broker.register("Repeater", new ContainerRepeater());
 }
 
 CommonEnv.prototype.clear = function() {
