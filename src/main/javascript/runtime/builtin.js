@@ -321,6 +321,36 @@ FLBuiltin.expr = function(_cxt, val) {
 }
 FLBuiltin.expr.nfargs = function() { return 1; }
 
+const MakeHash = function() {
+}
+MakeHash.eval = function(_cxt, args) {
+	throw Error("should not be called - optimize away");
+}
+
+const HashPair = function() {
+}
+HashPair.eval = function(_cxt, args) {
+	var ret = new HashPair();
+	ret.m = args[0];
+	ret.o = args[1];
+	return ret;
+}
+
+FLBuiltin.hashPair = function(_cxt, key, value) {
+	return HashPair.eval(_cxt, [key, value]);
+}
+FLBuiltin.hashPair.nfargs = function() { return 2; }
+
+FLBuiltin.assoc = function(_cxt, hash, member) {
+	hash = _cxt.spine(hash);
+	member = _cxt.full(member);
+	if (hash[member])
+		return hash[member];
+	else
+		return new FLError("no member " + member);
+}
+FLBuiltin.assoc.nfargs = function() { return 2; }
+
 //--EXPORT
 /* istanbul ignore else */
 if (typeof(module) !== 'undefined') {

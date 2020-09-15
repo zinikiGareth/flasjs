@@ -62,6 +62,18 @@ FLContext.prototype.makeTuple = function(...args) {
 	return Tuple.eval(this, args);
 }
 
+FLContext.prototype.hash = function(...args) {
+	var ret = {};
+	for (var i=0;i<args.length;i++) {
+		var hp = this.head(args[i]);
+		if (!(hp instanceof HashPair))
+			return new FLError("member was not a hashpair");
+		var m = this.full(hp.m);
+		ret[m] = hp.o;
+	}
+	return ret;
+}
+
 FLContext.prototype.tupleMember = function(tuple, which) {
 	tuple = this.head(tuple);
 	if (!tuple instanceof Tuple)
@@ -113,10 +125,13 @@ FLContext.prototype.head = function(obj) {
 
 FLContext.prototype.spine = function(obj) {
 	obj = this.head(obj);
-	if (Array.isArray(obj))
-		return obj;
 	if (obj instanceof FLError)
 		return obj;
+	if (Array.isArray(obj))
+		return obj;
+	if (obj.constructor === Object) {
+		return obj;
+	}
 	throw Error("spine should only be called on lists");
 }
 
