@@ -162,6 +162,11 @@ FLContext.prototype.full = function(obj) {
 	} else if (Array.isArray(obj)) {
 		for (var i=0;i<obj.length;i++)
 			obj[i] = this.full(obj[i]);
+	} else if (obj.state instanceof FieldsContainer) {
+		var ks = Object.keys(obj.state.dict);
+		for (var i=0;i<ks.length;i++) {
+			obj.state.dict[ks[i]] = this.full(obj.state.dict[ks[i]]);
+		}
 	}
 	return obj;
 }

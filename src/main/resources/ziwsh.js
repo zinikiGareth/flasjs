@@ -48,6 +48,8 @@ JsonBeachhead.prototype.handleArg = function(ux, o) {
         ux.string(o);
     else if (o._cycle) {
         ux.handleCycle(o._cycle);
+    } else if (o._wireable) {
+        debugger;
     } else if (o._clz) {
         const fm = ux.beginFields(o._clz);
         ux.unpack(fm.collectingAs());
@@ -104,6 +106,12 @@ JsonMarshaller.prototype.number = function(n) {
 
 JsonMarshaller.prototype.boolean = function(b) {
     this.collect(b);
+}
+
+JsonMarshaller.prototype.wireable = function(w) {
+    var c = { _clz: "_wireable", "_wireable": w._clz };
+    w._towire(c);
+    this.collect(c);
 }
 
 JsonMarshaller.prototype.circle = function(o, as) {
@@ -407,6 +415,8 @@ ObjectMarshaller.prototype.recursiveMarshal = function(ux, o) {
         ;
     else if (typeof o === "string")
         ux.string(o);
+    else if (o instanceof URL)
+        ux.url(o);
     else if (typeof o === "number")
         ux.number(o);
     else if (typeof o === "boolean")
@@ -418,6 +428,8 @@ ObjectMarshaller.prototype.recursiveMarshal = function(ux, o) {
             this.handleStruct(ux, o);
         } else if (Array.isArray(o)) {
             this.handleArray(ux, o);
+        } else if (o._towire) {
+            ux.wireable(o);
         } else {
             this.logger.log("o =", o);
             this.logger.log("o.state = ", o.state);
@@ -440,7 +452,7 @@ ObjectMarshaller.prototype.handleStruct = function(ux, o) {
     this.logger.log(fm.constructor.name);
     ux.circle(o, fm.collectingAs());
     const ks = Object.keys(fc.dict);
-    for (var k in ks) {
+    for (var k=0;k<ks.length;k++) {
         fm.field(ks[k]);
         this.recursiveMarshal(fm, fc.dict[ks[k]]);
     }
@@ -565,12 +577,20 @@ CollectingTraverser.prototype.string = function(s) {
     this.collect(s);
 }
 
+CollectingTraverser.prototype.url = function(u) {
+    this.collect(u);
+}
+
 CollectingTraverser.prototype.number = function(n) {
     this.collect(n);
 }
 
 CollectingTraverser.prototype.boolean = function(b) {
     this.collect(b);
+}
+
+CollectingTraverser.prototype.wireable = function(w) {
+    this.collect(w);
 }
 
 CollectingTraverser.prototype.handleCycle = function(cr) {
