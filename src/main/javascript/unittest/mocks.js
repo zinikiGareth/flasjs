@@ -240,16 +240,21 @@ MockHandler.prototype.expect = MockContract.prototype.expect;
 MockHandler.prototype.serviceMethod = MockContract.prototype.serviceMethod;
 MockHandler.prototype.assertSatisfied = MockContract.prototype.assertSatisfied;
 
+const MockAjax = function() {
+
+}
+
 //--EXPORT
 /* istanbul ignore else */ 
 if (typeof(module) !== 'undefined')
-	module.exports = { MockContract, MockFLObject, MockHandler, MockAgent, MockCard, Expectation, BoundVar, ExplodingIdempotentHandler };
+	module.exports = { MockContract, MockFLObject, MockHandler, MockAgent, MockCard, Expectation, BoundVar, ExplodingIdempotentHandler, MockAjax };
 else {
 	window.MockContract = MockContract;
 	window.MockFLObject = MockFLObject;
 	window.MockHandler = MockHandler;
 	window.MockAgent = MockAgent;
 	window.MockCard = MockCard;
+	window.MockAjax = MockAjax;
 	window.Expectation = Expectation;
 	window.BoundVar = BoundVar;
 }

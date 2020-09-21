@@ -210,6 +210,9 @@ UTRunner.prototype.mockCard = function(_cxt, name, card) {
 	this.cards.push(ret);
 	return ret;
 }
+UTRunner.prototype.newAjax = function() {
+	return new MockAjax();
+}
 UTRunner.prototype._updateDisplay = function(_cxt, rt) {
 	this.updateAllCards(_cxt);
 }
