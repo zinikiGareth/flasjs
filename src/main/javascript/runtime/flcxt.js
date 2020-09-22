@@ -289,6 +289,10 @@ FLContext.prototype.localCard = function(cardClz, elt) {
 		var msgs = lc.init(this);
 		this.env.queueMessages(this, msgs);
 	}
+	if (lc && lc.ready) {
+		var msgs = lc.ready(this);
+		this.env.queueMessages(this, msgs);
+	}
 	return card;
 }
 
