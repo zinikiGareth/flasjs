@@ -9,10 +9,17 @@ const UTRunner = function(logger) {
 	CommonEnv.call(this, logger, new SimpleBroker(logger, this, {}));
 	this.errors = [];
 	this.mocks = {};
+	this.ajaxen = [];
+	this.activeSubscribers = [];
 }
 
 UTRunner.prototype = new CommonEnv();
 UTRunner.prototype.constructor = UTRunner;
+
+UTRunner.prototype.makeReady = function() {
+	CommonEnv.prototype.makeReady.call(this);
+    this.broker.register("Ajax", new MockAjaxService());
+}
 
 UTRunner.prototype.error = function(err) {
 	this.errors.push(err);
@@ -210,8 +217,10 @@ UTRunner.prototype.mockCard = function(_cxt, name, card) {
 	this.cards.push(ret);
 	return ret;
 }
-UTRunner.prototype.newAjax = function() {
-	return new MockAjax();
+UTRunner.prototype.newAjax = function(cxt, baseUri) {
+	var ma = new MockAjax(cxt, baseUri);
+	this.ajaxen.push(ma);
+	return ma;
 }
 UTRunner.prototype._updateDisplay = function(_cxt, rt) {
 	this.updateAllCards(_cxt);

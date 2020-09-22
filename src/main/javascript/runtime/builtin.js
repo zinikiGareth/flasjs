@@ -358,7 +358,6 @@ FLBuiltin.parseUri = function(_cxt, s) {
 	else if (typeof(s) !== 'string')
 		return new FLError("not a string");
 	try {
-		_cxt.log("s = ", s);
 		return new URL(s);
 	} catch (e) {
 		_cxt.log("error in parsing", s);
@@ -366,6 +365,14 @@ FLBuiltin.parseUri = function(_cxt, s) {
 	}
 }
 FLBuiltin.parseUri.nfargs = function() { return 1; }
+
+FLBuiltin.parseJson = function(_cxt, s) {
+	s = _cxt.full(s);
+	if (s instanceof FLError)
+		return s;
+	return JSON.parse(s);
+}
+FLBuiltin.parseJson.nfargs = function() { return 1; }
 
 //--EXPORT
 /* istanbul ignore else */

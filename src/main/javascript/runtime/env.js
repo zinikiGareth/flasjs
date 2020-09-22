@@ -67,7 +67,9 @@ CommonEnv.prototype.handleMessagesWith = function(_cxt, msg, ret) {
             this.handleMessagesWith(_cxt, msg[i], ret);
         }
 	} else if (msg) {
-        var m = msg.dispatch(_cxt);
+        var ic = this.newContext();
+        ic.updateCards = _cxt.updateCards;
+        var m = msg.dispatch(ic);
         m = _cxt.full(m);
         this.addAll(ret, m);
     }
