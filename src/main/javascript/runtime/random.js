@@ -1,5 +1,5 @@
 const FLObject = require("./object");
-const { Send } = require("./messages");
+const { ReponseWithMessages, Send } = require("./messages");
 //--REQUIRE
 
 // Use a seedable random number generator
