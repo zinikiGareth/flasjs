@@ -79,9 +79,15 @@ Crobag.prototype.window = function(_cxt, from, size, handler) {
 }
 Crobag.prototype.window.nfargs = function() { return 3; }
 
+Crobag.prototype.size = function(_cxt) {
+    return 0;
+}
+Crobag.prototype.size.nfargs = function() { return 0; }
+
 Crobag.prototype._methods = function() {
     return {
         "add": Crobag.prototype.add,
+        "size": Crobag.prototype.size,
         "window": Crobag.prototype.window
     };
 }
