@@ -187,7 +187,15 @@ CrobagWindowEvent.prototype.dispatch = function(cx) {
     if (this.replyto instanceof FLError)
         return this.replyto;
     var arr = [];
-    // TODO: return an array of [Send handler msg]
+    var k = 0;
+    for (var i=0;i<this.bag._entries.length;i++) {
+        var e = this.bag._entries[i];
+        if (e.key < this.from)
+            continue;
+        if (k >= this.size)
+            break;
+        arr.push(Send.eval(cx, this.replyto, "next", [e.key, e.val], null));
+    }
     arr.push(Send.eval(cx, this.replyto, "done", [], _ActualSlideHandler.eval(cx, this.crobag)));
     return arr;
 }

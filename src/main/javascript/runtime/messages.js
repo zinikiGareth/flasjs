@@ -62,7 +62,10 @@ Send.prototype.dispatch = function(cx) {
 	} else {
 		args.splice(args.length, 0, new IdempotentHandler());
 	}
-	var ret = this.obj._methods()[this.meth].apply(this.obj, args);
+	var meth = this.obj._methods()[this.meth];
+	if (!meth)
+		return;
+	var ret = meth.apply(this.obj, args);
 	if (this.obj._updateDisplay)
 		cx.env.queueMessages(cx, [new UpdateDisplay(cx, this.obj)]);
 	else if (this.obj._card && this.obj._card._updateDisplay)
