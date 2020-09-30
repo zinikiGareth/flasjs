@@ -48,6 +48,8 @@ TypeOf.prototype.toString = function() {
 	switch (this.ty) {
 	case 'number':
 		return "Number";
+	case 'string':
+		return "String";
 	case 'TypeOf':
 		return 'Type';
 	default:
