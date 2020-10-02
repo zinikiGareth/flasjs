@@ -3,6 +3,7 @@ const { FLBuiltin } = require('./builtin');
 const { CallMe, Repeater, ContainerRepeater } = require('../container/repeater');
 const { Random } = require('./random');
 const { Crobag } = require('./crobag');
+const { Calendar } = require('./time');
 const FLError = require('../runtime/error');
 //--REQUIRE
 
@@ -15,6 +16,7 @@ const CommonEnv = function(logger, broker) {
     this.objects['Random'] = Random;
     this.objects['FLBuiltin'] = FLBuiltin;
     this.objects['Crobag'] = Crobag;
+    this.objects['Calendar'] = Calendar;
     this.logger = logger;
     this.broker = broker;
 	this.nextDivId = 1;
