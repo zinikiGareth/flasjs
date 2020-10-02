@@ -112,6 +112,18 @@ Crobag.prototype._change = function(cx, op, newKey, remove, val) {
                 this._entries.splice(i, 0, e);
                 done = true;
                 break;
+            } else if (this._entries[i].key == newKey) {
+                if (op == "insert") {
+                    continue;
+                } else if (op == "put") {
+                    // just shove it in
+                    this._entries.splice(i, 1, e);
+                } else if (op == "upsert") {
+                    // update this_.entries[i] with values from e
+                }
+
+                done = true;
+                break;
             }
         }
         if (!done)

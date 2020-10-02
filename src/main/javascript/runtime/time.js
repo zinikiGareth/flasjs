@@ -11,6 +11,10 @@ const Interval = function(d, ns) {
     this.ns = ns;
 }
 
+Interval.prototype.asJs = function() {
+    return this.days * 86400000 + (this.ns/1000/1000);
+}
+
 Interval.prototype._towire = function(wf) {
     wf.days = days;
     wf.ns = ns;

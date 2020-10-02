@@ -204,6 +204,12 @@ FLCard.prototype._updateContainer = function(_cxt, _renderTree, field, value, fn
                 fn.call(card, _cxt, rtc, node, ni, v);
             }
         });
+    } else if (value instanceof Crobag) {
+        this._updateCrobag(node, crt.children, value, {
+            insert: function(rtc, ni, v) {
+                fn.call(card, _cxt, rtc, node, ni, v);
+            }
+        });
     } else {
         // a single element container
         var curr = null;
@@ -297,6 +303,34 @@ FLCard.prototype._updateList = function(parent, rts, values, cb) {
         }
     } else {
         throw new Error("not handled: " + sw.op);
+    }
+}
+
+FLCard.prototype._updateCrobag = function(parent, rts, crobag, callback) {
+    for (var i=0;i<crobag.size();i++) {
+        var e = crobag._entries[i];
+        if (i >= rts.length) {
+            // if we've reached the end, add at the end ...
+            var rt  = {value: e};
+            rts.push(rt);
+            callback.insert(rt, null, e.val);
+        } else if (e.key == rts[i].value.key) {
+            // if it matches, update it
+            callback.insert(rts[i], parent.children[i], e.val);
+        } else if (e.key < rts[i].value.key) {
+            // a new entry - insert it here
+            var rt  = {value: e};
+            rts.splice(i, 0, rt);
+            callback.insert(rt, null, e.val);
+            i++;
+        } else if (e.key > rts[i].value.key) {
+            // the current entry appears to no longer be in the crobag - remove it
+            var rt = rts[i];
+            rts.splice(i, 1);
+            document.getElementById(rt._id).remove();
+        } else {
+            debugger;
+        }
     }
 }
 
