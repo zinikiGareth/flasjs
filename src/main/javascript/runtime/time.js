@@ -3,6 +3,7 @@ const FLBuiltin = require('./builtin');
 const FLObject = require("./object");
 const { IdempotentHandler } = require('../../resources/ziwsh');
 const { ResponseWithMessages } = require("./messages");
+const { Crobag } = require('./crobag');
 //--REQUIRE
 
 const Interval = function(d, ns) {
@@ -18,6 +19,10 @@ Interval.prototype._towire = function(wf) {
 const Instant = function(d, ns) {
     this.days = d;
     this.ns = ns;
+}
+
+Instant.prototype.asJs = function() {
+    return this.days * 86400000 + (this.ns/1000/1000);
 }
 
 Instant.prototype._towire = function(wf) {
@@ -70,8 +75,19 @@ Calendar._ctor_gregorian = function(_cxt, _card) {
 }
 Calendar._ctor_gregorian.nfargs = function() { return 1; }
 
+Calendar.prototype.isoDateTime = function(_cxt, inst) {
+    inst = _cxt.full(inst);
+    if (inst instanceof FLError)
+        return inst;
+    else if (!(inst instanceof Instant))
+        return new FLError("not an instant");
+    return dateFormat(new Date(inst.asJs()), dateFormat.masks.isoUtcDateTime);
+}
+Calendar.prototype.isoDateTime.nfargs = function() { return 1; }
+
 Calendar.prototype._methods = function() {
     return {
+        "isoDateTime": Calendar.prototype.isoDateTime
     };
 }
 
