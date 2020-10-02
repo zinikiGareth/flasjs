@@ -40,6 +40,16 @@ FLBuiltin.seconds = function(_cxt, n) {
 }
 FLBuiltin.seconds.nfargs = function() { return 1; }
 
+FLBuiltin.milliseconds = function(_cxt, n) {
+    n = _cxt.full(n);
+	if (n instanceof FLError)
+		return n;
+	else if (typeof(n) !== 'number')
+        return new FLError("not a number");
+	return new Interval(Math.floor(n / 86400000), (n % 86400000) * 1000 * 1000 * 1000);
+}
+FLBuiltin.milliseconds.nfargs = function() { return 1; }
+
 FLBuiltin.fromunixdate = function(_cxt, n) {
     n = _cxt.full(n);
 	if (n instanceof FLError)
