@@ -92,7 +92,6 @@ CommonEnv.prototype.newContext = function() {
 	return new FLContext(this, this.broker);
 }
 
-
 //--EXPORT
 /* istanbul ignore next */
 if (typeof(module) !== 'undefined') {
