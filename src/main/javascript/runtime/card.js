@@ -353,7 +353,8 @@ FLCard.prototype._updateCrobag = function(parent, rts, crobag, callback) {
 FLCard.prototype._figureScrollInfo = function(parent) {
     var div = parent;
     while (div != document.body) {
-        if (window.getComputedStyle(div)['overflowY'] == 'scroll')
+        var oy = window.getComputedStyle(div)['overflowY'];
+        if (oy == 'scroll' || oy == 'auto')
             break;
         div = div.parentElement;
     }
