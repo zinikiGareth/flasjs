@@ -110,6 +110,9 @@ FLContext.prototype.mksend = function(meth, obj, cnt, handler) {
 		return new FLMakeSend(meth, obj, cnt, handler);
 }
 
+FLContext.returnNull = function(_cxt) {
+	return null;
+}
 FLContext.prototype.mkacor = function(meth, obj, cnt) {
 	if (cnt == 0) {
 		if (typeof obj === 'undefined' || obj === null)
@@ -118,9 +121,13 @@ FLContext.prototype.mkacor = function(meth, obj, cnt) {
 			return this.oclosure(meth, obj);
 	}
 	else {
-		if (typeof obj === 'undefined' || obj === null)
-			throw new Error("we want to return a curry of " + cnt + " args which ultimately returns undefined");
-		else
+		if (typeof obj === 'undefined' || obj === null) {
+			var fn = function(_cxt) {
+				return null;
+			}
+			fn.nfargs = function() { return cnt; };
+			return this.ocurry(cnt, fn, obj);
+		} else
 			return this.ocurry(cnt, meth, obj);
 	}
 }

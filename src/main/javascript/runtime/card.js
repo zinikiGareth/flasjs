@@ -360,7 +360,7 @@ FLCard.prototype._figureScrollInfo = function(parent) {
     var min = div.scrollTop;
     var max = min + div.clientHeight;
     var mid = (min + max) / 2;
-    var ret = { scroller: div, ht : 0, scrollht: div.scrollHeight, scrollTop: div.scrollTop, viewport: div.clientHeight };
+    var ret = { lockMode: 'bottom', lockOffset: 0, scroller: div, ht : 0, scrollht: div.scrollHeight, scrollTop: div.scrollTop, viewport: div.clientHeight };
     var nodes = parent.children;
     if (nodes.length == 0) {
         return ret;
