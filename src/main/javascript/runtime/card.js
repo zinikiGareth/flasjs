@@ -386,7 +386,6 @@ FLCard.prototype._figureScrollInfo = function(parent) {
             }
         }
     }
-    console.log("done: ", ret);
     return ret;
 }
 
