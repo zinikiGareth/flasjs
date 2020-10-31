@@ -45,6 +45,9 @@ TypeOf.prototype._compare = function(_cxt, other) {
 		return false;
 }
 TypeOf.prototype.toString = function() {
+	if (this.ty._typename) {
+		return this.ty._typename;
+	}
 	switch (this.ty) {
 	case 'number':
 		return "Number";
@@ -56,6 +59,12 @@ TypeOf.prototype.toString = function() {
 		return this.ty;
 	}
 }
+
+TypeOf.prototype._towire = function(wf) {
+    wf.type = this.toString();
+    wf.ns = ns;
+}
+
 
 
 /* istanbul ignore next */
