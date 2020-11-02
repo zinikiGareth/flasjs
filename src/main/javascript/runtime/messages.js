@@ -73,7 +73,7 @@ Send.prototype.dispatch = function(cx) {
 	return ret;
 }
 Send.prototype.toString = function() {
-	return "Send[" + "]";
+	return "Send[" + this.obj + ":" + this.meth + "]";
 }
 
 const Assign = function() {

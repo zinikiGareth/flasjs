@@ -7,8 +7,8 @@ const { Calendar } = require('./time');
 const FLError = require('../runtime/error');
 //--REQUIRE
 
-const CommonEnv = function(logger, broker) {
-    if (!logger) // when used as a constructor
+const CommonEnv = function(bridge, broker) {
+    if (!bridge) // when used as a constructor
         return;
     this.contracts = broker.contracts;
     this.structs = {};
@@ -17,7 +17,7 @@ const CommonEnv = function(logger, broker) {
     this.objects['FLBuiltin'] = FLBuiltin;
     this.objects['Crobag'] = Crobag;
     this.objects['Calendar'] = Calendar;
-    this.logger = logger;
+    this.logger = bridge;
     this.broker = broker;
 	this.nextDivId = 1;
 	this.divSince = this.nextDivId;
@@ -74,6 +74,7 @@ CommonEnv.prototype.handleMessagesWith = function(_cxt, msg, ret) {
 	} else if (msg) {
         var ic = this.newContext();
         ic.updateCards = _cxt.updateCards;
+        this.logger.log("dispatching message", msg);
         var m = msg.dispatch(ic);
         // m = _cxt.full(m);
         // this.addAll(ret, m);

@@ -50,7 +50,7 @@ describe('dispatcher', () => {
         var _cxt = runner.newContext();
         var debug = Debug.eval(_cxt, "hello, world");
         runner.invoke(_cxt, debug);
-        expect(logger.text).to.equal('hello, world');
+        expect(logger.text).to.equal('dispatching messagehello, world');
 	});
 
     it('nothing happens on null', () => {

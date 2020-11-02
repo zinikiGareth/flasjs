@@ -36,7 +36,7 @@ describe('send', () => {
 	it('has tostring', () => {
         var _cxt = new FLContext({logger: console});
 		var v1 = Send.eval(_cxt, {}, "fred", []);
-		expect(v1.toString()).to.equal("Send[]");
+		expect(v1.toString()).to.equal("Send[[object Object]:fred]");
 	});
 
 	it('is comparable to another Send with the same details', () => {

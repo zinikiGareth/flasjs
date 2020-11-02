@@ -1,16 +1,18 @@
 const CommonEnv = require('../runtime/env');
-const { SimpleBroker } = require('../../resources/ziwsh');
+const { SimpleBroker, JsonBeachhead } = require('../../resources/ziwsh');
 const { MockCard, MockFLObject } = require('./mocks');
 //--REQUIRE
 
-const UTRunner = function(logger) {
-	if (!logger)
-		logger = console;
-	CommonEnv.call(this, logger, new SimpleBroker(logger, this, {}));
+const UTRunner = function(bridge) {
+	if (!bridge)
+		bridge = console; // at least get the logger ...
+	CommonEnv.call(this, bridge, new SimpleBroker(bridge, this, {}));
 	this.errors = [];
 	this.mocks = {};
 	this.ajaxen = [];
 	this.activeSubscribers = [];
+	if (typeof(window) !== 'undefined')
+		window.utrunner = this;
 }
 
 UTRunner.prototype = new CommonEnv();
@@ -54,6 +56,7 @@ UTRunner.prototype.invoke = function(_cxt, inv) {
 	this.dispatchMessages(_cxt);
 }
 UTRunner.prototype.send = function(_cxt, target, contract, msg, args) {
+	_cxt.log("doing send from runner to " + contract + ":" + msg);
 	var reply = target.sendTo(_cxt, contract, msg, args);
 	reply = _cxt.full(reply);
 	this.queueMessages(_cxt, reply);
@@ -252,6 +255,10 @@ UTRunner.prototype.module = function(mod) {
 		this.logger.log("module architecture not supported for " + mod);
 		return null;
 	}
+}
+UTRunner.prototype.transport = function(tz) {
+	// we have a transport to Ziniki
+	this.broker.beachhead(new JsonBeachhead(this, "fred", this.broker, tz));
 }
 
 //--EXPORT
