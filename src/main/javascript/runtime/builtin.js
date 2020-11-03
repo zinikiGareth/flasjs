@@ -61,7 +61,8 @@ TypeOf.prototype.toString = function() {
 }
 
 TypeOf.prototype._towire = function(wf) {
-    wf.type = this.toString();
+	wf.type = this.toString();
+	wf._wireable = 'org.flasck.jvm.builtin.TypeOf';
 }
 
 
