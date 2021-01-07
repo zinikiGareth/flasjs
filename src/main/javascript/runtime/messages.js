@@ -110,6 +110,10 @@ Assign.prototype.dispatch = function(cx) {
 		this.expr = ResponseWithMessages.response(cx, this.expr);
 	}
 	target.state.set(this.slot, this.expr);
+	if (this.obj._updateDisplay)
+		cx.env.queueMessages(cx, [new UpdateDisplay(cx, this.obj)]);
+	else if (this.obj._card && this.obj._card._updateDisplay)
+		cx.env.queueMessages(cx, [new UpdateDisplay(cx, this.obj._card)]);
 	return msgs;
 }
 Assign.prototype.toString = function() {
