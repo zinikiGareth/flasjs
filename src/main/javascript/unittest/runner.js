@@ -30,6 +30,10 @@ UTRunner.prototype.constructor = UTRunner;
 
 UTRunner.modules = {};
 
+UTRunner.prototype.bindModule = function(name, jm) {
+	this.moduleInstances[name] = new UTRunner.modules[name](this, jm);
+}
+
 UTRunner.prototype.makeReady = function() {
 	CommonEnv.prototype.makeReady.call(this);
     this.broker.register("Ajax", new MockAjaxService());
