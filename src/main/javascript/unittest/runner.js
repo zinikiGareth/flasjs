@@ -17,8 +17,8 @@ const UTRunner = function(bridge) {
 	for (var mn in UTRunner.modules) {
 		if (UTRunner.modules.hasOwnProperty(mn)) {
 			var jm;
-			if (window.callJava && window.callJava.module) {
-				jm = window.callJava.module(mn);
+			if (bridge.module) {
+				jm = bridge.module(mn);
 			}
 			this.moduleInstances[mn] = new UTRunner.modules[mn](this, jm);
 		}
@@ -278,6 +278,30 @@ UTRunner.prototype.deliver = function(json) {
 	var msgs = this.zinBch.dispatch(cx, json, null);
 	this.logger.log("have messages", msgs);
 	this.queueMessages(cx, msgs);
+}
+
+UTRunner.prototype.runRemote = function(testClz, spec) {
+	var cxt = this.newContext();
+	var st = new testClz(this, cxt);
+	var allSteps = [];
+	if (spec.configure) {
+		var steps = spec.configure.call(st, cxt);
+		for (var j=0;j<steps.length;j++)
+			allSteps.push(steps[j]);
+	}
+	if (spec.stages) {
+		for (var i=0;i<spec.stages.length;i++) {
+			var steps = spec.stages[i].call(st, cxt);
+			for (var j=0;j<steps.length;j++)
+				allSteps.push(steps[j]);
+		}
+	}
+	if (spec.cleanup) {
+		var steps = spec.cleanup.call(st, cxt);
+		for (var j=0;j<steps.length;j++)
+			allSteps.push(steps[j]);
+	}
+	this.logger.executeSync(this, st, cxt, allSteps); // logger is really "bridge"
 }
 
 //--EXPORT
