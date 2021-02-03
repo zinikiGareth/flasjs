@@ -2,7 +2,10 @@ function WSBridge(host, port) {
 	var self = this;
 	this.ws = new WebSocket("ws://" + host + ":" + port + "/bridge");
 	this.waitcount = 1;
+	this.requestId = 1;
 	this.sending = [];
+	this.lockedOut = [];
+	this.responders = {};
 	this.ws.addEventListener("open", ev => {
 		console.log("connected", ev);
 		while (this.sending.length > 0) {
@@ -14,17 +17,27 @@ function WSBridge(host, port) {
 		console.log("message", ev.data);
 		var msg = JSON.parse(ev.data);
 		var action = msg.action;
-		if (!WSBridge.handlers[action]) {
-			console.log("there is no handler for " + action);
-			return;
+		if (action == "response") {
+			var rid = msg.respondingTo;
+			if (!this.responders[rid]) {
+				console.log("there is nobody willing to handle response " + rid);
+				return;
+			}
+			this.responders[rid].call(this, msg);
+			delete this.responders[rid];
+		} else {
+			if (!WSBridge.handlers[action]) {
+				console.log("there is no handler for " + action);
+				return;
+			}
+			WSBridge.handlers[action].call(self, msg);
 		}
-		WSBridge.handlers[action].call(self, msg);
 	});
 }
 WSBridge.handlers = {};
 
 WSBridge.prototype.log = function(...args) {
-	console.log(args);
+	console.log.apply(console.log, args);
 }
 
 WSBridge.prototype.module = function(moduleName) {
@@ -50,12 +63,21 @@ WSBridge.prototype.send = function(json) {
 		this.sending.push(text)
 }
 
+WSBridge.prototype.connectToZiniki = function(wsapi, cb) {
+	runner.broker.connectToServer('ws://' + host + ':' + port + '/wsapi/token/secret');
+}
+
 WSBridge.prototype.executeSync = function(runner, st, cxt, steps) {
 	this.runner = runner;
 	this.st = st;
 	this.runcxt = cxt;
 	this.readysteps = steps;
 	this.unlock("ready to go"); // unlocks the initial "1" we set in constructor
+}
+
+WSBridge.prototype.nextRequestId = function(hdlr) {
+	this.responders[this.requestId] = hdlr;
+	return this.requestId++;
 }
 
 WSBridge.prototype.lock = function(msg) {
@@ -71,11 +93,20 @@ WSBridge.prototype.unlock = function(msg) {
 	}
 }
 
+WSBridge.prototype.onUnlock = function(f) {
+	this.lockedOut.push(f);
+}
+
 WSBridge.prototype.gotime = function() {
 	if (this.readysteps.length == 0)
 		return; // we're done
 	if (this.waitcount > 0)
 		return; // we are in a holding pattern
+	if (this.lockedOut.length  > 0) {
+		this.lock("a callback");
+		this.lockedOut.shift().call(this);
+		return;
+	}
 	var s = this.readysteps.shift();
 	console.log("executing step", s);
 	this.lock("around step");

@@ -284,7 +284,7 @@ UTRunner.prototype.deliver = function(json) {
 	this.queueMessages(cx, msgs);
 }
 
-UTRunner.prototype.runRemote = function(testClz, spec) {
+UTRunner.prototype.runRemote = function(testClz, wsapi, spec) {
 	var cxt = this.newContext();
 	var st = new testClz(this, cxt);
 	var allSteps = [];
@@ -305,7 +305,8 @@ UTRunner.prototype.runRemote = function(testClz, spec) {
 		for (var j=0;j<steps.length;j++)
 			allSteps.push(steps[j]);
 	}
-	this.logger.executeSync(this, st, cxt, allSteps); // logger is really "bridge"
+	var bridge = this.logger; // what it really is
+	bridge.executeSync(this, st, cxt, allSteps);
 }
 
 //--EXPORT
