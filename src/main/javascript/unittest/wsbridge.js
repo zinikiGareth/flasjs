@@ -89,6 +89,7 @@ WSBridge.prototype.unlock = function(msg) {
 	--this.waitcount;
 	console.log("unlock waitcount = " + this.waitcount, msg);
 	if (this.waitcount == 0) {
+		console.log(new Date() + " ready to go");
 		this.gotime();
 	}
 }
@@ -114,8 +115,12 @@ WSBridge.prototype.gotime = function() {
 		return;
 	}
 	var s = this.readysteps.shift();
-	console.log("executing step", s);
+	console.log(new Date() + " executing step", s);
 	this.lock("around step");
 	this.st[s].call(this.st, this.runcxt);
+	this.send({action: "step"});
+}
+
+WSBridge.handlers["stepdone"] = function(msg) {
 	this.unlock("around step");
 }
