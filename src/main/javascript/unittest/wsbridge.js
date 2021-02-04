@@ -98,11 +98,17 @@ WSBridge.prototype.onUnlock = function(f) {
 }
 
 WSBridge.prototype.gotime = function() {
-	if (this.readysteps.length == 0)
-		return; // we're done
-	if (this.waitcount > 0)
+	if (this.readysteps.length == 0) {
+		// we're done
+		console.log("test complete");
+		return;
+	}
+	if (this.waitcount > 0) {
+		console.log("cannot go because lock count is", this.waitcount);
 		return; // we are in a holding pattern
+	}
 	if (this.lockedOut.length  > 0) {
+		console.log("handling locked out callback");
 		this.lock("a callback");
 		this.lockedOut.shift().call(this);
 		return;
