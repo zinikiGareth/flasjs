@@ -45,12 +45,12 @@ describe('dispatcher', () => {
     });
 
 	it('can print a debug', () => {
-        var logger = { text:'', log : function(msg) { this.text += msg; }};
+        var logger = { text:'', logs:'', debugmsg : function(msg) { this.text += msg; }, log : function(msg) { this.logs += "LOG[" + msg + "]"; }};
         runner = new Runner(logger);
         var _cxt = runner.newContext();
         var debug = Debug.eval(_cxt, "hello, world");
         runner.invoke(_cxt, debug);
-        expect(logger.text).to.equal('dispatching messagehello, world');
+        expect(logger.text).to.equal('hello, world');
 	});
 
     it('nothing happens on null', () => {
