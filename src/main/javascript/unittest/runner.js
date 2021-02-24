@@ -1,6 +1,7 @@
 const CommonEnv = require('../runtime/env');
 const { SimpleBroker, JsonBeachhead } = require('../../resources/ziwsh');
 const { MockCard, MockFLObject } = require('./mocks');
+const FLError = require('../runtime/error');
 //--REQUIRE
 
 const UTRunner = function(bridge) {
@@ -49,6 +50,8 @@ UTRunner.prototype.assertSameValue = function(_cxt, e, a) {
 	e = _cxt.full(e);
 	a = _cxt.full(a);
 	if (!_cxt.compare(e, a)) {
+		if (a instanceof FLError)
+			a = a.message;
 		throw new Error("NSV\n  expected: " + e + "\n  actual:   " + a);
 	}
 }
