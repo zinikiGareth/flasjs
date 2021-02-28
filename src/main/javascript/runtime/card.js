@@ -141,13 +141,22 @@ FLCard.prototype._updateTemplate = function(_cxt, _renderTree, type, field, fn, 
         var t = document.getElementById(templateName);
         if (t != null) {
             if (Array.isArray(value)) {
-                var chn;
                 if (!crt.children) {
                     crt.children = [];
                 }
                 var card = this;
                 this._updateList(node, crt.children, value, {
                     insert: function (rtc, ni, v) {
+                        card._addItem(_cxt, rtc, node, ni, t, fn, v, _tc);
+                    }
+                });
+            } else if (value instanceof Crobag) {
+                if (!crt.children) {
+                    crt.children = [];
+                }
+                var card = this;
+                this._updateCrobag(node, crt.children, value, {
+                    insert: function(rtc, ni, v) {
                         card._addItem(_cxt, rtc, node, ni, t, fn, v, _tc);
                     }
                 });

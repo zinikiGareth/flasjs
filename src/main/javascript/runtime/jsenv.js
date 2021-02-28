@@ -5,7 +5,11 @@ const { SimpleBroker } = require('../../resources/ziwsh');
 const JSEnv = function(broker) {
 	if (broker == null)
 		broker = new SimpleBroker(console, this, {});
-	CommonEnv.call(this, console, broker);
+	var logger = {
+		log: console.log,
+		debugmsg: console.log		
+	}
+	CommonEnv.call(this, logger, broker);
 	if (typeof(FlasckServices) !== 'undefined') {
 		FlasckServices.configure(this);
 	}
