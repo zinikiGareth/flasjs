@@ -322,9 +322,10 @@ FLBuiltin._probe_state = function(_cxt, mock, v) {
 	var sh = mock;
 	if (mock instanceof FLError)
 		return mock;
-	else if (mock.card)
+	else if (mock.card) {
 		sh = mock.card;
-	else if (mock.agent)
+		sh._updateFromInputs();
+	} else if (mock.agent)
 		sh = mock.agent;
 	if (sh.state.dict[v] === undefined)
 		return new FLError("No field '" + v + "' in probe_state");
