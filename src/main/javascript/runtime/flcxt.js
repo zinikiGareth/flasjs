@@ -280,6 +280,9 @@ FLContext.prototype.attachEventToCard = function(card, handlerInfo, div, wrapper
 }
 
 FLContext.prototype.handleEvent = function(card, handler, event) {
+	if (card && card._updateFromInputs) {
+		card._updateFromInputs();
+	}
 	var reply = [];
 	if (handler) {
 		reply = handler.call(card, this, event);

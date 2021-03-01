@@ -116,9 +116,8 @@ FLCard.prototype._updateFromEachInput = function(rt) {
             continue;
         var div = document.getElementById(sub._id);
         if (div.tagName == "INPUT" && div.hasAttribute("type") && (div.getAttribute("type") == "text" || div.getAttribute("type") == "password")) {
-            debugger;
             if (sub.fromField) {
-                sub.source.state.set(sub.fromField, div.getAttribute("value"));
+                sub.source.state.set(sub.fromField, div.value);
             }
         }
     }
