@@ -67,7 +67,8 @@ const CroEntry = function(key, val) {
 const Crobag = function(_cxt, _card) {
     FLObject.call(this, _cxt);
     this._card = _card;
-    // this.state = _cxt.fields();
+    // a crobag doesn't have any actual fields, but ZiWSH wants to pretend it does
+    this.state = { dict: {} }; // _cxt.fields();
     this._entries = [];
 }
 
