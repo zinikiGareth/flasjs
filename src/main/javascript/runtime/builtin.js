@@ -347,7 +347,13 @@ FLBuiltin.dispatch = function(_cxt, msgs) {
 	msgs = _cxt.full(msgs);
 	if (msgs instanceof FLError)
 		return msgs;
-	return _cxt.env.handleMessages(_cxt, msgs);
+	var ret = [];
+	var te = _cxt.env;
+	te.queueMessages = function(cx, m) {
+		ret.push(m);
+	}
+	_cxt.env.handleMessages(_cxt, msgs);
+	return ret;
 }
 FLBuiltin.dispatch.nfargs = function() { return 1; }
 

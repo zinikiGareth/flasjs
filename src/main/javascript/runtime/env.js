@@ -60,18 +60,16 @@ CommonEnv.prototype.dispatchMessages = function(_cxt) {
 
 CommonEnv.prototype.handleMessages = function(_cxt, msg) {
     var msg = _cxt.full(msg);
-    var ret = [];
-    this.handleMessagesWith(_cxt, msg, ret);
-    return ret;
+    this.handleMessagesWith(_cxt, msg);
 }
 
-CommonEnv.prototype.handleMessagesWith = function(_cxt, msg, ret) {
+CommonEnv.prototype.handleMessagesWith = function(_cxt, msg) {
     msg = _cxt.full(msg);
     if (!msg)
-        return [];
+        ;
     else if (msg instanceof FLError || typeof(msg) == 'string') {
         this.logger.log(msg);
-        return [];
+        ;
     } else if (msg instanceof Array) {
         for (var i=0;i<msg.length;i++) {
             this.handleMessages(_cxt, msg[i]);
@@ -81,8 +79,6 @@ CommonEnv.prototype.handleMessagesWith = function(_cxt, msg, ret) {
         ic.updateCards = _cxt.updateCards;
         this.logger.log("dispatching message", msg);
         var m = msg.dispatch(ic);
-        // m = _cxt.full(m);
-        // this.addAll(ret, m);
         this.handleMessages(_cxt, m);
     }
 }
