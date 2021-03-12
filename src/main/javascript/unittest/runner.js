@@ -19,7 +19,7 @@ const UTRunner = function(bridge) {
 		if (UTRunner.modules.hasOwnProperty(mn)) {
 			var jm;
 			if (bridge.module) {
-				jm = bridge.module(mn);
+				jm = bridge.module(this, mn);
 			}
 			this.moduleInstances[mn] = new UTRunner.modules[mn](this, jm);
 		}

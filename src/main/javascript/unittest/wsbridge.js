@@ -1,3 +1,4 @@
+// Connect to ChromeTestRunner
 function WSBridge(host, port) {
 	var self = this;
 	this.ws = new WebSocket("ws://" + host + ":" + port + "/bridge");
@@ -44,7 +45,8 @@ WSBridge.prototype.debugmsg = function(...args) {
 	console.log.apply(console.log, args);
 }
 
-WSBridge.prototype.module = function(moduleName) {
+WSBridge.prototype.module = function(runner, moduleName) {
+	this.runner = runner;
 	this.send({action: "module", "name": moduleName });
 	this.lock("bindModule");
 }
