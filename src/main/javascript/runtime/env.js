@@ -16,6 +16,7 @@ const CommonEnv = function(bridge, broker) {
     this.objects['Random'] = Random;
     this.objects['FLBuiltin'] = FLBuiltin;
     this.objects['Crobag'] = Crobag;
+    this.objects['org.flasck.jvm.builtin.Crobag'] = Crobag; // hack that enables the Java name to be sent on the wire.  It probably shouldn't be.
     this.objects['Calendar'] = Calendar;
     this.logger = bridge;
     this.broker = broker;

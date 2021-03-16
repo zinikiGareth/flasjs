@@ -78,6 +78,10 @@ Crobag._ctor_new = function(_cxt, _card) {
 }
 Crobag._ctor_new.nfargs = function() { return 1; }
 
+Crobag.fromWire = function(cx, om, fields) {
+    return new Crobag(cx, null);
+}
+
 Crobag.prototype.insert = function(_cxt, key, val) {
     return [CrobagChangeEvent.eval(_cxt, this, "insert", key, null, val)];
 }
