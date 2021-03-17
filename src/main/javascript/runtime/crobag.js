@@ -62,6 +62,12 @@ const CroEntry = function(key, val) {
     this.val = val;
 }
 
+CroEntry.fromWire = function(cx, om, fields) {
+    var lt = new ListTraverser(cx, om.state);
+    om.marshal(lt, fields["value"]);
+    return new CroEntry(fields["key"], lt.ret[0]);
+}
+
 
 /* CROBAG itself */
 const Crobag = function(_cxt, _card) {
@@ -79,7 +85,16 @@ Crobag._ctor_new = function(_cxt, _card) {
 Crobag._ctor_new.nfargs = function() { return 1; }
 
 Crobag.fromWire = function(cx, om, fields) {
-    return new Crobag(cx, null);
+    var ret = new Crobag(cx, null);
+    var os = fields["entries"];
+    if (os.length > 0) {
+        var lt = new ListTraverser(cx, om.state);
+        for (var i=0;i<os.length;i++) {
+            om.marshal(lt, os[i]);
+        }
+        ret._entries = lt.ret;
+    }
+    return ret;
 }
 
 Crobag.prototype.insert = function(_cxt, key, val) {
@@ -260,7 +275,8 @@ _ActualSlideHandler.prototype._card.nfargs = function() { return -1; }
 //--EXPORTS
 /* istanbul ignore else */
 if (typeof(module) !== 'undefined') {
-    module.exports = { Crobag };
+    module.exports = { Crobag, CroEntry };
 } else {
     window.Crobag = Crobag;
+    window.CroEntry = CroEntry;
 }

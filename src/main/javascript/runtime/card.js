@@ -217,9 +217,13 @@ FLCard.prototype._addItem = function(_cxt, rt, parent, currNode, template, fn, v
         rt._id = ncid;
         parent.appendChild(currNode);
     }
-    fn.call(this, _cxt, rt, value, _tc);
-    if (this._eventHandlers) {
-        this._attachHandlers(_cxt, rt, div, template.id, null, null, value);
+    try {
+        fn.call(this, _cxt, rt, value, _tc);
+        if (this._eventHandlers) {
+            this._attachHandlers(_cxt, rt, div, template.id, null, null, value);
+        }
+    } catch (e) {
+        _cxt.log("cannot add item: ", value, e);
     }
 }
 
