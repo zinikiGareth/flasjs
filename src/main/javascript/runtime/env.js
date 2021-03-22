@@ -3,6 +3,7 @@ const { FLBuiltin } = require('./builtin');
 const { CallMe, Repeater, ContainerRepeater } = require('../container/repeater');
 const { Random } = require('./random');
 const { Crobag, CroEntry } = require('./crobag');
+const { Image } = require('./image');
 const { Calendar } = require('./time');
 const FLError = require('../runtime/error');
 //--REQUIRE
@@ -28,6 +29,7 @@ const CommonEnv = function(bridge, broker) {
     this.objects['FLBuiltin'] = FLBuiltin;
     this.objects['Crobag'] = Crobag;
     this.objects['CroEntry'] = CroEntry;
+    this.objects['Image'] = Image;
     this.objects['org.ziniki.common.ZiIdURI'] = ZiIdURI; // hack that enables the Java name to be sent on the wire.  It probably shouldn't be; but should we send just a string or should we recognize ZiIdURI?
     this.objects['org.flasck.jvm.builtin.Crobag'] = Crobag; // hack that enables the Java name to be sent on the wire.  It probably shouldn't be.
     this.objects['org.flasck.jvm.builtin.CroEntry'] = CroEntry; // hack that enables the Java name to be sent on the wire.  It probably shouldn't be.

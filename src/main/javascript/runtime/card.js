@@ -96,6 +96,29 @@ FLCard.prototype._updateContent = function(_cxt, rt, templateName, field, option
     }
 }
 
+FLCard.prototype._updateImage = function(_cxt, rt, templateName, field, option, source, value, fromField) {
+    // In general, everything should already be fully evaluated, but we do allow expressions in templates
+    value = _cxt.full(value);
+    // it should be an Image object
+    if (typeof value === 'undefined' || value == null || !(value instanceof Image))
+        value = '';
+    else
+        value = value.getUri();
+    var div = document.getElementById(rt._id);
+    const node = div.querySelector("[data-flas-image='" + field + "']");
+    if (!node.id) {
+        var ncid = _cxt.nextDocumentId();
+        node.id = ncid;
+        rt[field] = { _id: ncid };
+        if (source)
+            rt[field].source = source;
+        else
+            rt[field].source = this;
+        rt[field].fromField = fromField;
+    }
+    node.src = value;
+}
+
 FLCard.prototype._updateFromInputs = function() {
     if (this._renderTree)
         this._updateFromEachInput(this._renderTree);
