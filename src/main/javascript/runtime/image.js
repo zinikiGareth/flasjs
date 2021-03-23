@@ -10,7 +10,6 @@ const Image = function(_cxt, _uri) {
 }
 
 Image._ctor_asset = function(_cxt, _card, _uri) {
-	debugger;
     const ret = new Image(_cxt, _uri);
     return new ResponseWithMessages(_cxt, ret, []);
 }

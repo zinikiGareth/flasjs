@@ -72,7 +72,10 @@ CommonEnv.prototype.dispatchMessages = function(_cxt) {
         }
     }
     delete _cxt.updateCards;
-    set.forEach(card => card._updateDisplay(_cxt, card._renderTree));
+    set.forEach(card => {
+        card._updateDisplay(_cxt, card._renderTree);
+        card._resizeDisplayElements(_cxt, card._renderTree);
+    });
 }
 
 CommonEnv.prototype.handleMessages = function(_cxt, msg) {
@@ -111,6 +114,13 @@ CommonEnv.prototype.addAll = function(ret, m) {
 
 CommonEnv.prototype.newContext = function() {
 	return new FLContext(this, this.broker);
+}
+
+if (typeof(window) !== 'undefined') {
+    window.addEventListener('resize', function(ev) {
+        if (window.maincard)
+            window.maincard._resizeDisplayElements(env.newContext(), window.maincard._renderTree);
+    });
 }
 
 //--EXPORT

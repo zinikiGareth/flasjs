@@ -11,6 +11,7 @@ FLObject.prototype._updateStyle = FLCard.prototype._updateStyle;
 FLObject.prototype._updateList = FLCard.prototype._updateList;
 FLObject.prototype._diffLists = FLCard.prototype._diffLists;
 FLObject.prototype._attachHandlers = FLCard.prototype._attachHandlers;
+FLObject.prototype._resizeDisplayElements = FLCard.prototype._resizeDisplayElements;
 
 
 //--EXPORT
