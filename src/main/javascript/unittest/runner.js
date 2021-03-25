@@ -264,6 +264,9 @@ UTRunner.prototype.matchScroll = function(_cxt, target, zone, contains, expected
 	if (actual != expected)
 		throw new Error("MATCH\n  expected: " + expected + "\n  actual:   " + actual);
 }
+UTRunner.prototype.route = function(_cxt, route, storeCards) {
+	
+}
 UTRunner.prototype.updateCard = function(_cxt, card) {
 	if (!(card instanceof MockCard))
 		return;
