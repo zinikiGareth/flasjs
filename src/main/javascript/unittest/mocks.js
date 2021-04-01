@@ -305,10 +305,21 @@ MockAjaxService.prototype.subscribe = function(_cxt, uri, options, handler) {
 	_cxt.env.activeSubscribers.push({ uri, options, handler });
 }
 
+const MockAppl = function(_cxt, clz) {
+	this.appl = new clz._Application(_cxt);
+}
+MockAppl.prototype.route = function(_cxt, r) {
+	this.appl.gotoRoute(_cxt, r);
+}
+MockAppl.prototype.bindCards = function(_cxt, iv) {
+	var binding = {};
+	binding["main"] = this.appl.cards["main"];
+	iv.bindActual({ routes: binding });
+}
 //--EXPORT
 /* istanbul ignore else */ 
 if (typeof(module) !== 'undefined')
-	module.exports = { MockContract, MockFLObject, MockHandler, MockAgent, MockCard, Expectation, BoundVar, ExplodingIdempotentHandler, MockAjax };
+	module.exports = { MockContract, MockFLObject, MockHandler, MockAgent, MockCard, Expectation, BoundVar, ExplodingIdempotentHandler, MockAjax, MockAppl };
 else {
 	window.MockContract = MockContract;
 	window.MockFLObject = MockFLObject;
@@ -316,6 +327,7 @@ else {
 	window.MockAgent = MockAgent;
 	window.MockCard = MockCard;
 	window.MockAjax = MockAjax;
+	window.MockAppl = MockAppl;
 	window.Expectation = Expectation;
 	window.BoundVar = BoundVar;
 }
