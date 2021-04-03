@@ -113,7 +113,7 @@ UTRunner.prototype.render = function(_cxt, target, fn, template) {
 	sendTo.redraw(_cxt);
 }
 UTRunner.prototype.findMockFor = function(obj) {
-	if (obj instanceof MockFLObject || obj instanceof MockCard)
+	if (obj instanceof MockFLObject || obj instanceof MockCard || obj instanceof MockAppl)
 		return obj;
 	var ks = Object.keys(this.mocks);
 	for (var i=0;i<ks.length;i++) {
