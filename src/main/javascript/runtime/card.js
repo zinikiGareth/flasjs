@@ -398,6 +398,9 @@ FLCard.prototype._updateContainer = function(_cxt, _renderTree, field, value, fn
     }
 }
 
+FLCard.prototype._updatePunnet = function(_cxt /*, _renderTree, field, value, fn */) {
+}
+
 FLCard.prototype._updateList = function(parent, rts, values, cb) {
     var sw = this._diffLists(rts, values);
     if (sw === true) {
