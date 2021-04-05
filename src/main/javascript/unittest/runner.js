@@ -1,6 +1,6 @@
 const CommonEnv = require('../runtime/env');
 const { SimpleBroker, JsonBeachhead } = require('../../resources/ziwsh');
-const { MockCard, MockFLObject } = require('./mocks');
+const { MockCard, MockFLObject, MockAppl } = require('./mocks');
 const FLError = require('../runtime/error');
 //--REQUIRE
 
@@ -209,6 +209,28 @@ UTRunner.prototype.matchText = function(_cxt, target, zone, contains, expected) 
 		throw Error("there is no mock " + target);
 	var div = this.getZoneDiv(_cxt, matchOn, zone);
 	var actual = div.innerText.trim();
+	actual = actual.replace(/\n/g, ' ');
+	actual = actual.replace(/ +/, ' ');
+	if (contains) {
+		if (!actual.includes(expected))
+			throw new Error("MATCH\n  expected to contain: " + expected + "\n  actual:   " + actual);
+	} else {
+		if (actual != expected)
+			throw new Error("MATCH\n  expected: " + expected + "\n  actual:   " + actual);
+	}
+}
+UTRunner.prototype.matchTitle = function(_cxt, target, zone, contains, expected) {
+	var matchOn = this.findMockFor(target);
+	if (!matchOn)
+		throw Error("there is no mock " + target);
+	if (!(matchOn instanceof MockAppl))
+		throw Error("can only test title on Appl");
+	var titles = document.head.getElementsByTagName("title");
+	var actual = "";
+	for (var i=0;i<titles.length;i++) {
+		actual += titles[i].innerText.trim() + " ";
+	}
+	actual = actual.trim();
 	actual = actual.replace(/\n/g, ' ');
 	actual = actual.replace(/ +/, ' ');
 	if (contains) {

@@ -310,6 +310,7 @@ const MockAppl = function(_cxt, clz) {
 	newdiv.setAttribute("id", _cxt.nextDocumentId());
 	document.body.appendChild(newdiv);
 	this.appl = new clz._Application(_cxt, newdiv);
+	this.appl._updateDisplay(_cxt, this.appl._currentRenderTree());
 }
 MockAppl.prototype.route = function(_cxt, r) {
 	this.appl.gotoRoute(_cxt, r);
