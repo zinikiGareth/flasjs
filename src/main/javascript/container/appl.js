@@ -13,7 +13,6 @@ Application.prototype.baseUri = function(_cxt) {
 
 Application.prototype.gotoRoute = function(_cxt, r) {
 	var routing = this._routing();
-	console.log("routing ", routing);
 	if (this.currentRoute == null) {
 		this.currentRoute = [];
 		this._createCards(_cxt, [{ name: 'main', card: this.mainCard }]);
@@ -21,7 +20,6 @@ Application.prototype.gotoRoute = function(_cxt, r) {
 		this.cards.main._renderInto(_cxt, this.topdiv);
 	}
 	var path = this.parseRoute(_cxt, r);
-	console.log("have", this.currentRoute, "want", path);
 
 	// remove and ignore any common elements
 	// move "up" if current has anything left
@@ -33,6 +31,13 @@ Application.prototype.parseRoute = function(_cxt, r) {
 	if (r instanceof Location) {
 		r = r.href;
 	}
+	try {
+		if (this.currentPath)
+			r = new URL(r, this.currentPath).href;
+		else 
+			r = new URL(r, this.baseUri()).href;
+	} catch (e) {}
+	this.currentPath = r;
 	var url = r.replace(this.baseUri(), '').replace(/^#*/, '').replace(/^\/*/, '');
 	var parts = url.split("/").filter(x => !!x);
 	return parts;
