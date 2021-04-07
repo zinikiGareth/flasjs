@@ -118,8 +118,13 @@ CommonEnv.prototype.newContext = function() {
 
 if (typeof(window) !== 'undefined') {
     window.addEventListener('resize', function(ev) {
-        if (window.maincard)
-            window.maincard._resizeDisplayElements(env.newContext(), window.maincard._renderTree);
+        if (window.appl) {
+            var keys = Object.keys(window.appl.cards);
+            for (var i=0;i<keys.length;i++) {
+                var card = window.appl.cards[keys[i]];
+                card._resizeDisplayElements(env.newContext(), card._renderTree);
+            }
+        }
     });
 }
 

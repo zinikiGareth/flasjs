@@ -172,6 +172,8 @@ FLCard.prototype._attachHandlers = function(_cxt, rt, div, key, field, option, s
 }
 
 FLCard.prototype._updateContent = function(_cxt, rt, templateName, field, option, source, value, fromField) {
+    if (!rt)
+        return;
     // In general, everything should already be fully evaluated, but we do allow expressions in templates
     value = _cxt.full(value);
     if (typeof value === 'undefined' || value == null)
@@ -196,6 +198,8 @@ FLCard.prototype._updateContent = function(_cxt, rt, templateName, field, option
 }
 
 FLCard.prototype._updateImage = function(_cxt, rt, templateName, field, option, source, value, fromField) {
+    if (!rt)
+        return;
     // In general, everything should already be fully evaluated, but we do allow expressions in templates
     value = _cxt.full(value);
     // it should be an Image object
@@ -252,6 +256,8 @@ FLCard.prototype._updateFromEachInput = function(rt) {
 }
 
 FLCard.prototype._updateStyle = function(_cxt, rt, templateName, type, field, option, source, constant, ...rest) {
+    if (!rt)
+        return;
     var styles = '';
     if (constant)
         styles = _cxt.full(constant);
