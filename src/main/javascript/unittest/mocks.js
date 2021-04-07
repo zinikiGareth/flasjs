@@ -316,6 +316,9 @@ MockAppl.prototype.route = function(_cxt, r) {
 	this.appl.gotoRoute(_cxt, r);
 	this.appl._updateDisplay(_cxt, this.appl._currentRenderTree());
 }
+MockAppl.prototype.userLoggedIn = function(_cxt, u) {
+	this.appl.securityModule.userLoggedIn(_cxt, this.appl, u);
+}
 MockAppl.prototype.bindCards = function(_cxt, iv) {
 	var binding = {};
 	binding["main"] = this.appl.cards["main"];

@@ -302,6 +302,9 @@ UTRunner.prototype.route = function(_cxt, app, route, storeCards) {
 	if (storeCards)
 		app.bindCards(_cxt, storeCards);
 }
+UTRunner.prototype.userlogin = function(_cxt, app, user) {
+	app.userLoggedIn(_cxt, user);
+}
 UTRunner.prototype.updateCard = function(_cxt, card) {
 	if (!(card instanceof MockCard))
 		return;
