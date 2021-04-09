@@ -2,6 +2,7 @@ const CommonEnv = require('../runtime/env');
 const { SimpleBroker, JsonBeachhead } = require('../../resources/ziwsh');
 const { MockCard, MockFLObject, MockAppl } = require('./mocks');
 const FLError = require('../runtime/error');
+const { ResponseWithMessages } = require('../runtime/messages');
 //--REQUIRE
 
 const UTRunner = function(bridge) {
@@ -49,6 +50,8 @@ UTRunner.prototype.handleMessages = function(_cxt, msg) {
 }
 UTRunner.prototype.assertSameValue = function(_cxt, e, a) {
 	e = _cxt.full(e);
+	if (e instanceof ResponseWithMessages)
+		e = e.obj; // just throw the messages away
 	a = _cxt.full(a);
 	if (!_cxt.compare(e, a)) {
 		if (a instanceof FLError)

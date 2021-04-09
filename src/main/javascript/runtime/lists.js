@@ -1,5 +1,5 @@
 const FLError = require('./error');
-const { Assign } = require('./messages');
+const { Assign, ResponseWithMessages } = require('./messages');
 //--REQUIRE
 
 const Nil = function() {
@@ -29,12 +29,16 @@ Array.prototype._field_tail.nfargs = function() { return 0; }
 Cons.prototype._field_tail = Array.prototype._field_tail;
 
 Cons.eval = function(_cxt, hd, tl) {
+	var msgs;
 	var cp = _cxt.spine(tl);
 	if (cp instanceof FLError)
 		return cp;
 	cp = cp.slice(0);
 	cp.splice(0, 0, hd);
-	return cp;
+	if (msgs) {
+		return new ResponseWithMessages(_cxt, cp, msgs)
+	} else
+		return cp;
 }
 
 const AssignItem = function(list, n) {

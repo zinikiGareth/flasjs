@@ -185,6 +185,9 @@ ResponseWithMessages.messages = function(cx, rwm) {
 	else
 		return null;
 }
+ResponseWithMessages.prototype.toString = function() {
+	return "ResponseWithMessages (" + this.obj + ")";
+}
 
 const UpdateDisplay = function(cx, card) {
 	this.card = card;

@@ -161,21 +161,35 @@ FLContext.prototype.spine = function(obj) {
 }
 
 FLContext.prototype.full = function(obj) {
+	var msgs = [];
 	obj = this.head(obj);
 	if (obj == null) {
 		// nothing to do
 	} else if (obj._full) {
 		obj._full(this);
 	} else if (Array.isArray(obj)) {
-		for (var i=0;i<obj.length;i++)
+		for (var i=0;i<obj.length;i++) {
 			obj[i] = this.full(obj[i]);
+			if (obj[i] instanceof ResponseWithMessages) {
+				msgs.unshift(obj[i].msgs);
+				obj[i] = obj[i].obj;
+			}
+		}
 	} else if (obj.state instanceof FieldsContainer) {
 		var ks = Object.keys(obj.state.dict);
 		for (var i=0;i<ks.length;i++) {
-			obj.state.dict[ks[i]] = this.full(obj.state.dict[ks[i]]);
+			var tmp = this.full(obj.state.dict[ks[i]]);
+			if (tmp instanceof ResponseWithMessages) {
+				msgs.unshift(tmp.msgs);
+				tmp = tmp.obj;
+			}
+			obj.state.dict[ks[i]] = tmp;
 		}
 	}
-	return obj;
+	if (msgs.length)
+		return new ResponseWithMessages(this, obj, msgs);
+	else
+		return obj;
 }
 
 FLContext.prototype.isTruthy = function(val) {
