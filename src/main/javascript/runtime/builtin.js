@@ -285,6 +285,14 @@ FLBuiltin.isEqual = function(_cxt, a, b) {
 
 FLBuiltin.isEqual.nfargs = function() { return 2; }
 
+FLBuiltin.isNotEqual = function(_cxt, a, b) {
+	a = _cxt.full(a);
+	b = _cxt.full(b);
+	return a!=b;
+}
+
+FLBuiltin.isNotEqual.nfargs = function() { return 2; }
+
 FLBuiltin.greaterEqual = function(_cxt, a, b) {
 	a = _cxt.full(a);
 	b = _cxt.full(b);

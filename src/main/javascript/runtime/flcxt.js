@@ -301,6 +301,10 @@ FLContext.prototype.handleEvent = function(card, handler, event) {
 	if (handler) {
 		reply = handler.call(card, this, event);
 	}
+	if (reply instanceof FLError) {
+		this.log(reply.message);
+		return;
+	}
 	reply.push(new UpdateDisplay(this, card));
 	this.env.queueMessages(this, reply);
 }
