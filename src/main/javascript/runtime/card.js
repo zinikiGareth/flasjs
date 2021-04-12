@@ -48,6 +48,7 @@ FLCard.prototype._resizeDisplayElements = function(_cxt, _rt) {
 FLCard.prototype._setSizeOf = function(_cxt, img, cw, ch, alg) {
     var parent = img.parentElement;
     if (alg.startsWith("target-center-")) {
+        parent.style.position = "relative";
         var props = alg.replace("target-center-", "");
         var idx = props.indexOf("-");
         var xp = parseFloat(props.substring(0, idx));
@@ -91,6 +92,7 @@ FLCard.prototype._setSizeOf = function(_cxt, img, cw, ch, alg) {
             parent.style.top = top;
         }
     } else if (alg.startsWith("min-aspect-")) {
+        parent.style.position = "relative";
         var props = alg.replace("min-aspect-", "");
         var idx = props.indexOf("-");
         var idx2 = props.indexOf("-", idx+1);
@@ -111,6 +113,7 @@ FLCard.prototype._setSizeOf = function(_cxt, img, cw, ch, alg) {
         img.style.left = xc - xr/2;
         img.style.top = yc - yr/2;
     } else if (alg.startsWith("promote-box-")) {
+        parent.style.position = "relative";
         var props = alg.replace("promote-box-", "");
         var idx = props.indexOf("-");
         var idx2 = props.indexOf("-", idx+1);
