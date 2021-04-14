@@ -22,7 +22,10 @@ Image._ctor_uri = function(_cxt, _card, _uri) {
 Image._ctor_uri.nfargs = function() { return 2; }
 
 Image.prototype.getUri = function() {
-	return this.state.get("uri");
+	var uri = this.state.get("uri");
+    if (uri instanceof FLURI)
+        uri = uri.resolve(window.location);
+    return uri;
 }
 Image.prototype._compare = function(_cxt, other) {
     if (!(other instanceof Image))

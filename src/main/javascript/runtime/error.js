@@ -9,6 +9,10 @@ class FLError extends Error {
 		if (other.message != this.message) return false;
 		return true;
 	}
+
+	_throw() {
+		return true;
+	}
 }
 
 FLError.eval = function(_cxt, msg) {
