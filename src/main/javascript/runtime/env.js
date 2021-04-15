@@ -4,6 +4,7 @@ const { CallMe, Repeater, ContainerRepeater } = require('../container/repeater')
 const { Random } = require('./random');
 const { Crobag, CroEntry } = require('./crobag');
 const { Image } = require('./image');
+const { Link } = require('./link');
 const { Calendar } = require('./time');
 const FLError = require('../runtime/error');
 //--REQUIRE
@@ -24,6 +25,7 @@ const CommonEnv = function(bridge, broker) {
         return;
     this.contracts = broker.contracts;
     this.structs = {};
+    this.structs['Link'] = Link;
     this.objects = {};
     this.objects['Random'] = Random;
     this.objects['FLBuiltin'] = FLBuiltin;

@@ -249,6 +249,36 @@ FLCard.prototype._updateImage = function(_cxt, rt, templateName, field, option, 
     node.onload = function(ev) { self._imageLoaded(_cxt); };
 }
 
+FLCard.prototype._updateLink = function(_cxt, rt, templateName, field, option, source, value, fromField) {
+    if (!rt)
+        return;
+    // In general, everything should already be fully evaluated, but we do allow expressions in templates
+    value = _cxt.full(value);
+    // it should be an Link object
+    var linkRef;
+    var linkText;
+    if (typeof value === 'undefined' || value == null || !(value instanceof Link))
+        linkRef = linkText = '';
+    else {
+        linkRef = value._field_uri(_cxt).uri;
+        linkTitle = value._field_title(_cxt);
+    }
+    var div = document.getElementById(rt._id);
+    const node = div.querySelector("[data-flas-link='" + field + "']");
+    if (!node.id) {
+        var ncid = _cxt.nextDocumentId();
+        node.id = ncid;
+        rt[field] = { _id: ncid };
+        if (source)
+            rt[field].source = source;
+        else
+            rt[field].source = this;
+        rt[field].fromField = fromField;
+    }
+    node.href = linkRef;
+    node.innerText = linkTitle;
+}
+
 FLCard.prototype._imageLoaded = function(_cxt) {
     this._resizeDisplayElements(_cxt, this._renderTree);
 }
