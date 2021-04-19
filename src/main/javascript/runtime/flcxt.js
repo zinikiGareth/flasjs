@@ -150,7 +150,7 @@ FLContext.prototype.head = function(obj) {
 
 FLContext.prototype.spine = function(obj) {
 	obj = this.head(obj);
-	if (obj instanceof FLError)
+	if (!obj || obj instanceof FLError)
 		return obj;
 	if (Array.isArray(obj))
 		return obj;

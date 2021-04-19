@@ -275,7 +275,9 @@ FLCard.prototype._updateLink = function(_cxt, rt, templateName, field, option, s
             rt[field].source = this;
         rt[field].fromField = fromField;
     }
-    node.href = linkRef;
+    var env = _cxt.env;
+    node.onclick = ev => window.appl.gotoRoute(env.newContext(), linkRef);
+    node.dataset.route = linkRef;
     node.innerText = linkTitle;
 }
 
@@ -487,6 +489,18 @@ FLCard.prototype._updatePunnet = function(_cxt, _renderTree, field, value, fn) {
         pe.setAttribute("id", inid);
         node.appendChild(pe);
         value._renderInto(_cxt, pe);
+    } else if (Array.isArray(value)) {
+        // this is too simplistic
+        for (var i=0;i<value.length;i++) {
+            if (value[i] instanceof FLCard) {
+                const pe = document.createElement("div");
+                pe.setAttribute("id", inid);
+                node.appendChild(pe);
+                value[i]._renderInto(_cxt, pe);
+            } else {
+                throw new Error("not a card: " + value);
+            }
+        }
     } else
         throw new Error("what is this? " + value);
 }

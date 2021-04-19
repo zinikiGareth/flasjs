@@ -29,16 +29,14 @@ Array.prototype._field_tail.nfargs = function() { return 0; }
 Cons.prototype._field_tail = Array.prototype._field_tail;
 
 Cons.eval = function(_cxt, hd, tl) {
-	var msgs;
 	var cp = _cxt.spine(tl);
 	if (cp instanceof FLError)
 		return cp;
+	else if (!cp)
+		return [hd];
 	cp = cp.slice(0);
 	cp.splice(0, 0, hd);
-	if (msgs) {
-		return new ResponseWithMessages(_cxt, cp, msgs)
-	} else
-		return cp;
+	return cp;
 }
 
 const AssignItem = function(list, n) {

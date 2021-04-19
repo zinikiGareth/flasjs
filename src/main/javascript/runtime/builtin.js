@@ -230,6 +230,8 @@ FLBuiltin.take = function(_cxt, quant, list) {
 	list = _cxt.spine(list);
 	if (list instanceof FLError)
 		return list;
+	else if (!list)
+		return [];
 	quant = _cxt.full(quant);
 	if (quant instanceof FLError)
 		return quant;
@@ -245,6 +247,8 @@ FLBuiltin.drop = function(_cxt, quant, list) {
 	list = _cxt.spine(list);
 	if (list instanceof FLError)
 		return list;
+	else if (!list)
+		return [];
 	quant = _cxt.full(quant);
 	if (quant instanceof FLError)
 		return quant;
