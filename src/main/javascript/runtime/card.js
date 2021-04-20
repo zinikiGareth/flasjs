@@ -496,6 +496,7 @@ FLCard.prototype._updatePunnet = function(_cxt, _renderTree, field, value, fn) {
         } else if (sw.op === 'addtoend') {
             for (var i=crt.children.length;i<value.length;i++) {
                 if (value[i] instanceof FLCard) {
+                    var inid = _cxt.nextDocumentId();
                     crt.children.push({ value: value[i] });
                     const pe = document.createElement("div");
                     pe.setAttribute("id", inid);
@@ -504,6 +505,24 @@ FLCard.prototype._updatePunnet = function(_cxt, _renderTree, field, value, fn) {
                 } else {
                     throw new Error("not a card: " + value);
                 }
+            }
+        } else if (sw.op === 'add') {
+            for (var i=0;i<sw.additions.length;i++) {
+                var ai = sw.additions[i];
+                var e = ai.value;
+                var rt  = {value: e};
+                crt.children.splice(ai.where, 0, rt);
+                if (e instanceof FLCard) {
+                    var inid = _cxt.nextDocumentId();
+                    const pe = document.createElement("div");
+                    pe.setAttribute("id", inid);
+                    node.appendChild(pe);
+                    e._renderInto(_cxt, pe);
+                } else {
+                    throw new Error("not a card: " + value);
+                }
+                if (ai.where < node.childElementCount-1)
+                    node.insertBefore(node.lastElementChild, node.children[ai.where]);
             }
         } else {
             throw new Error("cannot handle punnet change: " + sw.op);
