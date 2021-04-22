@@ -43,7 +43,7 @@ Application.prototype.gotoRoute = function(_cxt, r) {
 	// remove and ignore any common elements
 	// move "up" if current has anything left
 	// move "down" the new path
-	this.moveDown(_cxt, routing, path);
+	_cxt.env.queueMessages(_cxt, new MoveDownEvent(this, routing, path));
 }
 
 Application.prototype.parseRoute = function(_cxt, r) {
@@ -70,6 +70,7 @@ Application.prototype.moveDown = function(_cxt, table, path) {
 	if (table.title != null)
 		this.title = table.title;
 	if (path.length == 0) {
+		_cxt.env.queueMessages(_cxt, new UpdateDisplay(_cxt, this));
 		return;
 	}
 
@@ -93,7 +94,7 @@ Application.prototype.moveDown = function(_cxt, table, path) {
 			this._readyCards(_cxt, rr.cards);
 	
 			path.shift();
-			this.moveDown(_cxt, rr, path);
+			_cxt.env.queueMessages(_cxt, new MoveDownEvent(this, rr, path));
 
 			break;
 		}
@@ -167,6 +168,16 @@ Application.prototype._updateDisplay = function(_cxt, rt) {
 	if (card == null)
 		return;
 	card._updateDisplay(_cxt, rt);
+}
+
+function MoveDownEvent(appl, routing, path) {
+	this.appl = appl;
+	this.routing = routing;
+	this.path = path;
+}
+
+MoveDownEvent.prototype.dispatch = function(_cxt) {
+	this.appl.moveDown(_cxt, this.routing, this.path);
 }
 
 //--EXPORT

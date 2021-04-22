@@ -75,8 +75,12 @@ CommonEnv.prototype.dispatchMessages = function(_cxt) {
     }
     delete _cxt.updateCards;
     set.forEach(card => {
-        card._updateDisplay(_cxt, card._renderTree);
-        card._resizeDisplayElements(_cxt, card._renderTree);
+        if (!card._renderTree)
+            return;
+        if (card._updateDisplay)
+            card._updateDisplay(_cxt, card._renderTree);
+        if (card._resizeDisplayElements)
+            card._resizeDisplayElements(_cxt, card._renderTree);
     });
 }
 
@@ -90,8 +94,7 @@ CommonEnv.prototype.handleMessagesWith = function(_cxt, msg) {
     if (!msg)
         ;
     else if (msg instanceof FLError || typeof(msg) == 'string') {
-        this.logger.log(msg);
-        ;
+        _cxt.log(msg);
     } else if (msg instanceof Array) {
         for (var i=0;i<msg.length;i++) {
             this.handleMessages(_cxt, msg[i]);
@@ -99,7 +102,7 @@ CommonEnv.prototype.handleMessagesWith = function(_cxt, msg) {
 	} else if (msg) {
         var ic = this.newContext();
         ic.updateCards = _cxt.updateCards;
-        this.logger.log("dispatching message", msg);
+        _cxt.log("dispatching message", msg);
         var m = msg.dispatch(ic);
         this.handleMessages(_cxt, m);
     }

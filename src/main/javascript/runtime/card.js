@@ -1,3 +1,6 @@
+const FLError = require("./error");
+//--REQUIRE
+
 const FLCard = function(cx) {
     this._renderTree = null;
     this._containedIn = null;
@@ -471,6 +474,10 @@ FLCard.prototype._updatePunnet = function(_cxt, _renderTree, field, value, fn) {
         _renderTree[field] = { _id: ncid, children: [] };
     }
     var crt = _renderTree[field];
+    if (value instanceof FLError) {
+        _cxt.log("error cannot be rendered", value);
+        value = null;
+    }
     if (!value) {
         node.innerHTML = ''; // clear it out
         crt.children = [];

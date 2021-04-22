@@ -150,8 +150,10 @@ FLContext.prototype.head = function(obj) {
 
 FLContext.prototype.spine = function(obj) {
 	obj = this.head(obj);
-	if (!obj || obj instanceof FLError)
+	if (obj instanceof FLError)
 		return obj;
+	if (!obj)
+		return [];
 	if (Array.isArray(obj))
 		return obj;
 	if (obj.constructor === Object) {
@@ -413,6 +415,10 @@ FLContext.prototype.newdiv = function(cnt) {
 FLContext.prototype.show = function(val) {
 // HACK !  We should map it into a string repn properly
 	return "" + val;
+}
+
+FLContext.prototype.log = function(...args) {
+	this.env.logger.log.apply(this.env.logger, args);
 }
 
 //--EXPORT
