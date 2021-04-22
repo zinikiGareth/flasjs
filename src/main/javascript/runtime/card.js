@@ -465,6 +465,8 @@ FLCard.prototype._updateContainer = function(_cxt, _renderTree, field, value, fn
 }
 
 FLCard.prototype._updatePunnet = function(_cxt, _renderTree, field, value, fn) {
+    if (!_renderTree)
+        return;
     value = _cxt.full(value);
     var div = document.getElementById(_renderTree._id);
     const node = div.querySelector("[data-flas-punnet='" + field + "']");

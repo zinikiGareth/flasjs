@@ -180,6 +180,10 @@ MoveDownEvent.prototype.dispatch = function(_cxt) {
 	this.appl.moveDown(_cxt, this.routing, this.path);
 }
 
+MoveDownEvent.prototype.toString = function() {
+	return "MDE[" + this.path + "]";
+}
+
 //--EXPORT
 /* istanbul ignore else */ 
 if (typeof(module) !== 'undefined')

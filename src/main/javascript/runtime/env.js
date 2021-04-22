@@ -75,8 +75,9 @@ CommonEnv.prototype.dispatchMessages = function(_cxt) {
     }
     delete _cxt.updateCards;
     set.forEach(card => {
-        if (!card._renderTree)
-            return;
+        // This stops applications rendering so we can't do this
+        // if (!card._renderTree)
+        //     return;
         if (card._updateDisplay)
             card._updateDisplay(_cxt, card._renderTree);
         if (card._resizeDisplayElements)
