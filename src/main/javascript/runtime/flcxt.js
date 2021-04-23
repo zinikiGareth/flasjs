@@ -242,7 +242,10 @@ FLContext.prototype.compare = function(left, right) {
 		return left.message === right.message;
 	} else if (left._compare) {
 		return left._compare(this, right);
-	} else if (left.state && right.state && left.state instanceof FieldsContainer && right.state instanceof FieldsContainer && left.name() === right.name()) {
+		// This is dumb differentiation ...
+	} else if (left.state && right.state && left.state instanceof FieldsContainer && right.state instanceof FieldsContainer && left.name && right.name && left.name() === right.name()) {
+		return left.state._compare(this, right.state);
+	} else if (left.state && right.state && left.state instanceof FieldsContainer && right.state instanceof FieldsContainer && left.state.get('_type') && right.state.get('_type') && left.state.get('_type') === right.state.get('_type')) {
 		return left.state._compare(this, right.state);
 	} else
 		return left == right;

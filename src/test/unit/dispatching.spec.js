@@ -1,4 +1,4 @@
-const Runner = require('../../main/javascript/unittest/runner');
+const { UTRunner } = require('../../main/javascript/unittest/runner');
 const { Debug, Send, Assign } = require('../../main/javascript/runtime/messages');
 const { expect, assert } = require('chai');
 const { IdempotentHandler } = require('../../main/resources/ziwsh');
@@ -9,6 +9,7 @@ var MyObj = function(_cxt) {
 
 MyObj.eval = function(_cxt) {
     const ret = new MyObj(_cxt);
+    ret.state.set("_type", "MyObj");
     ret.state.set('x', 2);
     return ret;
 }
@@ -41,12 +42,12 @@ describe('dispatcher', () => {
     var runner
 
     beforeEach(() => {
-        runner = new Runner(console);
+        runner = new UTRunner(console);
     });
 
 	it('can print a debug', () => {
         var logger = { text:'', logs:'', debugmsg : function(msg) { this.text += msg; }, log : function(msg) { this.logs += "LOG[" + msg + "]"; }};
-        runner = new Runner(logger);
+        runner = new UTRunner(logger);
         var _cxt = runner.newContext();
         var debug = Debug.eval(_cxt, "hello, world");
         runner.invoke(_cxt, debug);

@@ -1,9 +1,9 @@
 const FLContext = require('../../main/javascript/runtime/flcxt');
-const Runner = require('../../main/javascript/unittest/runner');
+const { UTRunner } = require('../../main/javascript/unittest/runner');
 const { expect } = require('chai');
 
 describe('runner', () => {
-    var runner = new Runner(console);
+    var runner = new UTRunner(console);
 
 	it('can create a new context', () => {
         var _cxt = runner.newContext();

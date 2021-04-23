@@ -8,6 +8,7 @@ var MyObj = function(_cxt) {
 
 MyObj.eval = function(_cxt) {
     const ret = new MyObj(_cxt);
+    ret.state.set("_type", "MyObj");
     return ret;
 }
 
