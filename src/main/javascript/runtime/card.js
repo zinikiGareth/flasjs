@@ -218,8 +218,12 @@ FLCard.prototype._updateContent = function(_cxt, rt, templateName, field, option
             rt[field].source = this;
         rt[field].fromField = fromField;
     }
-    node.innerHTML = '';
-    node.appendChild(document.createTextNode(value));
+    if (value instanceof Html) {
+        node.innerHTML = value.state.get('html');
+    } else {
+        node.innerHTML = '';
+        node.appendChild(document.createTextNode(value));
+    }
     if (this._eventHandlers) {
         this._attachHandlers(_cxt, rt[field], node, templateName, field, option, source);
     }
@@ -348,6 +352,8 @@ FLCard.prototype._updateStyle = function(_cxt, rt, templateName, type, field, op
 }
 
 FLCard.prototype._updateTemplate = function(_cxt, _renderTree, type, field, fn, templateName, value, _tc) {
+    if (!_renderTree)
+        return;
     value = _cxt.full(value);
     var div = document.getElementById(_renderTree._id);
     const node = div.querySelector("[data-flas-" + type + "='" + field + "']");
@@ -422,6 +428,8 @@ FLCard.prototype._addItem = function(_cxt, rt, parent, currNode, template, fn, v
 }
 
 FLCard.prototype._updateContainer = function(_cxt, _renderTree, field, value, fn) {
+    if (!_renderTree)
+        return;
     value = _cxt.full(value);
     var div = document.getElementById(_renderTree._id);
     const node = div.querySelector("[data-flas-container='" + field + "']");
