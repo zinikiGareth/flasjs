@@ -232,6 +232,7 @@ UTRunner.prototype.matchText = function(_cxt, target, zone, contains, fails, exp
 	var actual = div.innerText.trim();
 	actual = actual.replace(/\n/g, ' ');
 	actual = actual.replace(/ +/, ' ');
+	actual = actual.trim();
 	if (contains) {
 		if (!actual.includes(expected))
 			throw new Error("MATCH\n  expected to contain: " + expected + "\n  actual:   " + actual);

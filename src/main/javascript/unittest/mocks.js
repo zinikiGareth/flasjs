@@ -289,7 +289,10 @@ MockAjaxSubscriber.prototype.matchAndSend = function(_cxt, baseUri, sub) {
 		} else {
 			msg = new AjaxMessage(_cxt);
 			msg.state.set('headers', []);
-			msg.state.set('body', JSON.stringify(resp));
+			if (typeof(resp) === "string")
+				msg.state.set('body', resp);
+			else
+				msg.state.set('body', JSON.stringify(resp));
 		}
 		_cxt.env.queueMessages(_cxt, Send.eval(_cxt, sub.handler, "message", [msg], null));
 		_cxt.env.dispatchMessages(_cxt);
