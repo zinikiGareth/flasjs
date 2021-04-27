@@ -323,9 +323,9 @@ UTRunner.prototype.matchScroll = function(_cxt, target, zone, contains, expected
 		throw new Error("MATCH\n  expected: " + expected + "\n  actual:   " + actual);
 }
 UTRunner.prototype.route = function(_cxt, app, route, storeCards) {
-	app.route(_cxt, route);
-	if (storeCards)
+	app.route(_cxt, route, () => {
 		app.bindCards(_cxt, storeCards);
+	});
 }
 UTRunner.prototype.userlogin = function(_cxt, app, user) {
 	app.userLoggedIn(_cxt, user);

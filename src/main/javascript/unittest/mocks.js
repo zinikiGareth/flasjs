@@ -317,14 +317,18 @@ const MockAppl = function(_cxt, clz) {
 	this.appl = new clz._Application(_cxt, newdiv);
 	this.appl._updateDisplay(_cxt, this.appl._currentRenderTree());
 }
-MockAppl.prototype.route = function(_cxt, r) {
-	this.appl.gotoRoute(_cxt, r);
-	this.appl._updateDisplay(_cxt, this.appl._currentRenderTree());
+MockAppl.prototype.route = function(_cxt, r, andThen) {
+	this.appl.gotoRoute(_cxt, r, () => {
+		this.appl._updateDisplay(_cxt, this.appl._currentRenderTree());
+		andThen();
+	});
 }
 MockAppl.prototype.userLoggedIn = function(_cxt, u) {
 	this.appl.securityModule.userLoggedIn(_cxt, this.appl, u);
 }
 MockAppl.prototype.bindCards = function(_cxt, iv) {
+	if (!iv)
+		return;
 	var binding = {};
 	binding["main"] = this.appl.cards["main"];
 	iv.bindActual({ routes: binding });
