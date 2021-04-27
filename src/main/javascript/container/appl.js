@@ -96,6 +96,7 @@ Application.prototype.moveDown = function(_cxt, table, path, allDone) {
 		_cxt.env.queueMessages(_cxt, new UpdateDisplay(_cxt, this));
 		if (allDone)
 			allDone();
+		history.pushState({}, this.title, this.currentPath);
 		return;
 	}
 
