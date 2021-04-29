@@ -496,6 +496,9 @@ FLCard.prototype._updatePunnet = function(_cxt, _renderTree, field, value, fn) {
         if (crt.children.length == 1 && crt.children[0].value == value)
             return;
         // clear out all extant children that are not "value"
+        for (var i=0;i<crt.children.length;i++) {
+            crt.children[i].value._renderTree = null;
+        }
         crt.children = [];
         node.innerHTML = '';
 
