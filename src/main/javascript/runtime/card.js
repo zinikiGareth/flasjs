@@ -512,7 +512,10 @@ FLCard.prototype._updatePunnet = function(_cxt, _renderTree, field, value, fn) {
     } else if (Array.isArray(value)) {
         var sw = this._diffLists(_cxt, crt.children, value);
         if (sw === true) {
-            ; // everything matched
+            // everything matched
+            for (var i=0;i<value.length;i++) {
+                value[i]._updateDisplay(_cxt, value[i]._renderTree);
+            }
         } else if (sw.op === 'addtoend') {
             for (var i=crt.children.length;i<value.length;i++) {
                 if (value[i] instanceof FLCard) {
