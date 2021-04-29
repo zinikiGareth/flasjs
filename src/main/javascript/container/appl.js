@@ -96,7 +96,7 @@ Application.prototype.moveDown = function(_cxt, table, path, allDone) {
 		_cxt.env.queueMessages(_cxt, new UpdateDisplay(_cxt, this));
 		if (allDone)
 			allDone();
-		history.pushState({}, this.title, this.currentPath);
+		_cxt.addHistory({}, this.title, this.currentPath);
 		return;
 	}
 
@@ -272,7 +272,7 @@ MoveUpEvent.prototype.dispatch = function(_cxt) {
 		this.appl.moveUp(_cxt);
 		_cxt.env.queueMessages(_cxt, this);
 	} else {
-		_cxt.env.queueMessages(_cxt, new MoveDownEvent(this.appl, this.cmn == 0 ? this.appl._routing() : this.appl.currentRoute[this.cmn].routes, this.path));
+		_cxt.env.queueMessages(_cxt, new MoveDownEvent(this.appl, this.cmn == 0 ? this.appl._routing() : this.appl.currentRoute[this.cmn-1].routes, this.path));
 	}
 }
 

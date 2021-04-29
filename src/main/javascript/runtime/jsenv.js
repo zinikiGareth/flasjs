@@ -18,6 +18,10 @@ const JSEnv = function(broker) {
 JSEnv.prototype = new CommonEnv();
 JSEnv.prototype.constructor = JSEnv;
 
+JSEnv.prototype.addHistory = function(state, title, url) {
+	history.pushState(state, title, url);
+}
+
 //--EXPORT
 /* istanbul ignore next */
 if (typeof(module) !== 'undefined') {

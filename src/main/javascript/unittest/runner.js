@@ -402,6 +402,9 @@ UTRunner.prototype.deliver = function(json) {
 	this.logger.log("have messages", msgs);
 	this.queueMessages(cx, msgs);
 }
+UTRunner.prototype.addHistory = function(state, title, url) {
+	// we could forward this to the bridge if we wanted to do something specific
+}
 
 UTRunner.prototype.runRemote = function(testClz, wsapi, spec) {
 	var cxt = this.newContext();
@@ -441,6 +444,7 @@ const makeBridge = function(jsb, logger) {
 		getTestCounter: () => jsb.getTestCounter.call(jsb)
 	};
 }
+
 //--EXPORT
 /* istanbul ignore else */ 
 if (typeof(module) !== 'undefined')

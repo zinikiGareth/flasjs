@@ -424,6 +424,10 @@ FLContext.prototype.log = function(...args) {
 	this.env.logger.log.apply(this.env.logger, args);
 }
 
+FLContext.prototype.addHistory = function(state, title, url) {
+	this.env.addHistory(state, title, url);
+}
+
 //--EXPORT
 /* istanbul ignore else */ 
 if (typeof(module) !== 'undefined')
