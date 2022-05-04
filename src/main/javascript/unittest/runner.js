@@ -17,6 +17,7 @@ const UTRunner = function(bridge) {
 	if (typeof(window) !== 'undefined')
 		window.utrunner = this;
 	this.moduleInstances = {};
+	this.toCancel = [];
 	for (var mn in UTRunner.modules) {
 		if (UTRunner.modules.hasOwnProperty(mn)) {
 			var jm;
@@ -347,6 +348,9 @@ UTRunner.prototype.newdiv = function(cnt) {
 		}
 	}
 	this.divSince = this.nextDivId;
+}
+UTRunner.prototype.expectCancel = function(handler) {
+	this.toCancel.push(handler);
 }
 UTRunner.prototype.mockAgent = function(_cxt, agent) {
 	return new MockAgent(agent);
