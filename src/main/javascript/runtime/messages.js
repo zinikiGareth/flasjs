@@ -1,4 +1,4 @@
-const { IdempotentHandler } = require('../../resources/ziwsh');
+const { IdempotentHandler, NamedIdempotentHandler } = require('../../resources/ziwsh');
 const { AssignItem } = require('./lists');
 //--REQUIRE
 
@@ -26,12 +26,13 @@ Debug.prototype.toString = function() {
 
 const Send = function() {
 }
-Send.eval = function(_cxt, obj, meth, args, handle) {
+Send.eval = function(_cxt, obj, meth, args, handle, subscriptionName) {
 	const s = new Send();
 	s.obj = obj;
 	s.meth = meth;
 	s.args = args;
 	s.handle = handle;
+	s.subscriptionName = subscriptionName;
 	return s;
 }
 Send.prototype._full = function(cx) {
@@ -39,6 +40,7 @@ Send.prototype._full = function(cx) {
 	this.meth = cx.full(this.meth);
 	this.args = cx.full(this.args);
 	this.handle = cx.full(this.handle);
+	this.subscriptionName = cx.full(this.subscriptionName);
 }
 Send.prototype._compare = function(cx, other) {
 	if (other instanceof Send) {
@@ -57,11 +59,16 @@ Send.prototype.dispatch = function(cx) {
 	}
 	var args = this.args.slice();
 	args.splice(0, 0, cx);
+	var hdlr;
 	if (this.handle) {
-		args.splice(args.length, 0, this.handle);
+		hdlr = this.handle;
 	} else {
-		args.splice(args.length, 0, new IdempotentHandler());
+		hdlr = new IdempotentHandler();
 	}
+	if (this.subscriptionName) {
+		hdlr = new NamedIdempotentHandler(hdlr, this.subscriptionName);
+	}
+	args.splice(args.length, 0, hdlr);
 	var meth = this.obj._methods()[this.meth];
 	if (!meth)
 		return;

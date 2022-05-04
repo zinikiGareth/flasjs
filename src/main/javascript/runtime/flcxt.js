@@ -103,11 +103,11 @@ FLContext.prototype.error = function(msg) {
 	return FLError.eval(this, msg);
 }
 
-FLContext.prototype.mksend = function(meth, obj, cnt, handler) {
+FLContext.prototype.mksend = function(meth, obj, cnt, handler, subscriptionName) {
 	if (cnt == 0)
-		return Send.eval(this, obj, meth, [], handler);
+		return Send.eval(this, obj, meth, [], handler, subscriptionName);
 	else
-		return new FLMakeSend(meth, obj, cnt, handler);
+		return new FLMakeSend(meth, obj, cnt, handler, subscriptionName);
 }
 
 FLContext.returnNull = function(_cxt) {
@@ -434,6 +434,14 @@ FLContext.prototype.log = function(...args) {
 
 FLContext.prototype.addHistory = function(state, title, url) {
 	this.env.addHistory(state, title, url);
+}
+
+FLContext.prototype._bindNamedHandler = function(nh) {
+	// TODO: this will need to become a lot more complicated, because it needs to be a hierarchy
+	if (this.env.subscriptions[nh._name]) {
+		this.log("need to cancel " + this.env.subscriptions[nh._name]);
+	}
+	this.env.subscriptions[nh._name] = nh._ihid;
 }
 
 //--EXPORT

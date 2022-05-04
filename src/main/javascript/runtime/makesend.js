@@ -1,12 +1,13 @@
 const { Send } = require('./messages');
 //--REQUIRE
 
-const FLMakeSend = function(meth, obj, nargs, handler) {
+const FLMakeSend = function(meth, obj, nargs, handler, subscriptionName) {
 	this.meth = meth;
 	this.obj = obj;
 	this.nargs = nargs;
 	this.current = [];
 	this.handler = handler;
+	this.subscriptionName = subscriptionName;
 }
 
 FLMakeSend.prototype.apply = function(cx, args) {
@@ -14,9 +15,9 @@ FLMakeSend.prototype.apply = function(cx, args) {
 	for (var i=1;i<args.length;i++)
 		all.push(args[i]);
 	if (all.length == this.nargs) {
-		return Send.eval(cx, this.obj, this.meth, all, this.handler);
+		return Send.eval(cx, this.obj, this.meth, all, this.handler, this.subscriptionName);
 	} else {
-		var ret = new FLMakeSend(this.meth, this.obj, this.nargs, this.handler);
+		var ret = new FLMakeSend(this.meth, this.obj, this.nargs, this.handler, this.subscriptionName);
 		ret.current = all;
 		return ret;
 	}

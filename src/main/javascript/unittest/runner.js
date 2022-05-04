@@ -1,4 +1,4 @@
-const CommonEnv = require('../runtime/env');
+const { CommonEnv } = require('../runtime/env');
 const { SimpleBroker, JsonBeachhead } = require('../../resources/ziwsh');
 const { MockCard, MockFLObject, MockAppl } = require('./mocks');
 const FLError = require('../runtime/error');

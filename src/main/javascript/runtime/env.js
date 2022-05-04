@@ -45,6 +45,7 @@ const CommonEnv = function(bridge, broker) {
 	this.evid = 1;
     this.cards = [];
     this.queue = [];
+    this.subscriptions = {};
     if (bridge.lock)
         this.locker = bridge;
     else
@@ -139,7 +140,7 @@ if (typeof(window) !== 'undefined') {
 //--EXPORT
 /* istanbul ignore next */
 if (typeof(module) !== 'undefined') {
-	module.exports = CommonEnv;
+	module.exports = { CommonEnv };
 } else {
 	window.CommonEnv = CommonEnv;
 }
