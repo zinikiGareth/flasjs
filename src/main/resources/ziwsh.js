@@ -309,6 +309,14 @@ SimpleBroker.prototype.currentIdem = function(h) {
     return ret;
 }
 
+SimpleBroker.prototype.cancel = function(old) {
+    const ret = this.handlers[old];
+    if (!ret) {
+        this.logger.log("there is no handler for", h);
+    }
+    this.logger.log("need to cancel " + ret);
+}
+
 
 
 const EvalContext = function(env, broker) {
