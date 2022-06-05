@@ -240,6 +240,7 @@ const SimpleBroker = function(logger, factory, contracts) {
     this.services = {};
     this.nextHandle = 1;
     this.handlers = {};
+    this.serviceHandlers = {};
 };
 
 SimpleBroker.prototype.connectToServer = function(uri) {
@@ -309,12 +310,18 @@ SimpleBroker.prototype.currentIdem = function(h) {
     return ret;
 }
 
-SimpleBroker.prototype.cancel = function(old) {
+SimpleBroker.prototype.serviceFor = function(h, sf) {
+    this.serviceHandlers[h] = sf;
+}
+SimpleBroker.prototype.cancel = function(cx, old) {
     const ret = this.handlers[old];
     if (!ret) {
         this.logger.log("there is no handler for", h);
     }
     this.logger.log("need to cancel " + ret);
+    if (this.serviceHandlers[ret]) {
+        this.serviceHandlers[ret].cancel(cx);
+    }
 }
 
 
@@ -451,7 +458,7 @@ MarshallerProxy.prototype.invoke = function(meth, args) {
         new ArgListMarshaller(this.logger, false, true).marshal(cx, ux, args);
         return ux.dispatch();
     } catch (e) {
-        this.logger.log("error during marshalling", e);
+        cx.log("error during marshalling", e);
     }
 }
 
@@ -626,6 +633,7 @@ const proxy1 = function(cx, underlying, methods, handler) {
 }
 
 
+
 const Unmarshaller = function() {
 }
 
@@ -768,7 +776,7 @@ DispatcherTraverser.prototype = new UnmarshalTraverser();
 DispatcherTraverser.prototype.constructor = DispatcherTraverser;
 
 DispatcherTraverser.prototype.dispatch = function() {
-    const ih = this.ret[this.ret.length-1];
+    var ih = this.ret[this.ret.length-1];
     try {
         var rets = this.svc[this.method].apply(this.svc, this.ret);
         // I don't think this matches the semantics of when we want success to be called
@@ -776,6 +784,10 @@ DispatcherTraverser.prototype.dispatch = function() {
         // But have test cases to prove that and hold that
         // ih.success(this.cx);
     } catch (e) {
+        if (ih instanceof NamedIdempotentHandler) {
+            ih = ih._handler;
+        }
+        
         ih.failure(this.cx, e.message);
     }
     return rets;

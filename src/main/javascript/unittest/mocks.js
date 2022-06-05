@@ -91,6 +91,7 @@ MockContract.prototype.serviceMethod = function(_cxt, meth, args) {
 			_cxt.log("Have invocation of", meth, "with", args);
 			if (matched.handler instanceof BoundVar) {
 				matched.handler.bindActual(ih);
+				_cxt.broker.serviceFor(ih, new SubscriptionFor(matched.handler));
 			}
 			return;
 		}
@@ -117,6 +118,14 @@ MockContract.prototype.assertSatisfied = function(_cxt) {
 	}
 	if (msg)
 		throw new Error("UNUSED\n" + msg);
+}
+
+const SubscriptionFor = function(bv) {
+	this.bv = bv;
+};
+
+SubscriptionFor.prototype.cancel = function(cx) {
+	cx.env.cancelBound(this.bv);
 }
 
 const MockFLObject = function(obj) {

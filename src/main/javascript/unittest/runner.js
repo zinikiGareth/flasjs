@@ -352,6 +352,15 @@ UTRunner.prototype.newdiv = function(cnt) {
 UTRunner.prototype.expectCancel = function(handler) {
 	this.toCancel.push(handler);
 }
+UTRunner.prototype.cancelBound = function(bv) {
+	var h = bv.actual;
+	var io = this.toCancel.indexOf(h);
+	if (io != -1) {
+		this.toCancel.splice(io, 1);
+	} else {
+		this.logger.log("unexpected cancel of " + h);
+	}
+}
 UTRunner.prototype.assertSatisfied = function() {
 	if (this.toCancel.length != 0) {
 		throw new Error("EXPCAN\n  subscription " + this.toCancel[0] + " was not cancelled");
