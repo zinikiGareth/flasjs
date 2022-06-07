@@ -1,7 +1,8 @@
 const { IdempotentHandler } = require('../../resources/ziwsh');
 //--REQUIRE
 
-const BoundVar = function() {
+const BoundVar = function(name) {
+	this.name = name;
 }
 
 BoundVar.prototype.bindActual = function(obj) {

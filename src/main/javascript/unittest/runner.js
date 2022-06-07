@@ -358,7 +358,7 @@ UTRunner.prototype.cancelBound = function(bv) {
 	if (io != -1) {
 		this.toCancel.splice(io, 1);
 	} else {
-		throw new Error("UECAN\n  cancelled handler but it was not expected");
+		throw new Error("UECAN\n  cancelled " + bv.name + " but it was not expected");
 	}
 }
 UTRunner.prototype.assertSatisfied = function() {
