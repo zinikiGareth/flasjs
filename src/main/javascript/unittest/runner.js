@@ -2,7 +2,7 @@ const { CommonEnv } = require('../runtime/env');
 const { SimpleBroker, JsonBeachhead } = require('../../resources/ziwsh');
 const { MockCard, MockFLObject, MockAppl } = require('./mocks');
 const FLError = require('../runtime/error');
-const { ResponseWithMessages } = require('../runtime/messages');
+const { ResponseWithMessages, Send } = require('../runtime/messages');
 //--REQUIRE
 
 const UTRunner = function(bridge) {
@@ -76,8 +76,16 @@ UTRunner.prototype.shove = function(_cxt, dest, slot, val) {
 }
 UTRunner.prototype.invoke = function(_cxt, inv) {
 	inv = _cxt.full(inv);
-	this.queueMessages(_cxt, inv);
-	this.dispatchMessages(_cxt);
+	if (inv instanceof Array && inv.length == 1) {
+		inv = inv[0];
+	}
+	var tcx;
+	if (inv instanceof Send)
+		tcx = _cxt.bindTo(inv.obj);
+	else
+		tcx = _cxt.split();
+	this.queueMessages(tcx, inv);
+	this.dispatchMessages(tcx);
 }
 UTRunner.prototype.send = function(_cxt, target, contract, msg, inargs) {
 	_cxt.log("doing send from runner to " + contract + ":" + msg);
@@ -90,17 +98,18 @@ UTRunner.prototype.send = function(_cxt, target, contract, msg, inargs) {
 			args.push(inargs[i]);
 		}
 	}
+	var tcx = _cxt.bindTo(target);
 	if (target.sendTo) {
-		reply = target.sendTo(_cxt, contract, msg, args);
+		reply = target.sendTo(tcx, contract, msg, args);
 	} else {
 		var withArgs = args.slice();
-		withArgs.unshift(_cxt);
+		withArgs.unshift(tcx);
 		reply = target[msg].apply(target, withArgs);
 	}
-	reply = _cxt.full(reply);
-	this.queueMessages(_cxt, reply);
-	this.dispatchMessages(_cxt);
-	this.updateCard(_cxt, target);
+	reply = tcx.full(reply);
+	this.queueMessages(tcx, reply);
+	this.dispatchMessages(tcx);
+	this.updateCard(tcx, target);
 }
 UTRunner.prototype.render = function(_cxt, target, fn, template) {
 	var sendTo = this.findMockFor(target);

@@ -45,7 +45,7 @@ const CommonEnv = function(bridge, broker) {
 	this.evid = 1;
     this.cards = [];
     this.queue = [];
-    this.subscriptions = {};
+    this.subscriptions = new Map();
     if (bridge.lock)
         this.locker = bridge;
     else
@@ -104,7 +104,7 @@ CommonEnv.prototype.handleMessagesWith = function(_cxt, msg) {
             this.handleMessages(_cxt, msg[i]);
         }
 	} else if (msg) {
-        var ic = this.newContext();
+        var ic = _cxt.split();
         ic.updateCards = _cxt.updateCards;
         _cxt.log("dispatching message", msg);
         var m = msg.dispatch(ic);

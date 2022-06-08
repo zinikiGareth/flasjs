@@ -9,10 +9,23 @@ const { EvalContext, FieldsContainer } = require('../../resources/ziwsh');
 
 const FLContext = function(env, broker) {
 	EvalContext.call(this, env, broker);
+	this.subcontext = null;
 }
 
 FLContext.prototype = new EvalContext();
 FLContext.prototype.constructor = FLContext;
+
+FLContext.prototype.bindTo = function(to) {
+	var ret = this.split();
+	ret.subcontext = to;
+	return ret;
+}
+
+FLContext.prototype.split = function() {
+	var ret = new FLContext(this.env, this.broker);
+	ret.subcontext = this.subcontext;
+	return ret;
+}
 
 FLContext.prototype.addAll = function(ret, arr) {
 	this.env.addAll(ret, arr);
@@ -438,11 +451,20 @@ FLContext.prototype.addHistory = function(state, title, url) {
 
 FLContext.prototype._bindNamedHandler = function(nh) {
 	// TODO: this will need to become a lot more complicated, because it needs to be a hierarchy
-	if (this.env.subscriptions[nh._name]) {
-		var old = this.env.subscriptions[nh._name];
+	if (!nh._name)
+		return;
+	if (!this.subcontext)
+		throw new Error("sub context not bound");
+	var forcxt = this.env.subscriptions.get(this.subcontext);
+	if (!forcxt) {
+		forcxt = new Map();
+		this.env.subscriptions.set(this.subcontext, forcxt);
+	}
+	if (forcxt.has(nh._name)) {
+		var old = forcxt.get(nh._name);
 		this.env.broker.cancel(this, old);
 	}
-	this.env.subscriptions[nh._name] = nh._ihid;
+	forcxt.set(nh._name, nh._ihid);
 }
 
 //--EXPORT
