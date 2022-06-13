@@ -810,6 +810,10 @@ FLCard.prototype._diffLists = function(_cxt, rtc, list) {
     return ret;
 }
 
+FLCard.prototype._close = function(cx) {
+    cx.unsubscribeAll(this);
+}
+
 //--EXPORT
 /* istanbul ignore else */ 
 if (typeof(module) !== 'undefined')

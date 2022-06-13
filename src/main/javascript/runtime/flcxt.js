@@ -467,6 +467,10 @@ FLContext.prototype._bindNamedHandler = function(nh) {
 	forcxt.set(nh._name, nh._ihid);
 }
 
+FLContext.prototype.unsubscribeAll = function(card) {
+	this.env.unsubscribeAll(this, card);
+}
+
 //--EXPORT
 /* istanbul ignore else */ 
 if (typeof(module) !== 'undefined')
