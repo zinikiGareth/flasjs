@@ -17,7 +17,7 @@ const UTRunner = function(bridge) {
 	if (typeof(window) !== 'undefined')
 		window.utrunner = this;
 	this.moduleInstances = {};
-	this.toCancel = [];
+	this.toCancel = new Map();
 	for (var mn in UTRunner.modules) {
 		if (UTRunner.modules.hasOwnProperty(mn)) {
 			var jm;
@@ -368,20 +368,30 @@ UTRunner.prototype.newdiv = function(cnt) {
 	this.divSince = this.nextDivId;
 }
 UTRunner.prototype.expectCancel = function(handler) {
-	this.toCancel.push(handler);
+	var hn;
+	if (handler instanceof NamedIdempotentHandler) {
+		hn = handler._ihid;
+	} else {
+		throw new Error("not handled");
+	}
+	this.toCancel.set(hn, handler);
 }
 UTRunner.prototype.cancelBound = function(bv) {
 	var h = bv.actual;
-	var io = this.toCancel.indexOf(h);
-	if (io != -1) {
-		this.toCancel.splice(io, 1);
+	var hn;
+	if (h instanceof NamedIdempotentHandler) {
+		hn = h._ihid;
 	} else {
+		throw new Error("not handled");
+	}
+	if (!this.toCancel.has(hn)) {
 		throw new Error("UECAN\n  cancelled " + bv.name + " but it was not expected");
 	}
+	this.toCancel.delete(hn);
 }
 UTRunner.prototype.assertSatisfied = function() {
-	if (this.toCancel.length != 0) {
-		throw new Error("EXPCAN\n  subscription " /* + this.toCancel[0]*/ + " was not cancelled");
+	if (this.toCancel.size != 0) {
+		throw new Error("EXPCAN\n  subscription " /* + this.toCancel[0]*/ + "was not cancelled");
 	}
 }
 UTRunner.prototype.mockAgent = function(_cxt, agent) {

@@ -28,7 +28,11 @@ const Send = function() {
 }
 Send.eval = function(_cxt, obj, meth, args, handle, subscriptionName) {
 	const s = new Send();
-	s.obj = obj;
+	if (obj instanceof NamedIdempotentHandler) {
+		s.obj = obj._handler;
+	} else {
+		s.obj = obj;
+	}
 	s.meth = meth;
 	s.args = args;
 	s.handle = handle;
@@ -61,12 +65,9 @@ Send.prototype.dispatch = function(cx) {
 	args.splice(0, 0, cx);
 	var hdlr;
 	if (this.handle) {
-		hdlr = this.handle;
+		hdlr = new NamedIdempotentHandler(this.handle, this.subscriptionName);
 	} else {
 		hdlr = new IdempotentHandler();
-	}
-	if (this.subscriptionName) {
-		hdlr = new NamedIdempotentHandler(hdlr, this.subscriptionName);
 	}
 	args.splice(args.length, 0, hdlr);
 	var meth = this.obj._methods()[this.meth];

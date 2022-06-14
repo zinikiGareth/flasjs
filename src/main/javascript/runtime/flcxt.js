@@ -451,20 +451,27 @@ FLContext.prototype.addHistory = function(state, title, url) {
 
 FLContext.prototype._bindNamedHandler = function(nh) {
 	// TODO: this will need to become a lot more complicated, because it needs to be a hierarchy
-	if (!nh._name)
-		return;
 	if (!this.subcontext)
 		throw new Error("sub context not bound");
-	var forcxt = this.env.subscriptions.get(this.subcontext);
-	if (!forcxt) {
-		forcxt = new Map();
-		this.env.subscriptions.set(this.subcontext, forcxt);
+	if (!nh._name) {
+		var forcxt = this.env.unnamedSubscriptions.get(this.subcontext);
+		if (!forcxt) {
+			forcxt = [];
+			this.env.unnamedSubscriptions.set(this.subcontext, forcxt);
+		}
+		forcxt.push(nh._ihid);
+	} else {
+		var forcxt = this.env.namedSubscriptions.get(this.subcontext);
+		if (!forcxt) {
+			forcxt = new Map();
+			this.env.namedSubscriptions.set(this.subcontext, forcxt);
+		}
+		if (forcxt.has(nh._name)) {
+			var old = forcxt.get(nh._name);
+			this.env.broker.cancel(this, old);
+		}
+		forcxt.set(nh._name, nh._ihid);
 	}
-	if (forcxt.has(nh._name)) {
-		var old = forcxt.get(nh._name);
-		this.env.broker.cancel(this, old);
-	}
-	forcxt.set(nh._name, nh._ihid);
 }
 
 FLContext.prototype.unsubscribeAll = function(card) {

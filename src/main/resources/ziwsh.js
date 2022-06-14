@@ -247,7 +247,7 @@ const SimpleBroker = function(logger, factory, contracts) {
     this.services = {};
     this.nextHandle = 1;
     this.handlers = {};
-    this.serviceHandlers = {};
+    this.serviceHandlers = new Map();
     this.name = "jsbroker_" + brokerId++;
     logger.log("created ", this.name, new Error().stack);
 };
@@ -321,7 +321,7 @@ SimpleBroker.prototype.currentIdem = function(h) {
 }
 
 SimpleBroker.prototype.serviceFor = function(h, sf) {
-    this.serviceHandlers[h] = sf;
+    this.serviceHandlers.set(h, sf);
 }
 SimpleBroker.prototype.cancel = function(cx, old) {
     const ret = this.handlers[old];
@@ -330,8 +330,8 @@ SimpleBroker.prototype.cancel = function(cx, old) {
         return;
     }
     this.logger.log("need to cancel " + ret);
-    if (this.serviceHandlers[ret]) {
-        this.serviceHandlers[ret].cancel(cx);
+    if (this.serviceHandlers.has(ret)) {
+        this.serviceHandlers.get(ret).cancel(cx);
     }
 }
 
@@ -519,8 +519,6 @@ ObjectMarshaller.prototype.recursiveMarshal = function(cx, ux, o) {
         if (o instanceof IdempotentHandler) {
             ux.handler(cx, o);
         } else if (o instanceof NamedIdempotentHandler) {
-            cx.log("stack is", new Error().stack);
-            cx.log("broker is", cx.broker);
             o._ihid = cx.broker.uniqueHandler(o);
             cx._bindNamedHandler(o);
             ux.handler(cx, o);
