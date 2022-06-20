@@ -451,8 +451,10 @@ FLContext.prototype.addHistory = function(state, title, url) {
 
 FLContext.prototype._bindNamedHandler = function(nh) {
 	// TODO: this will need to become a lot more complicated, because it needs to be a hierarchy
-	if (!this.subcontext)
+	if (!this.subcontext) {
+		this.log("no sub context", new Error().stack);
 		throw new Error("sub context not bound");
+	}
 	if (!nh._name) {
 		var forcxt = this.env.unnamedSubscriptions.get(this.subcontext);
 		if (!forcxt) {

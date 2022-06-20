@@ -49,6 +49,7 @@ WSBridge.prototype.module = function(runner, moduleName) {
 	this.runner = runner;
 	this.send({action: "module", "name": moduleName });
 	this.lock("bindModule");
+	return 'must-wait';
 }
 
 WSBridge.handlers['haveModule'] = function(msg) {

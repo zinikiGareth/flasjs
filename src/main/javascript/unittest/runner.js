@@ -23,6 +23,8 @@ const UTRunner = function(bridge) {
 			var jm;
 			if (bridge.module) {
 				jm = bridge.module(this, mn);
+				if (jm == 'must-wait')
+					continue;
 			}
 			this.moduleInstances[mn] = new UTRunner.modules[mn](this, jm);
 		}
@@ -452,7 +454,7 @@ UTRunner.prototype.addHistory = function(state, title, url) {
 	// we could forward this to the bridge if we wanted to do something specific
 }
 
-UTRunner.prototype.runRemote = function(testClz, wsapi, spec) {
+UTRunner.prototype.runRemote = function(testClz, spec) {
 	var cxt = this.newContext();
 	var st = new testClz(this, cxt);
 	var allSteps = [];
@@ -473,7 +475,7 @@ UTRunner.prototype.runRemote = function(testClz, wsapi, spec) {
 		for (var j=0;j<steps.length;j++)
 			allSteps.push(steps[j]);
 	}
-	var bridge = this.logger; // what it really is
+	var bridge = this.logger; // we have stored it as "logger" but it is actually the bridge to "Java-world"
 	bridge.executeSync(this, st, cxt, allSteps);
 }
 

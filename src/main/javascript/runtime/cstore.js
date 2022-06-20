@@ -50,7 +50,8 @@ DispatcherInvoker.prototype.invoke = function(meth, args) {
         hdlrName = hdlr._name;
         hdlr = hdlr._handler;
     }
-    this.env.queueMessages(args[0], Send.eval(args[0], this.call, meth, pass, hdlr, hdlrName));
+    var cx = args[0].bindTo(hdlr);
+    this.env.queueMessages(cx, Send.eval(cx, this.call, meth, pass, hdlr, hdlrName));
 }
 
 //--EXPORT
