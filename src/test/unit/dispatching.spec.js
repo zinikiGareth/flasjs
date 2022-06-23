@@ -134,7 +134,7 @@ describe('dispatcher', () => {
         runner.invoke(_cxt, send);
         eih.assertSatisfied();
         expect(runner.errors.length).to.equal(1);
-        expect(runner.errors[0].message).to.equal("There are no expectations on Contract for msg");
+        expect(runner.errors[0].message).to.equal("EXP\n  There are no expectations on Contract for msg");
     });
     
     it('a mock explodes if it is not expecting a specific method invocation', () => {
@@ -147,7 +147,7 @@ describe('dispatcher', () => {
         runner.invoke(_cxt, send);
         eih.assertSatisfied();
         expect(runner.errors.length).to.equal(1);
-        expect(runner.errors[0].message).to.equal("Unexpected invocation: Contract.msg 22");
+        expect(runner.errors[0].message).to.equal("EXP\n  Unexpected invocation: Contract.msg 22");
     });
 
     it('a mock explodes if it is expecting more arguments', () => {
@@ -160,7 +160,7 @@ describe('dispatcher', () => {
         runner.invoke(_cxt, send);
         eih.assertSatisfied();
         expect(runner.errors.length).to.equal(1);
-        expect(runner.errors[0].message).to.equal("Unexpected invocation: Contract.msg ");
+        expect(runner.errors[0].message).to.equal("EXP\n  Unexpected invocation: Contract.msg ");
     });
 
     it('a mock explodes if it is expecting a different argument', () => {
@@ -173,7 +173,7 @@ describe('dispatcher', () => {
         runner.invoke(_cxt, send);
         eih.assertSatisfied();
         expect(runner.errors.length).to.equal(1);
-        expect(runner.errors[0].message).to.equal("Unexpected invocation: Contract.msg 81");
+        expect(runner.errors[0].message).to.equal("EXP\n  Unexpected invocation: Contract.msg 81");
     });
 
     it('a mock explodes if it has already been called', () => {
@@ -187,7 +187,7 @@ describe('dispatcher', () => {
         runner.invoke(_cxt, send);
         eih.assertSatisfied();
         expect(runner.errors.length).to.equal(1);
-        expect(runner.errors[0].message).to.equal("Contract.msg 22 already invoked (allowed=1; actual=1)");
+        expect(runner.errors[0].message).to.equal("EXP\n  Contract.msg 22 already invoked (allowed=1; actual=1)");
     });
 
     it('Assign can change a value', () => {
