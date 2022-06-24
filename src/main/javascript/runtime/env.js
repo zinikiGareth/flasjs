@@ -47,6 +47,7 @@ const CommonEnv = function(bridge, broker) {
     this.queue = [];
     this.namedSubscriptions = new Map();
     this.unnamedSubscriptions = new Map();
+    this.subDag = new Map(); // this is a map from parent -> child, which kind of makes a DAG
     if (bridge.lock)
         this.locker = bridge;
     else
@@ -131,13 +132,13 @@ CommonEnv.prototype.unsubscribeAll = function(_cxt, card) {
     // and we need to traverse it from "card"
     this.unnamedSubscriptions.forEach(v => {
         for (var i=0;i<v.length;i++) {
-            this.broker.cancel(_cxt, v[i]);
+            this.broker.cancel(_cxt, v[i]._ihid);
         }
     });
     this.unnamedSubscriptions.clear();
     this.namedSubscriptions.forEach((forcxt) => {
         forcxt.forEach(v => {
-            this.broker.cancel(_cxt, v);
+            this.broker.cancel(_cxt, v._ihid);
         });
     });
     this.namedSubscriptions.clear();

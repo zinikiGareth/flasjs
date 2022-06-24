@@ -455,13 +455,25 @@ FLContext.prototype._bindNamedHandler = function(nh) {
 		this.log("no sub context", new Error().stack);
 		throw new Error("sub context not bound");
 	}
+	if (nh._handler) {
+		var de;
+		if (this.env.subDag.has(this.subcontext)) {
+			de = this.env.subDag.get(this.subcontext);
+		} else {
+			de = [];
+			this.env.subDag.set(this.subcontext, de);
+		}
+		if (!de.includes(nh._handler)) {
+			de.push(nh._handler);
+		}
+	}
 	if (!nh._name) {
 		var forcxt = this.env.unnamedSubscriptions.get(this.subcontext);
 		if (!forcxt) {
 			forcxt = [];
 			this.env.unnamedSubscriptions.set(this.subcontext, forcxt);
 		}
-		forcxt.push(nh._ihid);
+		forcxt.push(nh);
 	} else {
 		var forcxt = this.env.namedSubscriptions.get(this.subcontext);
 		if (!forcxt) {
@@ -470,9 +482,16 @@ FLContext.prototype._bindNamedHandler = function(nh) {
 		}
 		if (forcxt.has(nh._name)) {
 			var old = forcxt.get(nh._name);
-			this.env.broker.cancel(this, old);
+			var ns = this.env.subDag.get(old._handler);
+			this.log("ns =", ns);
+			if (ns) {
+				ns.forEach(sc => {
+					this.unsubscribeAll(sc);
+				});
+			}
+			this.env.broker.cancel(this, old._ihid);
 		}
-		forcxt.set(nh._name, nh._ihid);
+		forcxt.set(nh._name, nh);
 	}
 }
 
