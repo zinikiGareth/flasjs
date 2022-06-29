@@ -109,8 +109,15 @@ CommonEnv.prototype.handleMessagesWith = function(_cxt, msg) {
         var ic = _cxt.split();
         ic.updateCards = _cxt.updateCards;
         _cxt.log("dispatching message", msg);
-        var m = msg.dispatch(ic);
-        this.handleMessages(_cxt, m);
+        try {
+            var m = msg.dispatch(ic);
+            this.handleMessages(_cxt, m);
+        } catch (e) {
+            _cxt.log(e.message);
+            if (this.error) {
+                this.error(e.toString());
+            }
+        }
     }
 }
 

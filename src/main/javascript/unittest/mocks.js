@@ -1,4 +1,4 @@
-const { IdempotentHandler } = require('../../resources/ziwsh');
+const { IdempotentHandler, NamedIdempotentHandler } = require('../../resources/ziwsh');
 //--REQUIRE
 
 const BoundVar = function(name) {
@@ -91,8 +91,14 @@ MockContract.prototype.serviceMethod = function(_cxt, meth, args) {
 			matched.invoked++;
 			_cxt.log("Have invocation of", meth, "with", args);
 			if (matched.handler instanceof BoundVar) {
-				matched.handler.bindActual(ih);
-				_cxt.broker.serviceFor(ih, new SubscriptionFor(matched.handler));
+				var tih = ih;
+				// if (ih instanceof NamedIdempotentHandler) {
+				// 	tih = ih._handler;
+				// }
+				matched.handler.bindActual(tih);
+				if (ih._ihid) {
+					_cxt.broker.serviceFor(ih, new SubscriptionFor(matched.handler.name, ih._ihid));
+				}
 			}
 			return;
 		}
@@ -121,12 +127,13 @@ MockContract.prototype.assertSatisfied = function(_cxt) {
 		throw new Error("UNUSED\n" + msg);
 }
 
-const SubscriptionFor = function(bv) {
-	this.bv = bv;
+const SubscriptionFor = function(varName, handlerName) {
+	this.varName = varName;
+	this.handlerName = handlerName;
 };
 
 SubscriptionFor.prototype.cancel = function(cx) {
-	cx.env.cancelBound(this.bv);
+	cx.env.cancelBound(this.varName, this.handlerName);
 }
 
 const MockFLObject = function(obj) {

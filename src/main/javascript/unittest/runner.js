@@ -378,18 +378,11 @@ UTRunner.prototype.expectCancel = function(handler) {
 	}
 	this.toCancel.set(hn, handler);
 }
-UTRunner.prototype.cancelBound = function(bv) {
-	var h = bv.actual;
-	var hn;
-	if (h instanceof NamedIdempotentHandler) {
-		hn = h._ihid;
-	} else {
-		throw new Error("not handled");
+UTRunner.prototype.cancelBound = function(varName, handlerName) {
+	if (!this.toCancel.has(handlerName)) {
+		throw new Error("UECAN\n  cancelled " + varName + " but it was not expected");
 	}
-	if (!this.toCancel.has(hn)) {
-		throw new Error("UECAN\n  cancelled " + bv.name + " but it was not expected");
-	}
-	this.toCancel.delete(hn);
+	this.toCancel.delete(handlerName);
 }
 UTRunner.prototype.assertSatisfied = function() {
 	if (this.toCancel.size != 0) {

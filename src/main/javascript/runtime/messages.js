@@ -28,6 +28,7 @@ const Send = function() {
 }
 Send.eval = function(_cxt, obj, meth, args, handle, subscriptionName) {
 	const s = new Send();
+	s.subcontext = _cxt.subcontext;
 	if (obj instanceof NamedIdempotentHandler) {
 		s.obj = obj._handler;
 	} else {
@@ -65,8 +66,10 @@ Send.prototype.dispatch = function(cx) {
 	// This appears to be tricky.  We don't want to always bind here, but we do need to bind when
 	// we are receiving a message from outside, and it seems that there is nowhere higher in the food chain
 	// to do that.  So, if the subcontext is not bound, bind it here.
-	if (!cx.subcontext) {
+	if (!this.subcontext) {
 		cx = cx.bindTo(this.obj);
+	} else {
+		cx = cx.bindTo(this.subcontext);
 	}
 	args.splice(0, 0, cx);
 	var hdlr;
