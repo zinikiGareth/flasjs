@@ -22,7 +22,7 @@ FLContext.prototype.bindTo = function(to) {
 }
 
 FLContext.prototype.split = function() {
-	var ret = new FLContext(this.env, this.broker);
+	var ret = this.env.newContext();
 	ret.subcontext = this.subcontext;
 	return ret;
 }

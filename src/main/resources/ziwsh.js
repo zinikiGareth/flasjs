@@ -345,6 +345,7 @@ SimpleBroker.prototype.cancel = function(cx, old) {
 const EvalContext = function(env, broker) {
 	this.env = env;
 	this.broker = broker;
+    this.log("creating context with env", env, new Error().stack);
 }
 
 EvalContext.prototype.log = function(...args) {
@@ -356,6 +357,16 @@ EvalContext.prototype.debugmsg = function(...args) {
 		this.env.logger.debugmsg.apply(this.env.logger, args);
 	else
 		this.log(args);
+}
+
+EvalContext.prototype.bindTo = function(to) {
+	var ret = this.split();
+	return ret;
+}
+
+EvalContext.prototype.split = function() {
+	var ret = this.env.newContext();
+	return ret;
 }
 
 EvalContext.prototype.registerContract = function(name, ctr) {
@@ -476,6 +487,7 @@ const MarshallerProxy = function(logger, ctr, svc) {
 
 MarshallerProxy.prototype.invoke = function(meth, args) {
     const cx = args[0];
+    cx.log("in invoke, have cx with env =", cx.env);
     try {
         const ux = this.svc.begin(cx, meth);
         new ArgListMarshaller(this.logger, false, true).marshal(cx, ux, args);
@@ -602,18 +614,22 @@ ObjectMarshaller.prototype.makeHandlerInvoker = function(cx, ihid) {
     var broker = cx.broker;
     var env = cx.env;
     var handler = new Object();
+    cx.log("MAKING HANDLER INVOKER");
     handler.invoke = function(name, args) {
         var uow = env.newContext();
+        cx.log("hello");
+        uow.log("uow hello");
         const ih = broker.currentIdem(ihid);
         if (!ih) {
             uow.log("failed to find idem handler for", ihid, new Error().stack);
             // throw new Error("NOHDLR\n  did not find idem " + ihid);
-            return; // quietly ignore it ...
+            return; // quietly ignore it ...    
         }
         const um = new UnmarshallerDispatcher(null, ih);
 
         var cnt = args.length;
         uow.log("invoking", name, "#args =", cnt);
+        uow.log("invoking " + name + " #args = " + cnt + " " + args[0] + " " + args[1]);
         // var wantHandler = false;
         // if (name != "success" && name != "failure") {
         //     wantHandler = true;
@@ -689,6 +705,9 @@ const proxy = function(cx, intf, handler) {
 const proxyMeth = function(meth, handler) {
 	return function(...args) {
 		const cx = args[0];
+        cx.log("attempting to call proxy method", meth);
+        cx.log("have cx", cx, "of", cx.constructor, "at", new Error().stack);
+        cx.log("cx.env =", cx.env);
         const ret = handler['invoke'].call(handler, meth, args);
         return ret;
     }
@@ -850,6 +869,7 @@ UnmarshalTraverser.prototype = new ListTraverser();
 UnmarshalTraverser.prototype.constructor = UnmarshalTraverser;
 
 const DispatcherTraverser = function(svc, method, cx, collector) {
+    cx.log("have cx", cx.constructor, new Error().stack);
     // cx.log("have service", svc, svc instanceof NamedIdempotentHandler, new Error().stack);
     UnmarshalTraverser.call(this, cx, collector);
     if (svc instanceof NamedIdempotentHandler) {
@@ -866,8 +886,12 @@ DispatcherTraverser.prototype = new UnmarshalTraverser();
 DispatcherTraverser.prototype.constructor = DispatcherTraverser;
 
 DispatcherTraverser.prototype.dispatch = function() {
+    var cx = this.ret[0];
     var ih = this.ret[this.ret.length-1];
-    this.ret[0] = this.ret[0].env.newContext().bindTo(this.svc);
+    cx.log(new Error().stack);
+    cx.log("js cx = " + cx + " " + JSON.toString(Object.keys(cx)));
+    cx.log("env = " + Object.keys(cx.env));
+    cx = cx.env.newContext().bindTo(this.svc);
     try {
         var rets = this.svc[this.method].apply(this.svc, this.ret);
         // I don't think this matches the semantics of when we want success to be called
@@ -876,11 +900,11 @@ DispatcherTraverser.prototype.dispatch = function() {
         // ih.success(this.cx);
     } catch (e) {
         if (ih instanceof NamedIdempotentHandler) {
-            this.cx.log("caught exception and reporting failure", e.message);
+            cx.log("caught exception and reporting failure", e.toString());
             ih = ih._handler;
         }
         
-        ih.failure(this.cx, e.message);
+        ih.failure(cx, e.message);
     }
     return rets;
 }
