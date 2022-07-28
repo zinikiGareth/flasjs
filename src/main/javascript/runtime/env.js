@@ -108,7 +108,6 @@ CommonEnv.prototype.handleMessagesWith = function(_cxt, msg) {
 	} else if (msg) {
         var ic = _cxt.split();
         ic.updateCards = _cxt.updateCards;
-        _cxt.log("dispatching message", msg);
         try {
             var m = msg.dispatch(ic);
             this.handleMessages(_cxt, m);
