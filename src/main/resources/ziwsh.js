@@ -895,7 +895,7 @@ DispatcherTraverser.prototype.dispatch = function() {
     // cx.log(new Error().stack);
     // cx.log("js cx = " + cx + " " + JSON.stringify(Object.keys(cx)));
     // cx.log("env = " + Object.keys(cx.env));
-    cx = cx.env.newContext().bindTo(this.svc);
+    this.ret[0] = cx = cx.env.newContext().bindTo(this.svc);
     try {
         var rets = this.svc[this.method].apply(this.svc, this.ret);
         // I don't think this matches the semantics of when we want success to be called
