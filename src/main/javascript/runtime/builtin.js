@@ -65,8 +65,6 @@ TypeOf.prototype._towire = function(wf) {
 	wf._wireable = 'org.flasck.jvm.builtin.TypeOf';
 }
 
-
-
 /* istanbul ignore next */
 const FLBuiltin = function() {
 }

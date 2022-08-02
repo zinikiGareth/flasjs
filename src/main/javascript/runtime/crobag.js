@@ -97,6 +97,19 @@ Crobag.fromWire = function(cx, om, fields) {
     return ret;
 }
 
+Crobag.prototype._towire = function(wf) {
+    wf._wireable = 'org.flasck.jvm.builtin.Crobag';
+    var os = fields["entries"];
+    if (os.length > 0) {
+        var lt = new ListTraverser(cx, om.state);
+        for (var i=0;i<os.length;i++) {
+            om.marshal(lt, os[i]);
+        }
+        ret._entries = lt.ret;
+    }
+    return ret;
+}
+
 Crobag.prototype.insert = function(_cxt, key, val) {
     return [CrobagChangeEvent.eval(_cxt, this, "insert", key, null, val)];
 }
