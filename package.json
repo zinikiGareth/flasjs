@@ -2,7 +2,6 @@
   "name": "flasjs",
   "version": "1.0.0",
   "description": "FLAS JS client library",
-  "dependencies": {},
   "scripts": {
     "test": "mocha src/test/unit/*.spec.js",
     "coverage": "nyc --reporter=html npm run test"
