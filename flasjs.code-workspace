@@ -7,13 +7,7 @@
 			"path": "../stdlib"
 		},
 		{
-			"path": "../ziniki-server/zintestjs"
-		},
-		{
 			"path": "../../../Clients/gmmapowell.com"
-		},
-		{
-			"path": "../../../Projects/SerStories"
 		}
 	]
 }
