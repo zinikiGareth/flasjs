@@ -8,6 +8,9 @@
 		},
 		{
 			"path": "../../../Clients/gmmapowell.com"
+		},
+		{
+			"path": "../ziniki-server/services"
 		}
 	]
 }
