@@ -1,4 +1,7 @@
 .settings/
+.nyc_output/
 node_modules/
 coverage/
-.nyc_output/
+html/
+jsout/
+jvmout/
