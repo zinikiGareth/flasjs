@@ -286,6 +286,14 @@ FLContext.prototype.field = function(obj, field) {
 	}
 }
 
+FLContext.prototype.getSingleton = function(name) {
+	return this.env.getSingleton(name);
+}
+
+FLContext.prototype.cacheSingleton = function(name, value) {
+	this.env.cacheSingleton(name, value);
+}
+
 FLContext.prototype.nextDocumentId = function() {
 	return "flaselt_" + (this.env.nextDivId++);
 }
