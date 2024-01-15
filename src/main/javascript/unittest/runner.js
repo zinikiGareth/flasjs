@@ -221,7 +221,7 @@ UTRunner.prototype.findDiv = function(_cxt, rt, zone, pos) {
 	const first = zone[pos];
 	if (first[0] == "item") {
 		if (!rt.children || first[1] >= rt.children.length) {
-			throw Error("MATCH\nThere is no child " + first[1] + " in " + this._nameOf(zone, pos));
+			throw Error("MATCH\nMatcher failed on '" + this._nameOf(zone, zone.length) + "': There is no child " + first[1] + " of " + this._nameOf(zone, pos));
 		}
 		return this.findDiv(_cxt, rt.children[first[1]], zone, pos+1);
 	} else {
