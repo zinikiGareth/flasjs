@@ -1,6 +1,6 @@
 const FLContext = require('./flcxt');
 const { FLBuiltin } = require('./builtin');
-const { CallMe, Repeater, ContainerRepeater } = require('../container/repeater');
+const { CallMe, Repeater, ContainerRepeater } = require('./repeater');
 const { Random } = require('./random');
 const { Crobag, CroEntry } = require('./crobag');
 const { Image } = require('./image');
@@ -8,7 +8,6 @@ const { Html } = require('./html');
 const { Link } = require('./link');
 const { Calendar } = require('./time');
 const FLError = require('../runtime/error');
-//--REQUIRE
 
 // should this be part of Ziniki?
 const ZiIdURI = function(s) {

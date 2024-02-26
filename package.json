@@ -4,10 +4,12 @@
   "description": "FLAS JS client library",
   "scripts": {
     "test": "mocha src/test/unit/*.spec.js",
+    "package": "node scripts/build.mjs",
     "coverage": "nyc --reporter=html npm run test"
   },
   "devDependencies": {
     "chai": "^4.3.6",
+    "esbuild": "0.20.1",
     "mocha": "^5.2.0",
     "nyc": "^14.1.1"
   }

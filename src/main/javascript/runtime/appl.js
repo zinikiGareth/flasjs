@@ -1,5 +1,5 @@
-const FLError = require('../runtime/error');
-//--REQUIRE
+const FLError = require('./error');
+const CommonEnv = require("./env");
 
 const Application = function(_cxt, topdiv) {
 	if (typeof(topdiv) == 'string')

@@ -1,4 +1,4 @@
-const { CommonEnv } = require('./env');
+const { CommonEnv } = require('../runtime/env');
 const { SimpleBroker } = require('../../resources/ziwsh');
 //--REQUIRE
 

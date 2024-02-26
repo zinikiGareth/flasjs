@@ -1,4 +1,4 @@
-const { Send } = require('../runtime/messages');
+const { Send } = require('./messages');
 //--REQUIRE
 
 const ContainerRepeater = function() {

@@ -2,6 +2,8 @@ const FLClosure = require('./closure');
 const FLCurry = require('./curry');
 const FLMakeSend = require('./makesend');
 const FLError = require('./error');
+const ContractStore = require('./cstore');
+const { FLEventSourceTrait } = require('./events');
 const { MockContract, MockAgent, MockCard, ExplodingIdempotentHandler } = require('../unittest/mocks');
 const { Debug, Send, Assign, ResponseWithMessages, UpdateDisplay } = require('./messages');
 const { EvalContext, FieldsContainer } = require('../../resources/ziwsh');
@@ -107,7 +109,7 @@ FLContext.prototype.applyhash = function(basic, hash) {
 
 FLContext.prototype.tupleMember = function(tuple, which) {
 	tuple = this.head(tuple);
-	if (!tuple instanceof Tuple)
+	if (!(tuple instanceof Tuple))
 		throw "not a tuple: " + tuple;
 	return tuple.args[which];
 }
