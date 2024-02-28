@@ -10,3 +10,5 @@ STSecurityModule.prototype.userLoggedIn = function(_cxt, app, user) {
 	this.currentUser = user;
 	app.nowLoggedIn(_cxt);
 }
+
+export { STSecurityModule }

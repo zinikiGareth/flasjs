@@ -1,4 +1,5 @@
 const { CommonEnv } = require('../runtime/env');
+import { UTContext } from './utcxt';
 const { SimpleBroker, JsonBeachhead } = require('../../resources/ziwsh');
 const { MockCard, MockFLObject, MockAppl } = require('./mocks');
 const FLError = require('../runtime/error');
@@ -33,6 +34,10 @@ const UTRunner = function(bridge) {
 
 UTRunner.prototype = new CommonEnv();
 UTRunner.prototype.constructor = UTRunner;
+
+UTRunner.prototype.newContext = function() {
+	return new UTContext(this, this.broker);
+}
 
 UTRunner.modules = {};
 

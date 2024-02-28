@@ -89,3 +89,5 @@ FlasckServices.configure = function(env) {
     env.broker.register("Ajax", new LiveAjaxService());
     env.broker.register("Navigation", new LiveNavigationService());
 }
+
+export { FlasckServices };

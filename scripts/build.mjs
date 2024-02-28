@@ -2,26 +2,31 @@ import * as esbuild from 'esbuild'
 
 await esbuild.build({
   entryPoints: [
-	'src/main/javascript/runtime/appl.js',
+	'src/main/javascript/runtime/flasjs.js',
   ],
   bundle: true,
   format: 'esm',
-  outfile: 'dist/core.js',
-// 	'dist/core.js',
-// 	'dist/unittest.js'
-//   ],
-  external: ['./src/main/resources/*', './src/main/javascript/unittest/*']
+  outfile: 'dist/flasjs.js',
+  external: ['./src/main/resources/*']
 })
 
 await esbuild.build({
   entryPoints: [
-	'src/main/javascript/unittest/runner.js'
+	'src/main/javascript/unittest/flastest.js'
   ],
   bundle: true,
   format: 'esm',
-  outfile: 'dist/test.js',
-// 	'dist/core.js',
-// 	'dist/unittest.js'
-//   ],
+  outfile: 'dist/flastest.js',
   external: ['./src/main/resources/*', './src/main/javascript/runtime/*']
 })
+
+await esbuild.build({
+	entryPoints: [
+	  'src/main/javascript/live/flaslive.js'
+	],
+	bundle: true,
+	format: 'esm',
+	outfile: 'dist/flaslive.js',
+	external: ['./src/main/resources/*', './src/main/javascript/runtime/*']
+  })
+  

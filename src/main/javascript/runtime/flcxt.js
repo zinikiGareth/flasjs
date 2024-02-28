@@ -2,9 +2,7 @@ const FLClosure = require('./closure');
 const FLCurry = require('./curry');
 const FLMakeSend = require('./makesend');
 const FLError = require('./error');
-const ContractStore = require('./cstore');
 const { FLEventSourceTrait } = require('./events');
-const { MockContract, MockAgent, MockCard, ExplodingIdempotentHandler } = require('../unittest/mocks');
 const { Debug, Send, Assign, ResponseWithMessages, UpdateDisplay } = require('./messages');
 const { EvalContext, FieldsContainer } = require('../../resources/ziwsh');
 //--REQUIRE
@@ -390,47 +388,6 @@ FLContext.prototype.needsUpdate = function(card) {
 		throw Error("cannot update when not in event loop");
 	if (!this.updateCards.includes(card))
 		this.updateCards.push(card);
-}
-
-FLContext.prototype.storeMock = function(name, value) {
-	value = this.full(value);
-	if (value instanceof ResponseWithMessages) {
-		this.env.queueMessages(this, ResponseWithMessages.messages(this, value));
-		// because this is a test operation, we dispatch the messages immediately
-		this.env.dispatchMessages(this);
-		value = ResponseWithMessages.response(this, value);
-	}
-	if (value instanceof FLObject) {
-		var mock = new MockFLObject(value);
-		this.env.mocks[name] = mock;
-		this.env.cards.push(mock);
-	} else
-		this.env.mocks[name] = value;
-	return value;
-}
-
-FLContext.prototype.mockContract = function(contract) {
-	const ret = new MockContract(contract);
-	this.broker.register(contract.name(), ret);
-	return ret;
-}
-
-FLContext.prototype.mockAgent = function(agent) {
-	return this.env.mockAgent(this, agent);
-}
-
-FLContext.prototype.mockCard = function(name, card) {
-	return this.env.mockCard(this, name, card);
-}
-
-FLContext.prototype.explodingHandler = function() {
-	const ret = new ExplodingIdempotentHandler(this);
-	return ret;
-}
-
-FLContext.prototype.mockHandler = function(contract) {
-	const ret = new MockHandler(contract);
-	return ret;
 }
 
 FLContext.prototype.newdiv = function(cnt) {
