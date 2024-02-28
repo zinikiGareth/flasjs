@@ -1,8 +1,6 @@
-const FLObject = require("./object");
-const { IdempotentHandler } = require('../../resources/ziwsh');
-const { ResponseWithMessages } = require("./messages");
-const FLError = require("./error");
-//--REQUIRE
+import FLObject from "./object";
+import { ResponseWithMessages } from "./messages";
+import FLError from "./error";
 
 const Html = function(_cxt, _html) {
     FLObject.call(this, _cxt);
@@ -31,10 +29,4 @@ Html.prototype.toString = function() {
     return "Html";
 }
 
-//--EXPORTS
-/* istanbul ignore else */
-if (typeof(module) !== 'undefined') {
-    module.exports = { Html };
-} else {
-    window.Html = Html;
-}
+export { Html };

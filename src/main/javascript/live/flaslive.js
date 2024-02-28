@@ -1,4 +1,4 @@
-import JSEnv from "./jsenv";
+import { JSEnv } from "./jsenv";
 import { FlasckServices } from "./services";
 
 export {

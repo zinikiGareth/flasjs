@@ -1,5 +1,4 @@
-const FLCard = require('./card');
-//--REQUIRE
+import { FLCard } from './card';
 
 const FLObject = function(cx) {
 }
@@ -16,10 +15,4 @@ FLObject.prototype._diffLists = FLCard.prototype._diffLists;
 FLObject.prototype._attachHandlers = FLCard.prototype._attachHandlers;
 FLObject.prototype._resizeDisplayElements = FLCard.prototype._resizeDisplayElements;
 
-
-//--EXPORT
-/* istanbul ignore else */ 
-if (typeof(module) !== 'undefined')
-	module.exports = FLObject;
-else
-	window.FLObject = FLObject;
+export default FLObject;

@@ -60,6 +60,7 @@ Application.prototype.parseRoute = function(_cxt, r) {
 	if (r instanceof Location || r instanceof URL) {
 		r = r.href;
 	}
+	var buri;
 	if (typeof(baseUri) !== 'undefined' && baseUri)
 		buri = baseUri;
 	else

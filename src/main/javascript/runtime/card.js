@@ -1,5 +1,5 @@
-const FLError = require("./error");
-//--REQUIRE
+import FLError from "./error";
+import { Html } from "./html";
 
 const FLCard = function(cx) {
     this._renderTree = null;
@@ -814,9 +814,4 @@ FLCard.prototype._close = function(cx) {
     cx.unsubscribeAll(this);
 }
 
-//--EXPORT
-/* istanbul ignore else */ 
-if (typeof(module) !== 'undefined')
-	module.exports = FLCard;
-else
-	window.FLCard = FLCard;
+export { FLCard };
