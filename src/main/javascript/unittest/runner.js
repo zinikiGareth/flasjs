@@ -1,10 +1,9 @@
-const { CommonEnv } = require('../runtime/env');
+import { CommonEnv } from '../runtime/env';
 import { UTContext } from './utcxt';
-const { SimpleBroker, JsonBeachhead } = require('../../resources/ziwsh');
-const { MockCard, MockFLObject, MockAppl } = require('./mocks');
-const FLError = require('../runtime/error');
-const { ResponseWithMessages, Send } = require('../runtime/messages');
-//--REQUIRE
+import { SimpleBroker, JsonBeachhead } from '../../resources/ziwsh';
+import { MockCard, MockFLObject, MockAppl } from './mocks';
+import FLError from '../runtime/error';
+import { Debug, Send, Assign, ResponseWithMessages, UpdateDisplay } from '../runtime/messages';
 
 const UTRunner = function(bridge) {
 	if (!bridge)
@@ -513,13 +512,4 @@ const makeBridge = function(jsb, logger) {
 	};
 }
 
-//--EXPORT
-/* istanbul ignore else */ 
-if (typeof(module) !== 'undefined')
-	module.exports = { UTRunner, makeBridge };
-else
-//--WINDOW
-{
-	window.UTRunner = UTRunner;
-	window.makeBridge = makeBridge;
-}
+export { UTRunner, makeBridge };

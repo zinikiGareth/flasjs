@@ -1,13 +1,13 @@
-const FLContext = require('./flcxt');
-const { FLBuiltin } = require('./builtin');
-const { CallMe, Repeater, ContainerRepeater } = require('./repeater');
-const { Random } = require('./random');
-const { Crobag, CroEntry } = require('./crobag');
-const { Image } = require('./image');
-const { Html } = require('./html');
-const { Link } = require('./link');
-const { Calendar } = require('./time');
-const FLError = require('../runtime/error');
+import FLContext from './flcxt';
+import { FLBuiltin } from './builtin';
+import { ContainerRepeater } from './repeater';
+import { Random } from './random';
+import { Crobag, CroEntry } from './crobag';
+import { Image } from './image';
+import { Html } from './html';
+import { Link } from './link';
+import { Calendar } from './time';
+import FLError from './error';
 
 // should this be part of Ziniki?
 const ZiIdURI = function(s) {
@@ -170,10 +170,4 @@ if (typeof(window) !== 'undefined') {
     });
 }
 
-//--EXPORT
-/* istanbul ignore next */
-if (typeof(module) !== 'undefined') {
-	module.exports = { CommonEnv };
-} else {
-	window.CommonEnv = CommonEnv;
-}
+export { CommonEnv };

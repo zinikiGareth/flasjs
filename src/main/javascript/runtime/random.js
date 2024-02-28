@@ -1,6 +1,5 @@
-const FLObject = require("./object");
-const { ReponseWithMessages, Send } = require("./messages");
-//--REQUIRE
+import FLObject from "./object";
+import { Debug, Send, Assign, ResponseWithMessages, UpdateDisplay } from './messages';
 
 // Use a seedable random number generator
 // see http://prng.di.unimi.it/xoshiro128plusplus.c
@@ -68,10 +67,5 @@ Random.prototype._methods = function() {
         "_used": Random.prototype._used
     };
 }
-//--EXPORTS
-/* istanbul ignore else */
-if (typeof(module) !== 'undefined') {
-	module.exports = { Random }
-} else {
-	window.Random = Random;
-}
+
+export { Random }

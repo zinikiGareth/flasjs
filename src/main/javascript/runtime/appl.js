@@ -1,6 +1,3 @@
-const FLError = require('./error');
-const CommonEnv = require("./env");
-
 const Application = function(_cxt, topdiv) {
 	if (typeof(topdiv) == 'string')
 		this.topdiv = document.getElementById(topdiv);
@@ -324,10 +321,4 @@ MoveUpEvent.prototype.toString = function() {
 	return "MUE[" + this.cmn + "]";
 }
 
-//--EXPORT
-/* istanbul ignore else */ 
-if (typeof(module) !== 'undefined')
-	module.exports = Application;
-else
-//--WINDOW
-	window.Application = Application;
+export default Application;

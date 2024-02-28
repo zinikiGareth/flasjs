@@ -1,5 +1,4 @@
-const { Send } = require('./messages');
-//--REQUIRE
+import { Send } from './messages';
 
 const FLMakeSend = function(meth, obj, nargs, handler, subscriptionName) {
 	this.meth = meth;
@@ -30,10 +29,4 @@ FLMakeSend.prototype.toString = function() {
 	return "MakeSend[" + this.nargs + "]";
 }
 
-//--EXPORT
-/* istanbul ignore next */
-if (typeof(module) !== 'undefined') {
-	module.exports = FLMakeSend;
-} else {
-	window.FLMakeSend = FLMakeSend;
-}
+export default FLMakeSend;

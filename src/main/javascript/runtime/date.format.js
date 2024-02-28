@@ -119,4 +119,4 @@ dateFormat.i18n = {
 	]
 };
 
-export default { dateFormat };
+export { dateFormat };

@@ -1,6 +1,5 @@
-const FLError = require('./error');
-const { ResponseWithMessages } = require('./messages');
-//--REQUIRE
+import FLError from './error';
+import { Debug, Send, Assign, ResponseWithMessages, UpdateDisplay } from './messages';
 
 const FLClosure = function(obj, fn, args) {
 	/* istanbul ignore if */
@@ -53,10 +52,4 @@ FLClosure.prototype.toString = function() {
 	return "FLClosure[]";
 }
 
-//--EXPORT
-/* istanbul ignore else */ 
-if (typeof(module) !== 'undefined') {
-	module.exports = FLClosure;
-} else {
-	window.FLClosure = FLClosure;
-}
+export default FLClosure;

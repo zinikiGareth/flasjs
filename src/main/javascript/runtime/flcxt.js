@@ -1,11 +1,10 @@
-const FLClosure = require('./closure');
-const FLCurry = require('./curry');
-const FLMakeSend = require('./makesend');
-const FLError = require('./error');
-const { FLEventSourceTrait } = require('./events');
-const { Debug, Send, Assign, ResponseWithMessages, UpdateDisplay } = require('./messages');
-const { EvalContext, FieldsContainer } = require('../../resources/ziwsh');
-//--REQUIRE
+import FLClosure from './closure';
+import FLCurry from './curry';
+import FLMakeSend from './makesend';
+import FLError from './error';
+import { FLEventSourceTrait } from './events';
+import { Debug, Send, Assign, ResponseWithMessages, UpdateDisplay } from './messages';
+import { EvalContext, FieldsContainer } from '../../resources/ziwsh';
 
 const FLContext = function(env, broker) {
 	EvalContext.call(this, env, broker);
@@ -470,9 +469,4 @@ FLContext.prototype.unsubscribeAll = function(card) {
 	this.env.unsubscribeAll(this, card);
 }
 
-//--EXPORT
-/* istanbul ignore else */ 
-if (typeof(module) !== 'undefined')
-	module.exports = FLContext;
-else
-	window.FLContext = FLContext;
+export default FLContext;

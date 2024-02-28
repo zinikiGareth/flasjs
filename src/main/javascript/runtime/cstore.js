@@ -1,7 +1,4 @@
-
-const { NamedIdempotentHandler } = require('../../resources/ziwsh');;
-//--REQUIRE
-
+import { NamedIdempotentHandler } from '../../resources/ziwsh';
 
 const ContractStore = function(_cxt) {
     this.env = _cxt.env;
@@ -57,10 +54,4 @@ DispatcherInvoker.prototype.invoke = function(meth, args) {
     this.env.queueMessages(cx, Send.eval(cx, this.call, meth, pass, hdlr, hdlrName));
 }
 
-//--EXPORT
-/* istanbul ignore next */
-if (typeof(module) !== 'undefined') {
-	module.exports = ContractStore;
-} else {
-	window.ContractStore = ContractStore;
-}
+export default ContractStore;

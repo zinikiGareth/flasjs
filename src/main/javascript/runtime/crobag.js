@@ -1,7 +1,6 @@
-const FLObject = require("./object");
-const { IdempotentHandler } = require('../../resources/ziwsh');
-const { ResponseWithMessages } = require("./messages");
-//--REQUIRE
+import FLObject from "./object";
+import { IdempotentHandler } from '../../resources/ziwsh';
+import { Debug, Send, Assign, ResponseWithMessages, UpdateDisplay } from './messages';
 
 /* Contracts */
 
@@ -285,11 +284,4 @@ _ActualSlideHandler.prototype._card = function() {
 }
 _ActualSlideHandler.prototype._card.nfargs = function() { return -1; }
   
-//--EXPORTS
-/* istanbul ignore else */
-if (typeof(module) !== 'undefined') {
-    module.exports = { Crobag, CroEntry };
-} else {
-    window.Crobag = Crobag;
-    window.CroEntry = CroEntry;
-}
+export { Crobag, CroEntry };

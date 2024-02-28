@@ -1,5 +1,4 @@
-const FLError = require('./error');
-//--REQUIRE
+import FLError from './error';
 
 /* istanbul ignore next */
 const True = function() {
@@ -454,12 +453,4 @@ FLBuiltin.parseJson = function(_cxt, s) {
 }
 FLBuiltin.parseJson.nfargs = function() { return 1; }
 
-//--EXPORT
-/* istanbul ignore else */
-if (typeof(module) !== 'undefined') {
-	module.exports = { False, True, FLBuiltin };
-} else {
-	window.FLBuiltin = FLBuiltin;
-	window.True = True;
-	window.False = False;
-}
+export { False, True, FLBuiltin };

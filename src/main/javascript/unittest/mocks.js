@@ -1,5 +1,4 @@
-const { IdempotentHandler, NamedIdempotentHandler } = require('../../resources/ziwsh');
-//--REQUIRE
+import { IdempotentHandler, NamedIdempotentHandler } from '../../resources/ziwsh';
 
 const BoundVar = function(name) {
 	this.name = name;
@@ -353,18 +352,5 @@ MockAppl.prototype.bindCards = function(_cxt, iv) {
 MockAppl.prototype._currentRenderTree = function() {
 	return this.appl._currentRenderTree();
 }
-//--EXPORT
-/* istanbul ignore else */ 
-if (typeof(module) !== 'undefined')
-	module.exports = { MockContract, MockFLObject, MockHandler, MockAgent, MockCard, Expectation, BoundVar, ExplodingIdempotentHandler, MockAjax, MockAppl };
-else {
-	window.MockContract = MockContract;
-	window.MockFLObject = MockFLObject;
-	window.MockHandler = MockHandler;
-	window.MockAgent = MockAgent;
-	window.MockCard = MockCard;
-	window.MockAjax = MockAjax;
-	window.MockAppl = MockAppl;
-	window.Expectation = Expectation;
-	window.BoundVar = BoundVar;
-}
+
+export { MockContract, MockFLObject, MockHandler, MockAgent, MockCard, Expectation, BoundVar, ExplodingIdempotentHandler, MockAjax, MockAppl };

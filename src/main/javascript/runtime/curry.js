@@ -48,10 +48,4 @@ FLCurry.prototype.toString = function() {
 	return "FLCurry[" + this.reqd + "]";
 }
 
-//--EXPORT
-/* istanbul ignore else */ 
-if (typeof(module) !== 'undefined') {
-	module.exports = FLCurry;
-} else {
-	window.FLCurry = FLCurry;
-}
+export default FLCurry;
