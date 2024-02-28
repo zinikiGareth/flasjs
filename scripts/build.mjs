@@ -5,6 +5,7 @@ await esbuild.build({
 	'src/main/javascript/runtime/appl.js',
   ],
   bundle: true,
+  format: 'esm',
   outfile: 'dist/core.js',
 // 	'dist/core.js',
 // 	'dist/unittest.js'
@@ -17,6 +18,7 @@ await esbuild.build({
 	'src/main/javascript/unittest/runner.js'
   ],
   bundle: true,
+  format: 'esm',
   outfile: 'dist/test.js',
 // 	'dist/core.js',
 // 	'dist/unittest.js'

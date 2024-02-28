@@ -6,7 +6,7 @@ const { ResponseWithMessages } = require("./messages");
 /* Contracts */
 
 // SlideWindow
-SlideWindow = function(_cxt) {
+var SlideWindow = function(_cxt) {
     IdempotentHandler.call(this, _cxt);
     return ;
 }
@@ -27,7 +27,7 @@ SlideWindow.prototype._methods = function() {
 SlideWindow.prototype._methods.nfargs = function() { return -1; }
 
 // CrobagWindow
-CrobagWindow = function(_cxt) {
+var CrobagWindow = function(_cxt) {
     IdempotentHandler.call(this, _cxt);
     return ;
 }
@@ -264,7 +264,7 @@ CrobagWindowEvent.prototype.toString = function() {
 	return "CrobagWindowEvent[" + this.from + ":" + this.size + "]";
 }
 
-_ActualSlideHandler = function(_cxt, crobag) {
+var _ActualSlideHandler = function(_cxt, crobag) {
     SlideWindow.call(this, _cxt);
     this.state = _cxt.fields();
     this._card = crobag;
