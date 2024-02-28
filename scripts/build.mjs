@@ -1,11 +1,8 @@
 import * as esbuild from 'esbuild'
 
-let importPathPlugin = {
+let flasImportPathPlugin = {
 	name: 'import-path',
 	setup(build) {
-	  build.onResolve({ filter: /\/runtime\// }, args => {
-		return { path: '/js/flasjs.js', external: true }
-	  })
 	  build.onResolve({ filter: /\/ziwsh$/ }, args => {
 		return { path: '/js/ziwsh.js', external: true }
 	  })
@@ -19,9 +16,22 @@ await esbuild.build({
   bundle: true,
   format: 'esm',
   outfile: 'dist/flasjs.js',
-  external: ['./src/main/resources/*']
+  plugins: [ flasImportPathPlugin ],
+//   external: ['./src/main/resources/*']
 })
 
+let liveImportPathPlugin = {
+	name: 'import-path',
+	setup(build) {
+	  build.onResolve({ filter: /\/runtime\// }, args => {
+		return { path: '/js/flasjs.js', external: true }
+	  })
+	  build.onResolve({ filter: /\/ziwsh$/ }, args => {
+		return { path: '/js/ziwsh.js', external: true }
+	  })
+	},
+  }
+  
 await esbuild.build({
   entryPoints: [
 	'src/main/javascript/unittest/flastest.js'
@@ -29,8 +39,10 @@ await esbuild.build({
   bundle: true,
   format: 'esm',
   outfile: 'dist/flastest.js',
-  external: ['./src/main/resources/*', './src/main/javascript/runtime/*']
+  plugins: [ liveImportPathPlugin ],
+//   external: ['./src/main/resources/*', './src/main/javascript/runtime/*']
 })
+
 
 await esbuild.build({
 	entryPoints: [
@@ -42,7 +54,7 @@ await esbuild.build({
 	bundle: true,
 	format: 'esm',
 	outfile: 'dist/flaslive.js',
-	plugins: [ importPathPlugin ],
+	plugins: [ liveImportPathPlugin ],
 	// external: ['./src/main/resources/*', './src/main/javascript/runtime/*']
   })
   
