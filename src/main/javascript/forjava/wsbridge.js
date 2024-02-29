@@ -138,3 +138,5 @@ WSBridge.prototype.gotime = function() {
 WSBridge.handlers["stepdone"] = function(msg) {
 	this.unlock("around step");
 }
+
+export default WSBridge;
