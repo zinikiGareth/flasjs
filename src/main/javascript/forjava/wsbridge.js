@@ -1,3 +1,5 @@
+import JavaLogger from "./javalogger.js";
+
 // Connect to ChromeTestRunner
 function WSBridge(host, port) {
 	var self = this;
@@ -139,4 +141,4 @@ WSBridge.handlers["stepdone"] = function(msg) {
 	this.unlock("around step");
 }
 
-export default WSBridge;
+export { JavaLogger, WSBridge };

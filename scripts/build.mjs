@@ -43,7 +43,6 @@ await esbuild.build({
 //   external: ['./src/main/resources/*', './src/main/javascript/runtime/*']
 })
 
-
 await esbuild.build({
 	entryPoints: [
 	  'src/main/javascript/live/flaslive.js'
@@ -55,6 +54,20 @@ await esbuild.build({
 	format: 'esm',
 	outfile: 'dist/flaslive.js',
 	plugins: [ liveImportPathPlugin ],
+	// external: ['./src/main/resources/*', './src/main/javascript/runtime/*']
+  })
+  
+  await esbuild.build({
+	entryPoints: [
+	  'src/main/javascript/forjava/wsbridge.js'
+	],
+	// alias: {
+	// 	'../src/main/javascript/runtime/flasjs': '/js/flasjs',
+	// },
+	bundle: true,
+	format: 'esm',
+	outfile: 'dist/flasjava.js',
+	plugins: [ ],
 	// external: ['./src/main/resources/*', './src/main/javascript/runtime/*']
   })
   
