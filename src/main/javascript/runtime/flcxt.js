@@ -1,10 +1,10 @@
-import FLClosure from './closure';
-import FLCurry from './curry';
-import FLMakeSend from './makesend';
-import FLError from './error';
-import { FLEventSourceTrait } from './events';
-import { Debug, Send, Assign, ResponseWithMessages, UpdateDisplay } from './messages';
-import { EvalContext, FieldsContainer } from '../../resources/ziwsh';
+import FLClosure from './closure.js';
+import FLCurry from './curry.js';
+import FLMakeSend from './makesend.js';
+import FLError from './error.js';
+import { FLEventSourceTrait } from './events.js';
+import { Debug, Send, Assign, ResponseWithMessages, UpdateDisplay } from './messages.js';
+import { EvalContext, FieldsContainer } from '../../resources/ziwsh.js';
 
 const FLContext = function(env, broker) {
 	EvalContext.call(this, env, broker);

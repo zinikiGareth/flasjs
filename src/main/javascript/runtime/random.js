@@ -1,5 +1,5 @@
-import FLObject from "./object";
-import { Debug, Send, Assign, ResponseWithMessages, UpdateDisplay } from './messages';
+import FLObject from "./object.js";
+import { Debug, Send, Assign, ResponseWithMessages, UpdateDisplay } from './messages.js';
 
 // Use a seedable random number generator
 // see http://prng.di.unimi.it/xoshiro128plusplus.c

@@ -1,9 +1,9 @@
-import { CommonEnv } from '../runtime/env';
-import { UTContext } from './utcxt';
-import { SimpleBroker, JsonBeachhead } from '../../resources/ziwsh';
-import { MockCard, MockFLObject, MockAppl } from './mocks';
-import FLError from '../runtime/error';
-import { Debug, Send, Assign, ResponseWithMessages, UpdateDisplay } from '../runtime/messages';
+import { CommonEnv } from '../runtime/env.js';
+import { UTContext } from './utcxt.js';
+import { SimpleBroker, JsonBeachhead } from '../../resources/ziwsh.js';
+import { MockCard, MockFLObject, MockAppl } from './mocks.js';
+import FLError from '../runtime/error.js';
+import { Debug, Send, Assign, ResponseWithMessages, UpdateDisplay } from '../runtime/messages.js';
 
 const UTRunner = function(bridge) {
 	if (!bridge)

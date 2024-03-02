@@ -1,4 +1,4 @@
-import { IdempotentHandler, NamedIdempotentHandler } from '../../resources/ziwsh';
+import { IdempotentHandler, NamedIdempotentHandler } from '../../resources/ziwsh.js';
 
 const BoundVar = function(name) {
 	this.name = name;

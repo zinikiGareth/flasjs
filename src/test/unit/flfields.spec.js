@@ -1,6 +1,5 @@
-const FLContext = require('../../main/javascript/runtime/flcxt');
-const { FieldsContainer } = require('../../main/resources/ziwsh');
-const { expect } = require('chai');
+import FLContext from '../../main/javascript/runtime/flcxt.js';
+import { expect } from 'chai';
 
 var MyObj = function(_cxt) {
     this.state = _cxt.fields();

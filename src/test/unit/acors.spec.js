@@ -1,7 +1,7 @@
-const FLContext = require('../../main/javascript/runtime/flcxt');
-const { FieldsContainer } = require('../../main/resources/ziwsh');
-const { FLBuiltin } = require('../../main/javascript/runtime/builtin');
-const { expect } = require('chai');
+import FLContext from '../../main/javascript/runtime/flcxt.js';
+import { FieldsContainer } from '../../main/resources/ziwsh.js';
+import { FLBuiltin } from '../../main/javascript/runtime/builtin.js';
+import { expect } from 'chai';
 
 const AcorClass = function(cx) {
     this.state = new FieldsContainer(cx);

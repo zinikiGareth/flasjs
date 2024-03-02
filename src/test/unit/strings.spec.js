@@ -1,8 +1,8 @@
-const FLContext = require('../../main/javascript/runtime/flcxt');
-const { Nil, Cons } = require('../../main/javascript/runtime/lists');
-const { FLBuiltin } = require('../../main/javascript/runtime/builtin');
-const FLError = require('../../main/javascript/runtime/error');
-const { expect } = require('chai');
+import FLContext from '../../main/javascript/runtime/flcxt.js';
+import { Nil, Cons } from '../../main/javascript/runtime/lists.js';
+import { FLBuiltin } from '../../main/javascript/runtime/builtin.js';
+import FLError from '../../main/javascript/runtime/error.js'
+import { expect } from 'chai';
 
 describe('strings', () => {
 	it('strlen has the length of a string', () => {

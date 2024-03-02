@@ -1,4 +1,4 @@
-import { Debug, Send, Assign, ResponseWithMessages, UpdateDisplay } from './messages';
+import { Debug, Send, Assign, ResponseWithMessages, UpdateDisplay } from './messages.js';
 
 const ContainerRepeater = function() {
 }

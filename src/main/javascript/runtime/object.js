@@ -1,4 +1,4 @@
-import { FLCard } from './card';
+import { FLCard } from './card.js';
 
 const FLObject = function(cx) {
 }

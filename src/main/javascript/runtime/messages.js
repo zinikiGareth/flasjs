@@ -1,5 +1,5 @@
-import { IdempotentHandler, NamedIdempotentHandler } from '../../resources/ziwsh';
-import { AssignItem } from './lists';
+import { IdempotentHandler, NamedIdempotentHandler } from '../../resources/ziwsh.js';
+import { AssignItem } from './lists.js';
 
 const Debug = function() {
 }

@@ -1,6 +1,6 @@
-import FLObject from "./object";
-import { IdempotentHandler } from '../../resources/ziwsh';
-import { Debug, Send, Assign, ResponseWithMessages, UpdateDisplay } from './messages';
+import FLObject from "./object.js";
+import { IdempotentHandler } from '../../resources/ziwsh.js';
+import { Debug, Send, Assign, ResponseWithMessages, UpdateDisplay } from './messages.js';
 
 /* Contracts */
 

@@ -1,7 +1,7 @@
-const { UTRunner } = require('../../main/javascript/unittest/runner');
-const { Debug, Send, Assign } = require('../../main/javascript/runtime/messages');
-const { expect, assert } = require('chai');
-const { IdempotentHandler } = require('../../main/resources/ziwsh');
+import { UTRunner } from '../../main/javascript/unittest/runner.js';
+import { Debug, Send, Assign } from '../../main/javascript/runtime/messages.js'
+import { IdempotentHandler } from '../../main/resources/ziwsh.js';
+import { expect, assert } from 'chai';
 
 var MyObj = function(_cxt) {
     this.state = _cxt.fields();
@@ -25,7 +25,7 @@ MyObj.prototype._methods = function() {
     };
 }
 
-Contract = function(cx) {
+var Contract = function(cx) {
     cx.registerContract('Contract', this);
 }
 Contract.prototype.name = function() {

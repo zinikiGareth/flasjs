@@ -1,5 +1,5 @@
-import FLError from './error';
-import { Debug, Send, Assign, ResponseWithMessages, UpdateDisplay } from './messages';
+import FLError from './error.js';
+import { Debug, Send, Assign, ResponseWithMessages, UpdateDisplay } from './messages.js';
 
 const Nil = function() {
 }

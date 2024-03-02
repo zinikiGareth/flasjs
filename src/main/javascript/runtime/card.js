@@ -1,5 +1,5 @@
-import FLError from "./error";
-import { Html } from "./html";
+import FLError from "./error.js";
+import { Html } from "./html.js";
 
 const FLCard = function(cx) {
     this._renderTree = null;

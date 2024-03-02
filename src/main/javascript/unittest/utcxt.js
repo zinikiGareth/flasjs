@@ -1,7 +1,8 @@
-import FLContext from "../runtime/flcxt";
+import FLContext from "../runtime/flcxt.js";
+import { MockContract, MockFLObject, ExplodingIdempotentHandler } from './mocks.js';
 
 const UTContext = function(env, broker) {
-	FLContext.call(env, broker);
+	FLContext.call(this, env, broker);
 }
 
 UTContext.prototype = FLContext.prototype;

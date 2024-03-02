@@ -1,6 +1,6 @@
-const FLContext = require('../../main/javascript/runtime/flcxt');
-const FLCurry = require('../../main/javascript/runtime/curry');
-const { expect } = require('chai');
+import FLContext from '../../main/javascript/runtime/flcxt.js';
+import FLCurry from '../../main/javascript/runtime/curry.js';
+import { expect } from 'chai';
 
 function f(_cxt, a, b) {
     return _cxt.full(a)+_cxt.full(b);

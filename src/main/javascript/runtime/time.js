@@ -1,10 +1,10 @@
-import FLError from './error';
-import { FLBuiltin } from './builtin';
-import FLObject from "./object";
-import { IdempotentHandler } from '../../resources/ziwsh';
-import { Debug, Send, Assign, ResponseWithMessages, UpdateDisplay } from './messages';
-import { Crobag } from './crobag';
-import { dateFormat } from './date.format';
+import FLError from './error.js';
+import { FLBuiltin } from './builtin.js';
+import FLObject from "./object.js";
+import { IdempotentHandler } from '../../resources/ziwsh.js';
+import { Debug, Send, Assign, ResponseWithMessages, UpdateDisplay } from './messages.js';
+import { Crobag } from './crobag.js';
+import { dateFormat } from './date.format.js';
 
 const Interval = function(d, ns) {
     this.days = d;

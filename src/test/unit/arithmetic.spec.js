@@ -1,6 +1,6 @@
-const FLContext = require('../../main/javascript/runtime/flcxt');
-const { FLBuiltin } = require('../../main/javascript/runtime/builtin');
-const { expect } = require('chai');
+import FLContext from '../../main/javascript/runtime/flcxt.js';
+import { FLBuiltin } from '../../main/javascript/runtime/builtin.js';
+import { expect } from 'chai';
 
 describe('FLBuiltin.plus', () => {
 	it('can add two numbers', () => {

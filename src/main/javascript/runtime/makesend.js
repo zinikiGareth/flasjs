@@ -1,4 +1,4 @@
-import { Send } from './messages';
+import { Send } from './messages.js';
 
 const FLMakeSend = function(meth, obj, nargs, handler, subscriptionName) {
 	this.meth = meth;
