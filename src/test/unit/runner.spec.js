@@ -1,5 +1,5 @@
 import { UTRunner } from '../../main/javascript/unittest/runner.js';
-import FLContext from '../../main/javascript/runtime/flcxt.js';
+import { FLContext } from '../../main/javascript/runtime/flcxt.js';
 import { expect } from 'chai';
 
 describe('runner', () => {

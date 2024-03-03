@@ -19,4 +19,4 @@ JavaLogger.debugmsg = function() {
 	callJava.debugmsg(ret);
 };
 
-export default JavaLogger;
+export { JavaLogger };

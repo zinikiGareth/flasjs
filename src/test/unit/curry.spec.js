@@ -1,4 +1,4 @@
-import FLContext from '../../main/javascript/runtime/flcxt.js';
+import { FLContext } from '../../main/javascript/runtime/flcxt.js';
 import FLCurry from '../../main/javascript/runtime/curry.js';
 import { expect } from 'chai';
 

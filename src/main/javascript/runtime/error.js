@@ -19,4 +19,4 @@ FLError.eval = function(_cxt, msg) {
 	return new FLError(msg);
 }
 
-export default FLError;
+export { FLError };

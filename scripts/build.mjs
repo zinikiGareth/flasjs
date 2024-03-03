@@ -7,7 +7,7 @@ let flasImportPathPlugin = {
 		return { path: '/js/ziwsh.js', external: true }
 	  })
 	},
-  }
+};
   
 await esbuild.build({
   entryPoints: [
@@ -18,7 +18,7 @@ await esbuild.build({
   outfile: 'dist/flasjs.js',
   plugins: [ flasImportPathPlugin ],
 //   external: ['./src/main/resources/*']
-})
+});
 
 let liveImportPathPlugin = {
 	name: 'import-path',
@@ -30,7 +30,7 @@ let liveImportPathPlugin = {
 		return { path: '/js/ziwsh.js', external: true }
 	  })
 	},
-  }
+};
   
 await esbuild.build({
   entryPoints: [
@@ -41,7 +41,7 @@ await esbuild.build({
   outfile: 'dist/flastest.js',
   plugins: [ liveImportPathPlugin ],
 //   external: ['./src/main/resources/*', './src/main/javascript/runtime/*']
-})
+});
 
 await esbuild.build({
 	entryPoints: [
@@ -55,9 +55,9 @@ await esbuild.build({
 	outfile: 'dist/flaslive.js',
 	plugins: [ liveImportPathPlugin ],
 	// external: ['./src/main/resources/*', './src/main/javascript/runtime/*']
-  })
+});
   
-  await esbuild.build({
+await esbuild.build({
 	entryPoints: [
 	  'src/main/javascript/forjava/wsbridge.js'
 	],
@@ -69,5 +69,5 @@ await esbuild.build({
 	outfile: 'dist/flasjava.js',
 	plugins: [ ],
 	// external: ['./src/main/resources/*', './src/main/javascript/runtime/*']
-  })
+});
   

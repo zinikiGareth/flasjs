@@ -1,4 +1,4 @@
-import FLError from './error.js';
+import { FLError } from './error.js';
 
 /* istanbul ignore next */
 const True = function() {

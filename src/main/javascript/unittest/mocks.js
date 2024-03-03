@@ -353,4 +353,4 @@ MockAppl.prototype._currentRenderTree = function() {
 	return this.appl._currentRenderTree();
 }
 
-export { MockContract, MockFLObject, MockHandler, MockAgent, MockCard, Expectation, BoundVar, ExplodingIdempotentHandler, MockAjax, MockAppl };
+export { MockContract, MockFLObject, MockHandler, MockAgent, MockCard, Expectation, BoundVar, ExplodingIdempotentHandler, MockAjax, MockAjaxService, MockAjaxSubscriber, MockAppl };

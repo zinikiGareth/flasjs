@@ -1,7 +1,7 @@
 import FLClosure from './closure.js';
 import FLCurry from './curry.js';
 import FLMakeSend from './makesend.js';
-import FLError from './error.js';
+import { FLError } from './error.js';
 import { FLEventSourceTrait } from './events.js';
 import { Debug, Send, Assign, ResponseWithMessages, UpdateDisplay } from './messages.js';
 import { EvalContext, FieldsContainer } from '../../resources/ziwsh.js';
@@ -469,4 +469,4 @@ FLContext.prototype.unsubscribeAll = function(card) {
 	this.env.unsubscribeAll(this, card);
 }
 
-export default FLContext;
+export { FLContext };

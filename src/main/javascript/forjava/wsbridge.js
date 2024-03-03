@@ -1,10 +1,13 @@
-import JavaLogger from "./javalogger.js";
+import { JavaLogger } from "./javalogger.js";
+import { UTRunner } from "../unittest/flastest.js";
 
 // Connect to ChromeTestRunner
-function WSBridge(host, port) {
+function WSBridge(host, port, testWrapper) {
 	var self = this;
+	this.testWrapper = testWrapper;
+	this.runner = new UTRunner(this);
+	this.currentTest = null;
 	this.ws = new WebSocket("ws://" + host + ":" + port + "/bridge");
-	this.waitcount = 1;
 	this.requestId = 1;
 	this.sending = [];
 	this.lockedOut = [];
@@ -64,6 +67,29 @@ WSBridge.handlers['haveModule'] = function(msg) {
 	this.unlock("haveModule");
 }
 
+WSBridge.handlers['prepareTest'] = function(msg) {
+	console.log("run unit test", msg);
+	var cxt = this.runner.newContext();
+	var utf = this.testWrapper[msg.testname];
+	this.currentTest = new utf(this.runner, cxt);
+	console.log(this.currentTest);
+	debugger;
+	var steps = this.currentTest.dotest.call(this.currentTest, cxt);
+	console.log(steps);
+	this.send({action:"steps", steps: steps});
+}
+
+WSBridge.handlers['runStep'] = function(msg) {
+	console.log("run unit test step", msg);
+	var cxt = this.runner.newContext();
+	var step = this.currentTest[msg.step];
+	debugger;
+	step.call(this.currentTest, cxt);
+	this.unlock();
+
+	// still need to call this.runner.assertSatisfied();
+}
+
 WSBridge.prototype.send = function(json) {
 	var text = JSON.stringify(json);
 	if (this.ws.readyState == this.ws.OPEN)
@@ -89,56 +115,12 @@ WSBridge.prototype.nextRequestId = function(hdlr) {
 	return this.requestId++;
 }
 
-WSBridge.prototype.lock = function(msg) {
-	this.waitcount++;
-	console.log("lock   waitcount = " + this.waitcount, msg);
+WSBridge.prototype.lock = function() {
+	this.send({action: "lock"});
 }
 
 WSBridge.prototype.unlock = function(msg) {
-	--this.waitcount;
-	console.log("unlock waitcount = " + this.waitcount, msg);
-	if (this.waitcount == 0) {
-		console.log(new Date() + " ready to go");
-		this.gotime();
-	}
-}
-
-WSBridge.prototype.onUnlock = function(f) {
-	this.lockedOut.push(f);
-}
-
-WSBridge.prototype.gotime = function() {
-	if (this.readysteps.length == 0) {
-		// we're done
-		console.log("test complete");
-		return;
-	}
-	if (this.waitcount > 0) {
-		console.log("cannot go because lock count is", this.waitcount);
-		return; // we are in a holding pattern
-	}
-	if (this.lockedOut.length  > 0) {
-		console.log("handling locked out callback");
-		this.lock("a callback");
-		this.lockedOut.shift().call(this);
-		return;
-	}
-	setTimeout(() => {
-		if (this.readysteps.length == 0) {
-			// we're done
-			console.log("no more steps");
-			return;
-		}
-		var s = this.readysteps.shift();
-		console.log(new Date() + " executing step", s);
-		this.lock("around step");
-		this.st[s].call(this.st, this.runcxt);
-		this.send({action: "step"});
-	}, 100);
-}
-
-WSBridge.handlers["stepdone"] = function(msg) {
-	this.unlock("around step");
+	this.send({action: "unlock"});
 }
 
 export { JavaLogger, WSBridge };

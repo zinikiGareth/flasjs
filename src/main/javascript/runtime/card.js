@@ -1,4 +1,4 @@
-import FLError from "./error.js";
+import { FLError } from "./error.js";
 import { Html } from "./html.js";
 
 const FLCard = function(cx) {

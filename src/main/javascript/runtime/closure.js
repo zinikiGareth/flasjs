@@ -1,4 +1,4 @@
-import FLError from './error.js';
+import { FLError } from './error.js';
 import { Debug, Send, Assign, ResponseWithMessages, UpdateDisplay } from './messages.js';
 
 const FLClosure = function(obj, fn, args) {

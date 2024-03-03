@@ -1,4 +1,4 @@
-import FLContext from '../../main/javascript/runtime/flcxt.js';
+import { FLContext } from '../../main/javascript/runtime/flcxt.js';
 import { SimpleBroker } from '../../main/resources/ziwsh.js';
 import { expect } from 'chai';
 

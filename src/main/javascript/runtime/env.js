@@ -1,4 +1,4 @@
-import FLContext from './flcxt.js';
+import { FLContext } from './flcxt.js';
 import { FLBuiltin } from './builtin.js';
 import { ContainerRepeater } from './repeater.js';
 import { Random } from './random.js';
@@ -7,7 +7,7 @@ import { Image } from './image.js';
 import { Html } from './html.js';
 import { Link } from './link.js';
 import { Calendar } from './time.js';
-import FLError from './error.js';
+import { FLError } from './error.js';
 
 // should this be part of Ziniki?
 const ZiIdURI = function(s) {

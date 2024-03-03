@@ -1,4 +1,4 @@
-import FLContext from '../../main/javascript/runtime/flcxt.js';
+import { FLContext } from '../../main/javascript/runtime/flcxt.js';
 import { True, False, FLBuiltin } from '../../main/javascript/runtime/builtin.js';
 import { expect } from 'chai';
 

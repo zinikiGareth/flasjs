@@ -1,4 +1,4 @@
-import FLError from './error.js';
+import { FLError } from './error.js';
 import { FLBuiltin } from './builtin.js';
 import FLObject from "./object.js";
 import { IdempotentHandler } from '../../resources/ziwsh.js';

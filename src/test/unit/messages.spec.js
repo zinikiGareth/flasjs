@@ -1,4 +1,4 @@
-import FLContext from '../../main/javascript/runtime/flcxt.js';
+import { FLContext } from '../../main/javascript/runtime/flcxt.js';
 import { Debug, Send, Assign } from '../../main/javascript/runtime/messages.js'
 import { FieldsContainer, SimpleBroker, IdempotentHandler } from '../../main/resources/ziwsh.js';
 import FLMakeSend from '../../main/javascript/runtime/makesend.js';

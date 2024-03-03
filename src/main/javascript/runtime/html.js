@@ -1,6 +1,6 @@
 import FLObject from "./object.js";
 import { ResponseWithMessages } from "./messages.js";
-import FLError from "./error.js";
+import { FLError } from "./error.js";
 
 const Html = function(_cxt, _html) {
     FLObject.call(this, _cxt);

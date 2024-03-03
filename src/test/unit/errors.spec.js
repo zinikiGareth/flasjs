@@ -1,5 +1,5 @@
-import FLContext from '../../main/javascript/runtime/flcxt.js';
-import FLError from '../../main/javascript/runtime/error.js'
+import { FLContext } from '../../main/javascript/runtime/flcxt.js';
+import { FLError } from '../../main/javascript/runtime/error.js'
 import { expect, assert } from 'chai';
 
 describe('error class', () => {

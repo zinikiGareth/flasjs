@@ -1,5 +1,5 @@
-import FLContext from '../../main/javascript/runtime/flcxt.js';
-import FLError from '../../main/javascript/runtime/error.js'
+import { FLContext } from '../../main/javascript/runtime/flcxt.js';
+import { FLError } from '../../main/javascript/runtime/error.js'
 import { Debug, Send, Assign } from '../../main/javascript/runtime/messages.js'
 import { FieldsContainer, SimpleBroker, IdempotentHandler } from '../../main/resources/ziwsh.js';
 import { FLBuiltin } from '../../main/javascript/runtime/builtin.js';

@@ -321,4 +321,4 @@ MoveUpEvent.prototype.toString = function() {
 	return "MUE[" + this.cmn + "]";
 }
 
-export default Application;
+export { Application };

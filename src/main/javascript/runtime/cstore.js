@@ -54,4 +54,4 @@ DispatcherInvoker.prototype.invoke = function(meth, args) {
     this.env.queueMessages(cx, Send.eval(cx, this.call, meth, pass, hdlr, hdlrName));
 }
 
-export default ContractStore;
+export { ContractStore };
