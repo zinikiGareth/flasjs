@@ -5,6 +5,7 @@ import { ContractStore } from './cstore.js';
 import { FLCard } from "./card.js";
 import { FLError } from "./error.js";
 import { FLContext } from "./flcxt.js";
+import { Cons, Nil } from "./lists.js";
 
 export {
   Application,
@@ -13,5 +14,6 @@ export {
   ContractStore,
   FLCard,
   FLContext,
-  FLError
+  FLError,
+  Cons, Nil
 };

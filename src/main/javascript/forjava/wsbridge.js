@@ -72,22 +72,33 @@ WSBridge.handlers['prepareTest'] = function(msg) {
 	var cxt = this.runner.newContext();
 	var utf = this.testWrapper[msg.testname];
 	this.currentTest = new utf(this.runner, cxt);
-	console.log(this.currentTest);
-	debugger;
+	this.runner.clear();
 	var steps = this.currentTest.dotest.call(this.currentTest, cxt);
-	console.log(steps);
 	this.send({action:"steps", steps: steps});
 }
 
 WSBridge.handlers['runStep'] = function(msg) {
 	console.log("run unit test step", msg);
-	var cxt = this.runner.newContext();
-	var step = this.currentTest[msg.step];
-	debugger;
-	step.call(this.currentTest, cxt);
-	this.unlock();
+	try {
+		var cxt = this.runner.newContext();
+		var step = this.currentTest[msg.step];
+		step.call(this.currentTest, cxt);
+		this.unlock();
+	} catch (e) {
+		console.log(e);
+		this.send({ action: "error", error: e.toString() });
+	}
+}
 
-	// still need to call this.runner.assertSatisfied();
+WSBridge.handlers['assertSatisfied'] = function(msg) {
+	console.log("assert all expectations satisfied", msg);
+	try {
+		this.runner.assertSatisfied();
+		this.unlock();
+	} catch (e) {
+		console.log(e);
+		this.send({ action: "error", error: e.toString() });
+	}
 }
 
 WSBridge.prototype.send = function(json) {

@@ -56,7 +56,22 @@ await esbuild.build({
 	plugins: [ liveImportPathPlugin ],
 	// external: ['./src/main/resources/*', './src/main/javascript/runtime/*']
 });
-  
+
+let javaImportPathPlugin = {
+	name: 'import-path',
+	setup(build) {
+		build.onResolve({ filter: /\/runtime\// }, args => {
+  			return { path: '/js/flasjs.js', external: true }
+		})
+		build.onResolve({ filter: /ziwsh/ }, args => {
+			return { path: '/js/ziwsh.js', external: true }
+	    })
+		build.onResolve({ filter: /unittest/ }, args => {
+			return { path: '/js/flastest.js', external: true }
+	    })
+	},
+};
+
 await esbuild.build({
 	entryPoints: [
 	  'src/main/javascript/forjava/wsbridge.js'
@@ -67,7 +82,7 @@ await esbuild.build({
 	bundle: true,
 	format: 'esm',
 	outfile: 'dist/flasjava.js',
-	plugins: [ ],
+	plugins: [ javaImportPathPlugin ],
 	// external: ['./src/main/resources/*', './src/main/javascript/runtime/*']
 });
   
