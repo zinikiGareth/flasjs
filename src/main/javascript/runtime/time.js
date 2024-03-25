@@ -1,6 +1,6 @@
 import { FLError } from './error.js';
 import { FLBuiltin } from './builtin.js';
-import FLObject from "./object.js";
+import { FLObject } from "./object.js";
 import { IdempotentHandler } from '../../resources/ziwsh.js';
 import { Debug, Send, Assign, ResponseWithMessages, UpdateDisplay } from './messages.js';
 import { Crobag } from './crobag.js';

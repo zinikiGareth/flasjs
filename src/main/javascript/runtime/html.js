@@ -1,4 +1,4 @@
-import FLObject from "./object.js";
+import { FLObject } from "./object.js";
 import { ResponseWithMessages } from "./messages.js";
 import { FLError } from "./error.js";
 

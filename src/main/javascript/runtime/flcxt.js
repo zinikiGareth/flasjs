@@ -5,6 +5,7 @@ import { FLError } from './error.js';
 import { FLEventSourceTrait } from './events.js';
 import { Debug, Send, Assign, ResponseWithMessages, UpdateDisplay } from './messages.js';
 import { EvalContext, FieldsContainer } from '../../resources/ziwsh.js';
+import { HashPair, Tuple } from './builtin.js';
 
 const FLContext = function(env, broker) {
 	EvalContext.call(this, env, broker);

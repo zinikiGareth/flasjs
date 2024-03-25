@@ -2,9 +2,9 @@ import { JavaLogger } from "./javalogger.js";
 import { UTRunner } from "../unittest/flastest.js";
 
 // Connect to ChromeTestRunner
-function WSBridge(host, port, testWrapper) {
+function WSBridge(host, port) {
 	var self = this;
-	this.testWrapper = testWrapper;
+	this.tests = {};
 	this.runner = new UTRunner(this);
 	this.currentTest = null;
 	this.ws = new WebSocket("ws://" + host + ":" + port + "/bridge");
@@ -42,6 +42,10 @@ function WSBridge(host, port, testWrapper) {
 }
 WSBridge.handlers = {};
 
+WSBridge.prototype.addtest = function(name, test) {
+	this.tests[name] = test;
+}
+
 WSBridge.prototype.log = function(...args) {
 	console.log.apply(console.log, args);
 }
@@ -70,7 +74,7 @@ WSBridge.handlers['haveModule'] = function(msg) {
 WSBridge.handlers['prepareTest'] = function(msg) {
 	console.log("run unit test", msg);
 	var cxt = this.runner.newContext();
-	var utf = this.testWrapper[msg.testname];
+	var utf = this.tests[msg.wrapper][msg.testname];
 	this.currentTest = new utf(this.runner, cxt);
 	this.runner.clear();
 	var steps = this.currentTest.dotest.call(this.currentTest, cxt);

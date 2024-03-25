@@ -15,4 +15,4 @@ FLObject.prototype._diffLists = FLCard.prototype._diffLists;
 FLObject.prototype._attachHandlers = FLCard.prototype._attachHandlers;
 FLObject.prototype._resizeDisplayElements = FLCard.prototype._resizeDisplayElements;
 
-export default FLObject;
+export { FLObject };

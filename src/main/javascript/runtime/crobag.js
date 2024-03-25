@@ -1,4 +1,4 @@
-import FLObject from "./object.js";
+import { FLObject } from "./object.js";
 import { IdempotentHandler } from '../../resources/ziwsh.js';
 import { Debug, Send, Assign, ResponseWithMessages, UpdateDisplay } from './messages.js';
 
