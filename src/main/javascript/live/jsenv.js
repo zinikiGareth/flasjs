@@ -1,5 +1,5 @@
-import { CommonEnv } from '../runtime/flasjs';
-import { SimpleBroker } from '../../resources/ziwsh';
+import { CommonEnv } from '../runtime/flasjs.js';
+import { SimpleBroker } from '../../resources/ziwsh.js';
 
 const JSEnv = function(broker) {
 	if (broker == null)

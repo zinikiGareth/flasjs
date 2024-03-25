@@ -1,4 +1,5 @@
-import { NamedIdempotentHandler } from '../../resources/ziwsh';
+import { NamedIdempotentHandler, proxy } from '../../resources/ziwsh.js';
+import { Send } from './messages.js';
 
 const ContractStore = function(_cxt) {
     this.env = _cxt.env;
