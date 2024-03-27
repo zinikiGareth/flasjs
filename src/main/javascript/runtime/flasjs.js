@@ -1,5 +1,5 @@
 import { Application } from "./appl.js";
-import { Assign, Debug, Send, ResponseWithMessages, UpdateDisplay } from "./messages.js"
+import { Assign, AssignCons, Debug, Send, ResponseWithMessages, UpdateDisplay } from "./messages.js"
 import { CommonEnv } from "./env.js";
 import { ClickEvent } from "./events.js";
 import { ContractStore } from './cstore.js';
@@ -8,11 +8,11 @@ import { FLCard } from "./card.js";
 import { FLObject } from "./object.js";
 import { FLError } from "./error.js";
 import { FLContext } from "./flcxt.js";
-import { Cons, Nil } from "./lists.js";
+import { Cons, Nil, AssignItem } from "./lists.js";
 
 export {
   Application,
-  Assign, Debug, ResponseWithMessages, Send, UpdateDisplay,
+  Assign, AssignCons, Debug, ResponseWithMessages, Send, UpdateDisplay,
   CommonEnv,
   ClickEvent,
   ContractStore,
@@ -21,5 +21,5 @@ export {
   FLObject,
   FLContext,
   FLError,
-  Cons, Nil
+  Cons, Nil, AssignItem
 };

@@ -1,3 +1,4 @@
+import { FLError } from './error.js';
 import { IdempotentHandler, NamedIdempotentHandler } from '../../resources/ziwsh.js';
 import { AssignItem } from './lists.js';
 
@@ -225,4 +226,4 @@ UpdateDisplay.prototype.toString = function() {
 	return "UpdateDisplay";
 }
 
-export { Debug, Send, Assign, ResponseWithMessages, UpdateDisplay };
+export { Debug, Send, Assign, AssignCons, ResponseWithMessages, UpdateDisplay };

@@ -1,4 +1,5 @@
 import { FLError } from './error.js';
+import { AssignItem } from './lists.js';
 
 /* istanbul ignore next */
 const True = function() {
