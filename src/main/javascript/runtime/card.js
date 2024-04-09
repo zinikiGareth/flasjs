@@ -1,5 +1,6 @@
 import { FLError } from "./error.js";
 import { Html } from "./html.js";
+import { Crobag } from "./crobag.js";
 
 const FLCard = function(cx) {
     this._renderTree = null;

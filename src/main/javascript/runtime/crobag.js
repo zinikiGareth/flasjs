@@ -1,3 +1,4 @@
+import { FLError } from "./error.js";
 import { FLObject } from "./object.js";
 import { IdempotentHandler } from '../../resources/ziwsh.js';
 import { Debug, Send, Assign, ResponseWithMessages, UpdateDisplay } from './messages.js';
@@ -284,4 +285,4 @@ _ActualSlideHandler.prototype._card = function() {
 }
 _ActualSlideHandler.prototype._card.nfargs = function() { return -1; }
   
-export { Crobag, CroEntry };
+export { Crobag, CroEntry, SlideWindow, CrobagWindow, CrobagChangeEvent, CrobagWindowEvent };

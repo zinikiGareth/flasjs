@@ -9,6 +9,7 @@ import { FLObject } from "./object.js";
 import { FLError } from "./error.js";
 import { FLContext } from "./flcxt.js";
 import { Cons, Nil, AssignItem } from "./lists.js";
+import { Crobag, CroEntry, SlideWindow, CrobagWindow, CrobagChangeEvent, CrobagWindowEvent } from "./crobag.js";
 
 export {
   Application,
@@ -21,5 +22,6 @@ export {
   FLObject,
   FLContext,
   FLError,
-  Cons, Nil, AssignItem
+  Cons, Nil, AssignItem,
+  Crobag, CroEntry, SlideWindow, CrobagWindow, CrobagChangeEvent, CrobagWindowEvent
 };
