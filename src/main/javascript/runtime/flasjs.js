@@ -3,13 +3,15 @@ import { Assign, AssignCons, Debug, Send, ResponseWithMessages, UpdateDisplay } 
 import { CommonEnv } from "./env.js";
 import { ClickEvent } from "./events.js";
 import { ContractStore } from './cstore.js';
-import { FLBuiltin, False, True, MakeHash, HashPair, Tuple, TypeOf } from "./builtin.js";
+import { Image } from './image.js';
+import { FLBuiltin, FLURI, False, True, MakeHash, HashPair, Tuple, TypeOf } from "./builtin.js";
 import { FLCard } from "./card.js";
 import { FLObject } from "./object.js";
 import { FLError } from "./error.js";
 import { FLContext } from "./flcxt.js";
 import { Cons, Nil, AssignItem } from "./lists.js";
 import { Crobag, CroEntry, SlideWindow, CrobagWindow, CrobagChangeEvent, CrobagWindowEvent } from "./crobag.js";
+import { Random } from "./random.js";
 
 export {
   Application,
@@ -17,11 +19,13 @@ export {
   CommonEnv,
   ClickEvent,
   ContractStore,
-  FLBuiltin, False, True, MakeHash, HashPair, Tuple, TypeOf,
+  Image,
+  FLBuiltin, FLURI, False, True, MakeHash, HashPair, Tuple, TypeOf,
   FLCard,
   FLObject,
   FLContext,
   FLError,
   Cons, Nil, AssignItem,
-  Crobag, CroEntry, SlideWindow, CrobagWindow, CrobagChangeEvent, CrobagWindowEvent
+  Crobag, CroEntry, SlideWindow, CrobagWindow, CrobagChangeEvent, CrobagWindowEvent,
+  Random
 };

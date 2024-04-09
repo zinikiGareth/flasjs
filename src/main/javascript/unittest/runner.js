@@ -388,12 +388,13 @@ UTRunner.prototype.checkAtEnd = function() {
 		throw this.errors[0];
 }
 UTRunner.prototype.newdiv = function(cnt) {
+	var ds = this.divSince;
+	this.divSince = this.nextDivId;
 	if (cnt != null) { // specifically null, because we want to check on 0
-		if (cnt != this.nextDivId - this.divSince) {
-			throw Error("NEWDIV\n  expected: " + cnt + "\n  actual:   " + (this.nextDivId - this.divSince));
+		if (cnt != this.nextDivId - ds) {
+			throw Error("NEWDIV\n  expected: " + cnt + "\n  actual:   " + (this.nextDivId - ds));
 		}
 	}
-	this.divSince = this.nextDivId;
 }
 UTRunner.prototype.expectCancel = function(handler) {
 	var hn;

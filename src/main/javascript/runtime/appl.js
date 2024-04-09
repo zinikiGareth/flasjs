@@ -1,3 +1,5 @@
+import { Debug, Send, Assign, ResponseWithMessages, UpdateDisplay } from './messages.js';
+
 const Application = function(_cxt, topdiv) {
 	if (typeof(topdiv) == 'string')
 		this.topdiv = document.getElementById(topdiv);

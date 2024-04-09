@@ -61,6 +61,8 @@ CommonEnv.prototype.makeReady = function() {
 CommonEnv.prototype.clear = function() {
 	document.body.innerHTML = '';
     this.cards = [];
+    this.nextDivId = 1;
+    this.divSince = this.nextDivId;
     // TODO(?): probably want to clear more things as well, such as subscriptions and singletons
 }
 

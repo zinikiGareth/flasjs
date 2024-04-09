@@ -1,5 +1,6 @@
 import { FLObject } from "./object.js";
 import { ResponseWithMessages } from "./messages.js";
+import { FLURI } from "./builtin.js";
 
 const Image = function(_cxt, _uri) {
     FLObject.call(this, _cxt);

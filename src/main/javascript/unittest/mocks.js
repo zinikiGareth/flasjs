@@ -1,5 +1,6 @@
 import { IdempotentHandler, NamedIdempotentHandler } from '../../resources/ziwsh.js';
-import { FLError } from "../runtime/errors.js";
+import { FLError } from "../runtime/error.js";
+import { FLURI } from "../runtime/builtin.js";
 
 const BoundVar = function(name) {
 	this.name = name;

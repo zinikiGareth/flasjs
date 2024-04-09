@@ -1,3 +1,5 @@
+import { FLURI } from "../runtime/builtin.js";
+
 const groundUri = function(uri) {
 	try {
         if (uri instanceof FLURI) {

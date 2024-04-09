@@ -454,4 +454,4 @@ FLBuiltin.parseJson = function(_cxt, s) {
 }
 FLBuiltin.parseJson.nfargs = function() { return 1; }
 
-export { False, True, FLBuiltin, MakeHash, HashPair, Tuple, TypeOf };
+export { False, True, FLBuiltin, FLURI, MakeHash, HashPair, Tuple, TypeOf };
