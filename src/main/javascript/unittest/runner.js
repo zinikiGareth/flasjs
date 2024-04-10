@@ -1,6 +1,6 @@
 import { CommonEnv } from '../runtime/env.js';
 import { UTContext } from './utcxt.js';
-import { SimpleBroker, JsonBeachhead } from '../../resources/ziwsh.js';
+import { SimpleBroker, JsonBeachhead, IdempotentHandler, NamedIdempotentHandler } from '../../resources/ziwsh.js';
 import { MockAgent, MockCard, MockFLObject, MockAppl, MockAjaxService } from './mocks.js';
 import { FLError } from '../runtime/error.js';
 import { Debug, Send, Assign, ResponseWithMessages, UpdateDisplay } from '../runtime/messages.js';
@@ -9,15 +9,7 @@ const UTRunner = function(bridge) {
 	if (!bridge)
 		bridge = console; // at least get the logger ...
 	CommonEnv.call(this, bridge, new SimpleBroker(bridge, this, {}));
-	this.errors = [];
-	this.mocks = {};
-	this.ajaxen = [];
-	this.appls = [];
-	this.activeSubscribers = [];
-	if (typeof(window) !== 'undefined')
-		window.utrunner = this;
 	this.moduleInstances = {};
-	this.toCancel = new Map();
 	for (var mn in UTRunner.modules) {
 		if (UTRunner.modules.hasOwnProperty(mn)) {
 			var jm;
@@ -29,10 +21,21 @@ const UTRunner = function(bridge) {
 			this.moduleInstances[mn] = new UTRunner.modules[mn](this, jm);
 		}
 	}
+	this.clear();
 }
 
 UTRunner.prototype = new CommonEnv();
 UTRunner.prototype.constructor = UTRunner;
+
+UTRunner.prototype.clear = function() {
+	CommonEnv.prototype.clear.apply(this);
+	this.toCancel = new Map();
+	this.errors = [];
+	this.mocks = {};
+	this.ajaxen = [];
+	this.appls = [];
+	this.activeSubscribers = [];
+}
 
 UTRunner.prototype.newContext = function() {
 	return new UTContext(this, this.broker);

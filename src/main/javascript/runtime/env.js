@@ -63,7 +63,9 @@ CommonEnv.prototype.clear = function() {
     this.cards = [];
     this.nextDivId = 1;
     this.divSince = this.nextDivId;
-    // TODO(?): probably want to clear more things as well, such as subscriptions and singletons
+    this.namedSubscriptions = new Map();
+    this.unnamedSubscriptions = new Map();
+	this.singletons = {};
 }
 
 CommonEnv.prototype.queueMessages = function(_cxt, msg) {
