@@ -6,15 +6,11 @@
     "configurations": [
         {
             "type": "node",
-            "runtimeExecutable": "/Users/gareth/.nvm/versions/node/v18.12.1/bin/node",
+            "runtimeExecutable": "/Users/gareth/.nvm/versions/node/v18.12.1/bin/npm",
             "request": "launch",
             "name": "Mocha Tests",
-            "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
             "args": [
-                "--timeout",
-                "999999",
-                "--colors",
-                "${workspaceFolder}/src/test/unit/*.spec.js"
+                "test"
             ],
             "internalConsoleOptions": "openOnSessionStart",
             "skipFiles": [

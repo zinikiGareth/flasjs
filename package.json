@@ -8,10 +8,18 @@
     "package": "node scripts/build.mjs",
     "coverage": "nyc --reporter=html npm run test"
   },
+  "mocha": {
+    "timeout": 32000,
+    "require": [
+      "jsdom-global/register"
+    ]
+  },
   "devDependencies": {
     "chai": "^5.1.0",
     "esbuild": "0.20.1",
-    "mocha": "^10.3.0",
+    "jsdom": "24.0.0",
+    "jsdom-global": "3.0.2",
+    "mocha": "^10.4.0",
     "nyc": "^14.1.1"
   }
 }

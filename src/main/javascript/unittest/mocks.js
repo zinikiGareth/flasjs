@@ -90,7 +90,7 @@ MockContract.prototype.serviceMethod = function(_cxt, meth, args) {
 				continue; // there may be another that matches
 			}
 			matched.invoked++;
-			_cxt.log("Have invocation of", meth, "with", args);
+			// _cxt.log("Have invocation of", meth, "with", args);
 			if (matched.handler instanceof BoundVar) {
 				var tih = ih;
 				// if (ih instanceof NamedIdempotentHandler) {
