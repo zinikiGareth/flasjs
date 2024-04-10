@@ -11,6 +11,9 @@
 		},
 		{
 			"path": "../ziniki-server/services"
+		},
+		{
+			"path": "../ziniki-server/zinikijs"
 		}
 	]
 }
