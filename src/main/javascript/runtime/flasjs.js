@@ -1,9 +1,10 @@
 import { Application } from "./appl.js";
 import { Assign, AssignCons, Debug, Send, ResponseWithMessages, UpdateDisplay } from "./messages.js"
 import { CommonEnv } from "./env.js";
-import { ClickEvent } from "./events.js";
+import { ClickEvent, ScrollTo } from "./events.js";
 import { ContractStore } from './cstore.js';
 import { Image } from './image.js';
+import { Link } from './link.js';
 import { FLBuiltin, FLURI, False, True, MakeHash, HashPair, Tuple, TypeOf } from "./builtin.js";
 import { FLCard } from "./card.js";
 import { FLObject } from "./object.js";
@@ -18,9 +19,10 @@ export {
   Application,
   Assign, AssignCons, Debug, ResponseWithMessages, Send, UpdateDisplay,
   CommonEnv,
-  ClickEvent,
+  ClickEvent, ScrollTo,
   ContractStore,
   Image,
+  Link,
   FLBuiltin, FLURI, False, True, MakeHash, HashPair, Tuple, TypeOf,
   FLCard,
   FLObject,

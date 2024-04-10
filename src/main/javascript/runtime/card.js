@@ -1,5 +1,6 @@
 import { FLError } from "./error.js";
 import { Html } from "./html.js";
+import { Link } from "./link.js";
 import { Crobag } from "./crobag.js";
 import { Image } from "./image.js";
 
@@ -265,9 +266,9 @@ FLCard.prototype._updateLink = function(_cxt, rt, templateName, field, option, s
     value = _cxt.full(value);
     // it should be an Link object
     var linkRef;
-    var linkText;
+    var linkTitle;
     if (typeof value === 'undefined' || value == null || !(value instanceof Link))
-        linkRef = linkText = '';
+        linkRef = linkTitle = '';
     else {
         linkRef = value._field_uri(_cxt).uri;
         linkTitle = value._field_title(_cxt);
