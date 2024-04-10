@@ -12,6 +12,7 @@ import { FLContext } from "./flcxt.js";
 import { Cons, Nil, AssignItem } from "./lists.js";
 import { Crobag, CroEntry, SlideWindow, CrobagWindow, CrobagChangeEvent, CrobagWindowEvent } from "./crobag.js";
 import { Random } from "./random.js";
+import { Interval, Instant, Calendar } from "./time.js";
 
 export {
   Application,
@@ -27,5 +28,6 @@ export {
   FLError,
   Cons, Nil, AssignItem,
   Crobag, CroEntry, SlideWindow, CrobagWindow, CrobagChangeEvent, CrobagWindowEvent,
-  Random
+  Random,
+  Interval, Instant, Calendar
 };
