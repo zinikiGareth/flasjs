@@ -446,66 +446,16 @@ UTRunner.prototype.updateAllCards = function(_cxt) {
 		}
 	}
 }
+
 UTRunner.prototype.module = function(mod) {
 	var m = this.moduleInstances[mod];
 	if (!m)
 		throw new Error("There is no module " + mod);
 	return m;
 }
-UTRunner.prototype.transport = function(tz) {
-	// we have a transport to Ziniki
-	this.zinBch = new JsonBeachhead(this, "fred", this.broker, tz);
-	this.broker.beachhead(this.zinBch);
-}
-UTRunner.prototype.deliver = function(json) {
-	// we have a response from Ziniki
-	this.logger.log("have " + json + " ready for delivery");
-	var cx = this.newContext();
-	var msgs = this.zinBch.dispatch(cx, json, null);
-	this.logger.log("have messages", msgs);
-	this.queueMessages(cx, msgs);
-}
+
 UTRunner.prototype.addHistory = function(state, title, url) {
 	// we could forward this to the bridge if we wanted to do something specific
 }
 
-UTRunner.prototype.runRemote = function(testClz, spec) {
-	var cxt = this.newContext();
-	var st = new testClz(this, cxt);
-	var allSteps = [];
-	if (spec.configure) {
-		var steps = spec.configure.call(st, cxt);
-		for (var j=0;j<steps.length;j++)
-			allSteps.push(steps[j]);
-	}
-	if (spec.stages) {
-		for (var i=0;i<spec.stages.length;i++) {
-			var steps = spec.stages[i].call(st, cxt);
-			for (var j=0;j<steps.length;j++)
-				allSteps.push(steps[j]);
-		}
-	}
-	if (spec.cleanup) {
-		var steps = spec.cleanup.call(st, cxt);
-		for (var j=0;j<steps.length;j++)
-			allSteps.push(steps[j]);
-	}
-	var bridge = this.logger; // we have stored it as "logger" but it is actually the bridge to "Java-world"
-	bridge.executeSync(this, st, cxt, allSteps);
-}
-
-const makeBridge = function(jsb, logger) {
-	return {
-		log: logger.log,
-		debugmsg: logger.debugmsg,
-		// sendJson: (j) => jsb.sendJson.call(jsb, j),
-		// transport: (z) => jsb.transport.call(jsb, z),
-		module: (r, m) => jsb.module.call(jsb, r, m),
-		error: (e) => jsb.error.call(jsb, e),
-		lock: () => jsb.lock.call(jsb),
-		unlock: () => jsb.unlock.call(jsb),
-		getTestCounter: () => jsb.getTestCounter.call(jsb)
-	};
-}
-
-export { UTRunner, makeBridge };
+export { UTRunner };
