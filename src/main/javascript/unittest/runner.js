@@ -1,7 +1,7 @@
 import { CommonEnv } from '../runtime/env.js';
 import { UTContext } from './utcxt.js';
 import { SimpleBroker, JsonBeachhead, IdempotentHandler, NamedIdempotentHandler } from '../../resources/ziwsh.js';
-import { MockAgent, MockCard, MockFLObject, MockAppl, MockAjax, MockAjaxService } from './mocks.js';
+import { MockAgent, MockCard, MockFLObject, MockAppl } from './mocks.js';
 import { FLError } from '../runtime/error.js';
 import { Debug, Send, Assign, ResponseWithMessages, UpdateDisplay } from '../runtime/messages.js';
 
@@ -41,7 +41,6 @@ UTRunner.prototype.bindModule = function(name, jm) {
 
 UTRunner.prototype.makeReady = function() {
 	CommonEnv.prototype.makeReady.call(this);
-    this.broker.register("Ajax", new MockAjaxService());
 }
 
 UTRunner.prototype.error = function(err) {
@@ -419,11 +418,6 @@ UTRunner.prototype.mockCard = function(_cxt, name, card) {
 	this.mocks[name] = ret;
 	this.cards.push(ret);
 	return ret;
-}
-UTRunner.prototype.newAjax = function(cxt, baseUri) {
-	var ma = new MockAjax(cxt, baseUri);
-	this.ajaxen.push(ma);
-	return ma;
 }
 UTRunner.prototype.newMockAppl = function(cxt, clz) {
 	var ma = new MockAppl(cxt, clz);

@@ -3,8 +3,6 @@ import * as esbuild from 'esbuild'
 let flasImportPathPlugin = {
 	name: 'import-path',
 	setup(build) {
-		build.onResolve({ filter: /./ },  args => { if (!args.path.endsWith(".js")) { console.log(args); } });
-
 	  build.onResolve({ filter: /ziwsh.js$/ }, args => {
 		return { path: '/js/ziwsh.js', external: true }
 	  })
@@ -25,8 +23,6 @@ await esbuild.build({
 let liveImportPathPlugin = {
 	name: 'import-path',
 	setup(build) {
-		build.onResolve({ filter: /./ },  args => { if (!args.path.endsWith(".js")) { console.log(args); } });
-
 		build.onResolve({ filter: /\/runtime\// }, args => {
 		return { path: '/js/flasjs.js', external: true }
 	  })
@@ -59,8 +55,6 @@ await esbuild.build({
 let javaImportPathPlugin = {
 	name: 'import-path',
 	setup(build) {
-		build.onResolve({ filter: /./ },  args => { if (!args.path.endsWith(".js")) { console.log(args); } });
-
 		build.onResolve({ filter: /\/runtime\// }, args => {
   			return { path: '/js/flasjs.js', external: true }
 		})
