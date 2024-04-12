@@ -3,6 +3,7 @@ import { Assign, AssignCons, Debug, Send, ResponseWithMessages, UpdateDisplay } 
 import { CommonEnv } from "./env.js";
 import { ClickEvent, ScrollTo } from "./events.js";
 import { ContractStore } from './cstore.js';
+import { Entity } from "./entity.js";
 import { Image } from './image.js';
 import { Link } from './link.js';
 import { FLBuiltin, FLURI, False, True, MakeHash, HashPair, Tuple, TypeOf } from "./builtin.js";
@@ -21,6 +22,7 @@ export {
   CommonEnv,
   ClickEvent, ScrollTo,
   ContractStore,
+  Entity,
   Image,
   Link,
   FLBuiltin, FLURI, False, True, MakeHash, HashPair, Tuple, TypeOf,
