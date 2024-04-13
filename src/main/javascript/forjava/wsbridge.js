@@ -99,11 +99,6 @@ WSBridge.handlers['haveModule'] = function(msg) {
 		cb(this.runner, msg.conn);
 	}
 	delete this.moduleCreators[name];
-	// var clz = window[msg.clz];
-	// var conn = msg.conn;
-
-	// console.log("have connection for module", this, name, clz);
-	// this.runner.bindModule(name, new clz(this, conn));
 	this.unlock("haveModule");
 }
 
