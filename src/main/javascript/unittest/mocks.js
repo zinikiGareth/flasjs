@@ -1,6 +1,7 @@
 import { IdempotentHandler, NamedIdempotentHandler } from '../../resources/ziwsh.js';
 import { FLError } from "../runtime/error.js";
 import { FLURI } from "../runtime/builtin.js";
+import { STSecurityModule } from './stsecurity.js';
 
 const BoundVar = function(name) {
 	this.name = name;
@@ -265,6 +266,7 @@ const MockAppl = function(_cxt, clz) {
 	newdiv.setAttribute("id", _cxt.nextDocumentId());
 	document.body.appendChild(newdiv);
 	this.appl = new clz._Application(_cxt, newdiv);
+	this.appl.securityModule = new STSecurityModule();
 	this.appl._updateDisplay(_cxt, this.appl._currentRenderTree());
 }
 MockAppl.prototype.route = function(_cxt, r, andThen) {
