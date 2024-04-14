@@ -10,10 +10,10 @@ const Html = function(_cxt, _html) {
 
 Html._ctor_from = function(_cxt, _card, _html) {
     var ret;
-    if (!(_html instanceof AjaxMessage)) {
-        ret = new FLError("not an AjaxMessage");
+    if (!_html._convertToHTML) {
+        ret = new FLError("not valid HTML source");
     } else {
-        ret = new Html(_cxt, _html.state.get('body'));
+        ret = new Html(_cxt, _html._convertToHTML() /* state.get('body') */);
     }
     return new ResponseWithMessages(_cxt, ret, []);
 }
