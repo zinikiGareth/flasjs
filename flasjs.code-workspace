@@ -1,16 +1,20 @@
 {
 	"folders": [
 		{
+			"name": "flasjs",
 			"path": "."
 		},
 		{
-			"path": "../stdlib"
+			"name": "stdlib-jslib",
+			"path": "../stdlib/jslib"
 		},
 		{
-			"path": "../../../Clients/gmmapowell.com"
-		},
-		{
+			"name": "ziniki-js",
 			"path": "../ziniki-server/zinikijs"
+		},
+		{
+			"name": "gmmapowell.com",
+			"path": "../../../Clients/gmmapowell.com"
 		}
 	]
 }

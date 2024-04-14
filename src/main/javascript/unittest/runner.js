@@ -22,7 +22,6 @@ UTRunner.prototype.clear = function() {
 	this.toCancel = new Map();
 	this.errors = [];
 	this.mocks = {};
-	this.ajaxen = [];
 	this.appls = [];
 	this.activeSubscribers = [];
 }
