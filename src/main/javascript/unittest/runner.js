@@ -1,7 +1,7 @@
 import { CommonEnv } from '../runtime/env.js';
 import { UTContext } from './utcxt.js';
 import { SimpleBroker, JsonBeachhead, IdempotentHandler, NamedIdempotentHandler } from '../../resources/ziwsh.js';
-import { MockAgent, MockCard, MockFLObject, MockAppl } from './mocks.js';
+import { MockAgent, MockCard, MockFLObject } from './mocks.js';
 import { FLError } from '../runtime/error.js';
 import { Debug, Send, Assign, ResponseWithMessages, UpdateDisplay } from '../runtime/messages.js';
 
@@ -149,7 +149,7 @@ UTRunner.prototype.render = function(_cxt, target, fn, template) {
 	sendTo.redraw(_cxt);
 }
 UTRunner.prototype.findMockFor = function(obj) {
-	if (obj instanceof MockFLObject || obj instanceof MockCard || obj instanceof MockAppl)
+	if (obj._isMock)
 		return obj;
 	var ks = Object.keys(this.mocks);
 	for (var i=0;i<ks.length;i++) {
@@ -277,28 +277,6 @@ UTRunner.prototype.matchText = function(_cxt, target, zone, contains, fails, exp
 			throw new Error("MATCH\n  expected: " + expected + "\n  actual:   " + actual);
 	}
 }
-UTRunner.prototype.matchTitle = function(_cxt, target, zone, contains, expected) {
-	var matchOn = this.findMockFor(target);
-	if (!matchOn)
-		throw Error("there is no mock " + target);
-	if (!(matchOn instanceof MockAppl))
-		throw Error("can only test title on Appl");
-	var titles = document.head.getElementsByTagName("title");
-	var actual = "";
-	for (var i=0;i<titles.length;i++) {
-		actual += titles[i].innerText.trim() + " ";
-	}
-	actual = actual.trim();
-	actual = actual.replace(/\n/g, ' ');
-	actual = actual.replace(/ +/, ' ');
-	if (contains) {
-		if (!actual.includes(expected))
-			throw new Error("MATCH\n  expected to contain: " + expected + "\n  actual:   " + actual);
-	} else {
-		if (actual != expected)
-			throw new Error("MATCH\n  expected: " + expected + "\n  actual:   " + actual);
-	}
-}
 UTRunner.prototype.matchImageUri = function(_cxt, target, zone, expected) {
 	var matchOn = this.findMockFor(target);
 	if (!matchOn)
@@ -358,14 +336,6 @@ UTRunner.prototype.matchScroll = function(_cxt, target, zone, contains, expected
 	if (actual != expected)
 		throw new Error("MATCH\n  expected: " + expected + "\n  actual:   " + actual);
 }
-UTRunner.prototype.route = function(_cxt, app, route, storeCards) {
-	app.route(_cxt, route, () => {
-		app.bindCards(_cxt, storeCards);
-	});
-}
-UTRunner.prototype.userlogin = function(_cxt, app, user) {
-	app.userLoggedIn(_cxt, user);
-}
 UTRunner.prototype.updateCard = function(_cxt, card) {
 	if (!(card instanceof MockCard))
 		return;
@@ -413,11 +383,6 @@ UTRunner.prototype.mockCard = function(_cxt, name, card) {
 	this.mocks[name] = ret;
 	this.cards.push(ret);
 	return ret;
-}
-UTRunner.prototype.newMockAppl = function(cxt, clz) {
-	var ma = new MockAppl(cxt, clz);
-	this.appls.push(ma);
-	return ma;
 }
 UTRunner.prototype._updateDisplay = function(_cxt, rt) {
 	this.updateAllCards(_cxt);

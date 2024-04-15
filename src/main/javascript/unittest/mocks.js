@@ -1,7 +1,4 @@
 import { IdempotentHandler, NamedIdempotentHandler } from '../../resources/ziwsh.js';
-import { FLError } from "../runtime/error.js";
-import { FLURI } from "../runtime/builtin.js";
-import { STSecurityModule } from './stsecurity.js';
 
 const BoundVar = function(name) {
 	this.name = name;
@@ -142,6 +139,10 @@ const MockFLObject = function(obj) {
 	this.obj = obj;
 }
 
+MockFLObject.prototype._isMock = function() {
+	return true;
+}
+
 MockFLObject.prototype._currentDiv = function() {
 	if (this.div)
 		return this.div;
@@ -174,6 +175,10 @@ const MockCard = function(cx, card) {
 	document.body.appendChild(newdiv);
 	this.card._renderInto(cx, newdiv);
 };
+
+MockCard.prototype._isMock = function() {
+	return true;
+}
 
 MockCard.prototype.sendTo = function(_cxt, contract, msg, args) {
 	const ctr = this.card._contracts.contractFor(_cxt, contract);
@@ -261,32 +266,5 @@ MockHandler.prototype.expect = MockContract.prototype.expect;
 MockHandler.prototype.serviceMethod = MockContract.prototype.serviceMethod;
 MockHandler.prototype.assertSatisfied = MockContract.prototype.assertSatisfied;
 
-const MockAppl = function(_cxt, clz) {
-	const newdiv = document.createElement("div");
-	newdiv.setAttribute("id", _cxt.nextDocumentId());
-	document.body.appendChild(newdiv);
-	this.appl = new clz._Application(_cxt, newdiv);
-	this.appl.securityModule = new STSecurityModule();
-	this.appl._updateDisplay(_cxt, this.appl._currentRenderTree());
-}
-MockAppl.prototype.route = function(_cxt, r, andThen) {
-	this.appl.gotoRoute(_cxt, r, () => {
-		this.appl._updateDisplay(_cxt, this.appl._currentRenderTree());
-		andThen();
-	});
-}
-MockAppl.prototype.userLoggedIn = function(_cxt, u) {
-	this.appl.securityModule.userLoggedIn(_cxt, this.appl, u);
-}
-MockAppl.prototype.bindCards = function(_cxt, iv) {
-	if (!iv)
-		return;
-	var binding = {};
-	binding["main"] = this.appl.cards["main"];
-	iv.bindActual({ routes: binding });
-}
-MockAppl.prototype._currentRenderTree = function() {
-	return this.appl._currentRenderTree();
-}
 
-export { MockContract, MockFLObject, MockHandler, MockAgent, MockCard, Expectation, BoundVar, ExplodingIdempotentHandler, MockAppl };
+export { MockContract, MockFLObject, MockHandler, MockAgent, MockCard, Expectation, BoundVar, ExplodingIdempotentHandler };
