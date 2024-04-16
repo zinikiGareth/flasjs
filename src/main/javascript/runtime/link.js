@@ -1,6 +1,3 @@
-
-//--REQUIRE
-
 const Link = function(_cxt) {
     this.state = _cxt.fields();
     this.state.set('_type', 'Link');
@@ -35,10 +32,4 @@ Link.prototype._field_uri = function(_cxt) {
 Link.prototype._field_uri.nfargs = function() { return 0; }
   
 
-//--EXPORTS
-/* istanbul ignore else */
-if (typeof(module) !== 'undefined') {
-    module.exports = { Link };
-} else {
-    window.Link = Link;
-}
+export { Link };

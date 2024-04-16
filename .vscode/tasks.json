@@ -25,6 +25,14 @@
                 "cwd": "${workspaceFolder}/../Tools"
             },
             "problemMatcher": []
+        },
+        {
+            "type": "npm",
+            "script": "test",
+            "group": "test",
+            "problemMatcher": [],
+            "label": "npm: test",
+            "detail": "mocha src/test/unit/*.spec.js"
         }
     ]
 }

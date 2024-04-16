@@ -1,11 +1,11 @@
-const FLClosure = require('./closure');
-const FLCurry = require('./curry');
-const FLMakeSend = require('./makesend');
-const FLError = require('./error');
-const { MockContract, MockAgent, MockCard, ExplodingIdempotentHandler } = require('../unittest/mocks');
-const { Debug, Send, Assign, ResponseWithMessages, UpdateDisplay } = require('./messages');
-const { EvalContext, FieldsContainer } = require('../../resources/ziwsh');
-//--REQUIRE
+import FLClosure from './closure.js';
+import FLCurry from './curry.js';
+import FLMakeSend from './makesend.js';
+import { FLError } from './error.js';
+import { FLEventSourceTrait } from './events.js';
+import { Debug, Send, Assign, ResponseWithMessages, UpdateDisplay } from './messages.js';
+import { EvalContext, FieldsContainer } from '../../resources/ziwsh.js';
+import { HashPair, Tuple } from './builtin.js';
 
 const FLContext = function(env, broker) {
 	EvalContext.call(this, env, broker);
@@ -107,7 +107,7 @@ FLContext.prototype.applyhash = function(basic, hash) {
 
 FLContext.prototype.tupleMember = function(tuple, which) {
 	tuple = this.head(tuple);
-	if (!tuple instanceof Tuple)
+	if (!(tuple instanceof Tuple))
 		throw "not a tuple: " + tuple;
 	return tuple.args[which];
 }
@@ -390,47 +390,6 @@ FLContext.prototype.needsUpdate = function(card) {
 		this.updateCards.push(card);
 }
 
-FLContext.prototype.storeMock = function(name, value) {
-	value = this.full(value);
-	if (value instanceof ResponseWithMessages) {
-		this.env.queueMessages(this, ResponseWithMessages.messages(this, value));
-		// because this is a test operation, we dispatch the messages immediately
-		this.env.dispatchMessages(this);
-		value = ResponseWithMessages.response(this, value);
-	}
-	if (value instanceof FLObject) {
-		var mock = new MockFLObject(value);
-		this.env.mocks[name] = mock;
-		this.env.cards.push(mock);
-	} else
-		this.env.mocks[name] = value;
-	return value;
-}
-
-FLContext.prototype.mockContract = function(contract) {
-	const ret = new MockContract(contract);
-	this.broker.register(contract.name(), ret);
-	return ret;
-}
-
-FLContext.prototype.mockAgent = function(agent) {
-	return this.env.mockAgent(this, agent);
-}
-
-FLContext.prototype.mockCard = function(name, card) {
-	return this.env.mockCard(this, name, card);
-}
-
-FLContext.prototype.explodingHandler = function() {
-	const ret = new ExplodingIdempotentHandler(this);
-	return ret;
-}
-
-FLContext.prototype.mockHandler = function(contract) {
-	const ret = new MockHandler(contract);
-	return ret;
-}
-
 FLContext.prototype.newdiv = function(cnt) {
 	this.env.newdiv(cnt);
 }
@@ -511,9 +470,4 @@ FLContext.prototype.unsubscribeAll = function(card) {
 	this.env.unsubscribeAll(this, card);
 }
 
-//--EXPORT
-/* istanbul ignore else */ 
-if (typeof(module) !== 'undefined')
-	module.exports = FLContext;
-else
-	window.FLContext = FLContext;
+export { FLContext };

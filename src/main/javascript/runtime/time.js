@@ -1,10 +1,8 @@
-const FLError = require('./error');
-const FLBuiltin = require('./builtin');
-const FLObject = require("./object");
-const { IdempotentHandler } = require('../../resources/ziwsh');
-const { ResponseWithMessages } = require("./messages");
-const { Crobag } = require('./crobag');
-//--REQUIRE
+import { FLError } from './error.js';
+import { FLBuiltin } from './builtin.js';
+import { FLObject } from "./object.js";
+import { Debug, Send, Assign, ResponseWithMessages, UpdateDisplay } from './messages.js';
+import { dateFormat } from './date.format.js';
 
 const Interval = function(d, ns) {
     this.days = d;
@@ -165,13 +163,4 @@ Calendar.prototype._methods = function() {
     };
 }
 
-
-//--EXPORT
-/* istanbul ignore else */
-if (typeof(module) !== 'undefined') {
-	module.exports = { Interval, Instant, Calendar };
-} else {
-	window.Instant = Interval;
-    window.Interval = Interval;
-    window.Calendar = Calendar;
-}
+export { Interval, Instant, Calendar };

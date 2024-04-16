@@ -1,6 +1,3 @@
-
-//--REQUIRE
-
 const FLEvent = function() {
 }
 
@@ -73,13 +70,4 @@ ScrollTo.prototype._field_source.nfargs = function () {
     return 0;
 }
 
-//--EXPORT
-/* istanbul ignore else */
-if (typeof(module) !== 'undefined')
-	module.exports = { FLEvent, FLEventSourceTrait, ClickEvent, ScrollTo };
-else {
-	window.FLEvent = FLEvent;
-	window.FLEventSourceTrait = FLEventSourceTrait;
-	window.ClickEvent = ClickEvent;
-	window.ScrollTo = ScrollTo;
-}
+export { FLEvent, FLEventSourceTrait, ClickEvent, ScrollTo };

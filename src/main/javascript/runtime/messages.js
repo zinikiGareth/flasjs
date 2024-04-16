@@ -1,6 +1,6 @@
-const { IdempotentHandler, NamedIdempotentHandler } = require('../../resources/ziwsh');
-const { AssignItem } = require('./lists');
-//--REQUIRE
+import { FLError } from './error.js';
+import { IdempotentHandler, NamedIdempotentHandler } from '../../resources/ziwsh.js';
+import { AssignItem } from './lists.js';
 
 const Debug = function() {
 }
@@ -226,14 +226,4 @@ UpdateDisplay.prototype.toString = function() {
 	return "UpdateDisplay";
 }
 
-//--EXPORT
-/* istanbul ignore else */
-if (typeof(module) !== 'undefined')
-	module.exports = { Debug, Send, Assign, ResponseWithMessages, UpdateDisplay };
-else {
-	window.Debug = Debug;
-	window.Send = Send;
-	window.Assign = Assign;
-	window.ResponseWithMessages = ResponseWithMessages;
-	window.UpdateDisplay = UpdateDisplay;
-}
+export { Debug, Send, Assign, AssignCons, ResponseWithMessages, UpdateDisplay };

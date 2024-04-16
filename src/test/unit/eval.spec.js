@@ -1,5 +1,5 @@
-const FLContext = require('../../main/javascript/runtime/flcxt');
-const { expect } = require('chai');
+import { FLContext } from '../../main/javascript/runtime/flcxt.js';
+import { expect } from 'chai';
 
 var a = function(_cxt) {
 	return 42;

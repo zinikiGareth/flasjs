@@ -1,5 +1,4 @@
-const FLError = require('../runtime/error');
-//--REQUIRE
+import { Debug, Send, Assign, ResponseWithMessages, UpdateDisplay } from './messages.js';
 
 const Application = function(_cxt, topdiv) {
 	if (typeof(topdiv) == 'string')
@@ -60,6 +59,7 @@ Application.prototype.parseRoute = function(_cxt, r) {
 	if (r instanceof Location || r instanceof URL) {
 		r = r.href;
 	}
+	var buri;
 	if (typeof(baseUri) !== 'undefined' && baseUri)
 		buri = baseUri;
 	else
@@ -156,7 +156,7 @@ function createOne(appl, ci) {
 		var card = appl.cards[ci.name] = new ci.card(_cxt);
 		var ctr = _cxt.findContractOnCard(card, "Lifecycle");
 		if (ctr && ctr.init) {
-			msgs = ctr.init(_cxt);
+			var msgs = ctr.init(_cxt);
 			_cxt.env.queueMessages(_cxt, msgs);
 		}
 	};
@@ -167,7 +167,7 @@ function closeOne(appl, ci) {
 		var card = appl.cards[ci.name];
 		var ctr = _cxt.findContractOnCard(card, "Lifecycle");
 		if (ctr && ctr.closing) {
-			msgs = ctr.closing(_cxt);
+			var msgs = ctr.closing(_cxt);
 			_cxt.env.queueMessages(_cxt, msgs);
 		}
 		// TODO: I think we need an explicit on-card "cleanup" method which closes subscriptions and
@@ -192,7 +192,7 @@ function readyOne(appl, name) {
 		var card = appl.cards[name];
 		var ctr = _cxt.findContractOnCard(card, "Lifecycle");
 		if (ctr && ctr.ready) {
-			msgs = ctr.ready(_cxt);
+			var msgs = ctr.ready(_cxt);
 			_cxt.env.queueMessages(_cxt, msgs);
 		}
 	};
@@ -225,8 +225,7 @@ function oneAction(appl, a) {
 					} else
 						throw new Error("huh? " + JSON.stringify(aa));
 				}
-				var msgs;
-				msgs = ctr[m].apply(ctr, callWith);
+				var msgs = ctr[m].apply(ctr, callWith);
 				_cxt.env.queueMessages(_cxt, msgs);
 			}
 		}
@@ -323,10 +322,4 @@ MoveUpEvent.prototype.toString = function() {
 	return "MUE[" + this.cmn + "]";
 }
 
-//--EXPORT
-/* istanbul ignore else */ 
-if (typeof(module) !== 'undefined')
-	module.exports = Application;
-else
-//--WINDOW
-	window.Application = Application;
+export { Application };

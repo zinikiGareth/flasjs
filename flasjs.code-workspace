@@ -1,16 +1,20 @@
 {
 	"folders": [
 		{
+			"name": "flasjs",
 			"path": "."
 		},
 		{
-			"path": "../stdlib"
+			"name": "stdlib-jslib",
+			"path": "../stdlib/jslib"
 		},
 		{
+			"name": "ziniki-js",
+			"path": "../ziniki-server/zinikijs"
+		},
+		{
+			"name": "gmmapowell.com",
 			"path": "../../../Clients/gmmapowell.com"
-		},
-		{
-			"path": "../ziniki-server/services"
 		},
 		{
 			"path": "../FLAS2/src/test/resources/gh-grammar"

@@ -1,6 +1,6 @@
-const FLContext = require('../../main/javascript/runtime/flcxt');
-const FLError = require('../../main/javascript/runtime/error');
-const { expect } = require('chai');
+import { FLContext } from '../../main/javascript/runtime/flcxt.js';
+import { FLError } from '../../main/javascript/runtime/error.js'
+import { expect, assert } from 'chai';
 
 describe('error class', () => {
 	var _cxt = new FLContext({logger: console});

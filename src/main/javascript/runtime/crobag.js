@@ -1,12 +1,12 @@
-const FLObject = require("./object");
-const { IdempotentHandler } = require('../../resources/ziwsh');
-const { ResponseWithMessages } = require("./messages");
-//--REQUIRE
+import { FLError } from "./error.js";
+import { FLObject } from "./object.js";
+import { IdempotentHandler } from '../../resources/ziwsh.js';
+import { Debug, Send, Assign, ResponseWithMessages, UpdateDisplay } from './messages.js';
 
 /* Contracts */
 
 // SlideWindow
-SlideWindow = function(_cxt) {
+var SlideWindow = function(_cxt) {
     IdempotentHandler.call(this, _cxt);
     return ;
 }
@@ -27,7 +27,7 @@ SlideWindow.prototype._methods = function() {
 SlideWindow.prototype._methods.nfargs = function() { return -1; }
 
 // CrobagWindow
-CrobagWindow = function(_cxt) {
+var CrobagWindow = function(_cxt) {
     IdempotentHandler.call(this, _cxt);
     return ;
 }
@@ -264,7 +264,7 @@ CrobagWindowEvent.prototype.toString = function() {
 	return "CrobagWindowEvent[" + this.from + ":" + this.size + "]";
 }
 
-_ActualSlideHandler = function(_cxt, crobag) {
+var _ActualSlideHandler = function(_cxt, crobag) {
     SlideWindow.call(this, _cxt);
     this.state = _cxt.fields();
     this._card = crobag;
@@ -285,11 +285,4 @@ _ActualSlideHandler.prototype._card = function() {
 }
 _ActualSlideHandler.prototype._card.nfargs = function() { return -1; }
   
-//--EXPORTS
-/* istanbul ignore else */
-if (typeof(module) !== 'undefined') {
-    module.exports = { Crobag, CroEntry };
-} else {
-    window.Crobag = Crobag;
-    window.CroEntry = CroEntry;
-}
+export { Crobag, CroEntry, SlideWindow, CrobagWindow, CrobagChangeEvent, CrobagWindowEvent };

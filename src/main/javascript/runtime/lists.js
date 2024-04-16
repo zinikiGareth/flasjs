@@ -1,6 +1,5 @@
-const FLError = require('./error');
-const { Assign, ResponseWithMessages } = require('./messages');
-//--REQUIRE
+import { FLError } from './error.js';
+import { Debug, Send, Assign, ResponseWithMessages, UpdateDisplay } from './messages.js';
 
 const Nil = function() {
 }
@@ -53,11 +52,4 @@ AssignItem.prototype.set = function(obj) {
 	this.list[this.n] = obj;
 }
 
-//--EXPORTS
-/* istanbul ignore else */
-if (typeof(module) !== 'undefined') {
-	module.exports = { Nil, Cons, AssignItem }
-} else {
-	window.Nil = Nil;
-	window.Cons = Cons;
-}
+export { Nil, Cons, AssignItem };

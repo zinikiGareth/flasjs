@@ -1,48 +1,41 @@
-const { CommonEnv } = require('../runtime/env');
-const { SimpleBroker, JsonBeachhead } = require('../../resources/ziwsh');
-const { MockCard, MockFLObject, MockAppl } = require('./mocks');
-const FLError = require('../runtime/error');
-const { ResponseWithMessages, Send } = require('../runtime/messages');
-//--REQUIRE
+import { CommonEnv } from '../runtime/env.js';
+import { UTContext } from './utcxt.js';
+import { SimpleBroker, JsonBeachhead, IdempotentHandler, NamedIdempotentHandler } from '../../resources/ziwsh.js';
+import { MockAgent, MockCard, MockFLObject } from './mocks.js';
+import { FLError } from '../runtime/error.js';
+import { Debug, Send, Assign, ResponseWithMessages, UpdateDisplay } from '../runtime/messages.js';
 
 const UTRunner = function(bridge) {
 	if (!bridge)
 		bridge = console; // at least get the logger ...
 	CommonEnv.call(this, bridge, new SimpleBroker(bridge, this, {}));
-	this.errors = [];
-	this.mocks = {};
-	this.ajaxen = [];
-	this.appls = [];
-	this.activeSubscribers = [];
-	if (typeof(window) !== 'undefined')
-		window.utrunner = this;
+	this.modules = {};
 	this.moduleInstances = {};
-	this.toCancel = new Map();
-	for (var mn in UTRunner.modules) {
-		if (UTRunner.modules.hasOwnProperty(mn)) {
-			var jm;
-			if (bridge.module) {
-				jm = bridge.module(this, mn);
-				if (jm == 'must-wait')
-					continue;
-			}
-			this.moduleInstances[mn] = new UTRunner.modules[mn](this, jm);
-		}
-	}
+	this.clear();
 }
 
 UTRunner.prototype = new CommonEnv();
 UTRunner.prototype.constructor = UTRunner;
 
-UTRunner.modules = {};
+UTRunner.prototype.clear = function() {
+	CommonEnv.prototype.clear.apply(this);
+	this.toCancel = new Map();
+	this.errors = [];
+	this.mocks = {};
+	this.appls = [];
+	this.activeSubscribers = [];
+}
 
-UTRunner.prototype.bindModule = function(name, jm) {
-	this.moduleInstances[name] = new UTRunner.modules[name](this, jm);
+UTRunner.prototype.newContext = function() {
+	return new UTContext(this, this.broker);
+}
+
+UTRunner.prototype.bindModule = function(name, jsm) {
+	this.moduleInstances[name] = jsm;
 }
 
 UTRunner.prototype.makeReady = function() {
 	CommonEnv.prototype.makeReady.call(this);
-    this.broker.register("Ajax", new MockAjaxService());
 }
 
 UTRunner.prototype.error = function(err) {
@@ -156,7 +149,7 @@ UTRunner.prototype.render = function(_cxt, target, fn, template) {
 	sendTo.redraw(_cxt);
 }
 UTRunner.prototype.findMockFor = function(obj) {
-	if (obj instanceof MockFLObject || obj instanceof MockCard || obj instanceof MockAppl)
+	if (obj._isMock)
 		return obj;
 	var ks = Object.keys(this.mocks);
 	for (var i=0;i<ks.length;i++) {
@@ -284,28 +277,6 @@ UTRunner.prototype.matchText = function(_cxt, target, zone, contains, fails, exp
 			throw new Error("MATCH\n  expected: " + expected + "\n  actual:   " + actual);
 	}
 }
-UTRunner.prototype.matchTitle = function(_cxt, target, zone, contains, expected) {
-	var matchOn = this.findMockFor(target);
-	if (!matchOn)
-		throw Error("there is no mock " + target);
-	if (!(matchOn instanceof MockAppl))
-		throw Error("can only test title on Appl");
-	var titles = document.head.getElementsByTagName("title");
-	var actual = "";
-	for (var i=0;i<titles.length;i++) {
-		actual += titles[i].innerText.trim() + " ";
-	}
-	actual = actual.trim();
-	actual = actual.replace(/\n/g, ' ');
-	actual = actual.replace(/ +/, ' ');
-	if (contains) {
-		if (!actual.includes(expected))
-			throw new Error("MATCH\n  expected to contain: " + expected + "\n  actual:   " + actual);
-	} else {
-		if (actual != expected)
-			throw new Error("MATCH\n  expected: " + expected + "\n  actual:   " + actual);
-	}
-}
 UTRunner.prototype.matchImageUri = function(_cxt, target, zone, expected) {
 	var matchOn = this.findMockFor(target);
 	if (!matchOn)
@@ -365,14 +336,6 @@ UTRunner.prototype.matchScroll = function(_cxt, target, zone, contains, expected
 	if (actual != expected)
 		throw new Error("MATCH\n  expected: " + expected + "\n  actual:   " + actual);
 }
-UTRunner.prototype.route = function(_cxt, app, route, storeCards) {
-	app.route(_cxt, route, () => {
-		app.bindCards(_cxt, storeCards);
-	});
-}
-UTRunner.prototype.userlogin = function(_cxt, app, user) {
-	app.userLoggedIn(_cxt, user);
-}
 UTRunner.prototype.updateCard = function(_cxt, card) {
 	if (!(card instanceof MockCard))
 		return;
@@ -384,12 +347,13 @@ UTRunner.prototype.checkAtEnd = function() {
 		throw this.errors[0];
 }
 UTRunner.prototype.newdiv = function(cnt) {
+	var ds = this.divSince;
+	this.divSince = this.nextDivId;
 	if (cnt != null) { // specifically null, because we want to check on 0
-		if (cnt != this.nextDivId - this.divSince) {
-			throw Error("NEWDIV\n  expected: " + cnt + "\n  actual:   " + (this.nextDivId - this.divSince));
+		if (cnt != this.nextDivId - ds) {
+			throw Error("NEWDIV\n  expected: " + cnt + "\n  actual:   " + (this.nextDivId - ds));
 		}
 	}
-	this.divSince = this.nextDivId;
 }
 UTRunner.prototype.expectCancel = function(handler) {
 	var hn;
@@ -420,16 +384,6 @@ UTRunner.prototype.mockCard = function(_cxt, name, card) {
 	this.cards.push(ret);
 	return ret;
 }
-UTRunner.prototype.newAjax = function(cxt, baseUri) {
-	var ma = new MockAjax(cxt, baseUri);
-	this.ajaxen.push(ma);
-	return ma;
-}
-UTRunner.prototype.newMockAppl = function(cxt, clz) {
-	var ma = new MockAppl(cxt, clz);
-	this.appls.push(ma);
-	return ma;
-}
 UTRunner.prototype._updateDisplay = function(_cxt, rt) {
 	this.updateAllCards(_cxt);
 }
@@ -446,75 +400,16 @@ UTRunner.prototype.updateAllCards = function(_cxt) {
 		}
 	}
 }
+
 UTRunner.prototype.module = function(mod) {
 	var m = this.moduleInstances[mod];
 	if (!m)
 		throw new Error("There is no module " + mod);
 	return m;
 }
-UTRunner.prototype.transport = function(tz) {
-	// we have a transport to Ziniki
-	this.zinBch = new JsonBeachhead(this, "fred", this.broker, tz);
-	this.broker.beachhead(this.zinBch);
-}
-UTRunner.prototype.deliver = function(json) {
-	// we have a response from Ziniki
-	this.logger.log("have " + json + " ready for delivery");
-	var cx = this.newContext();
-	var msgs = this.zinBch.dispatch(cx, json, null);
-	this.logger.log("have messages", msgs);
-	this.queueMessages(cx, msgs);
-}
+
 UTRunner.prototype.addHistory = function(state, title, url) {
 	// we could forward this to the bridge if we wanted to do something specific
 }
 
-UTRunner.prototype.runRemote = function(testClz, spec) {
-	var cxt = this.newContext();
-	var st = new testClz(this, cxt);
-	var allSteps = [];
-	if (spec.configure) {
-		var steps = spec.configure.call(st, cxt);
-		for (var j=0;j<steps.length;j++)
-			allSteps.push(steps[j]);
-	}
-	if (spec.stages) {
-		for (var i=0;i<spec.stages.length;i++) {
-			var steps = spec.stages[i].call(st, cxt);
-			for (var j=0;j<steps.length;j++)
-				allSteps.push(steps[j]);
-		}
-	}
-	if (spec.cleanup) {
-		var steps = spec.cleanup.call(st, cxt);
-		for (var j=0;j<steps.length;j++)
-			allSteps.push(steps[j]);
-	}
-	var bridge = this.logger; // we have stored it as "logger" but it is actually the bridge to "Java-world"
-	bridge.executeSync(this, st, cxt, allSteps);
-}
-
-const makeBridge = function(jsb, logger) {
-	return {
-		log: logger.log,
-		debugmsg: logger.debugmsg,
-		// sendJson: (j) => jsb.sendJson.call(jsb, j),
-		// transport: (z) => jsb.transport.call(jsb, z),
-		module: (r, m) => jsb.module.call(jsb, r, m),
-		error: (e) => jsb.error.call(jsb, e),
-		lock: () => jsb.lock.call(jsb),
-		unlock: () => jsb.unlock.call(jsb),
-		getTestCounter: () => jsb.getTestCounter.call(jsb)
-	};
-}
-
-//--EXPORT
-/* istanbul ignore else */ 
-if (typeof(module) !== 'undefined')
-	module.exports = { UTRunner, makeBridge };
-else
-//--WINDOW
-{
-	window.UTRunner = UTRunner;
-	window.makeBridge = makeBridge;
-}
+export { UTRunner };

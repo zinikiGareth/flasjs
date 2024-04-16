@@ -1,5 +1,4 @@
-const { IdempotentHandler, NamedIdempotentHandler } = require('../../resources/ziwsh');
-//--REQUIRE
+import { IdempotentHandler, NamedIdempotentHandler } from '../../resources/ziwsh.js';
 
 const BoundVar = function(name) {
 	this.name = name;
@@ -89,7 +88,7 @@ MockContract.prototype.serviceMethod = function(_cxt, meth, args) {
 				continue; // there may be another that matches
 			}
 			matched.invoked++;
-			_cxt.log("Have invocation of", meth, "with", args);
+			// _cxt.log("Have invocation of", meth, "with", args);
 			if (matched.handler instanceof BoundVar) {
 				var tih = ih;
 				// if (ih instanceof NamedIdempotentHandler) {
@@ -140,6 +139,10 @@ const MockFLObject = function(obj) {
 	this.obj = obj;
 }
 
+MockFLObject.prototype._isMock = function() {
+	return true;
+}
+
 MockFLObject.prototype._currentDiv = function() {
 	if (this.div)
 		return this.div;
@@ -172,6 +175,10 @@ const MockCard = function(cx, card) {
 	document.body.appendChild(newdiv);
 	this.card._renderInto(cx, newdiv);
 };
+
+MockCard.prototype._isMock = function() {
+	return true;
+}
 
 MockCard.prototype.sendTo = function(_cxt, contract, msg, args) {
 	const ctr = this.card._contracts.contractFor(_cxt, contract);
@@ -259,112 +266,5 @@ MockHandler.prototype.expect = MockContract.prototype.expect;
 MockHandler.prototype.serviceMethod = MockContract.prototype.serviceMethod;
 MockHandler.prototype.assertSatisfied = MockContract.prototype.assertSatisfied;
 
-const MockAjax = function(_cxt, baseUri) {
-	this.baseUri = baseUri;
-	this.expect = { subscribe: [] }
-}
-MockAjax.prototype.expectSubscribe = function(_cxt, path) {
-	var mas = new MockAjaxSubscriber(_cxt, path);
-	this.expect.subscribe.push(mas);
-	return mas;
-}
-MockAjax.prototype.pump = function(_cxt) {
-	for (var i=0;i<this.expect.subscribe.length;i++) {
-		this.expect.subscribe[i].dispatch(_cxt, this.baseUri, _cxt.env.activeSubscribers);
-	}
-}
 
-const MockAjaxSubscriber = function(_cxt, path) {
-	this.path = path;
-	this.responses = [];
-	this.nextResponse = 0;
-}
-MockAjaxSubscriber.prototype.response = function(_cxt, val) {
-	this.responses.push(val);
-}
-MockAjaxSubscriber.prototype.dispatch = function(_cxt, baseUri, subscribers) {
-	if (this.nextResponse >= this.responses.length)
-		return;
-	for (var i=0;i<subscribers.length;i++) {
-		if (this.matchAndSend(_cxt, baseUri, subscribers[i]))
-			return;
-	}
-	// no message - is this an error or just one of those things?
-}
-MockAjaxSubscriber.prototype.matchAndSend = function(_cxt, baseUri, sub) {
-	if (sub.uri.toString() == new URL(this.path, baseUri).toString()) {
-		var resp = this.responses[this.nextResponse++];
-		resp = _cxt.full(resp);
-		if (resp instanceof FLError) {
-			// I think we need to report it and fail the test
-			_cxt.log(resp);
-			return true;
-		}
-		var msg;
-		if (resp instanceof AjaxMessage) {
-			msg = resp;
-		} else {
-			msg = new AjaxMessage(_cxt);
-			msg.state.set('headers', []);
-			if (typeof(resp) === "string")
-				msg.state.set('body', resp);
-			else
-				msg.state.set('body', JSON.stringify(resp));
-		}
-		_cxt.env.queueMessages(_cxt, Send.eval(_cxt, sub.handler, "message", [msg], null));
-		_cxt.env.dispatchMessages(_cxt);
-		return true;
-	} else
-		return false;
-}
-
-// The service that attempts to connect ...
-const MockAjaxService = function() {
-}
-MockAjaxService.prototype.subscribe = function(_cxt, uri, options, handler) {
-	if (uri instanceof FLURI)
-		uri = uri.uri;
-	_cxt.env.activeSubscribers.push({ uri, options, handler });
-}
-
-const MockAppl = function(_cxt, clz) {
-	const newdiv = document.createElement("div");
-	newdiv.setAttribute("id", _cxt.nextDocumentId());
-	document.body.appendChild(newdiv);
-	this.appl = new clz._Application(_cxt, newdiv);
-	this.appl._updateDisplay(_cxt, this.appl._currentRenderTree());
-}
-MockAppl.prototype.route = function(_cxt, r, andThen) {
-	this.appl.gotoRoute(_cxt, r, () => {
-		this.appl._updateDisplay(_cxt, this.appl._currentRenderTree());
-		andThen();
-	});
-}
-MockAppl.prototype.userLoggedIn = function(_cxt, u) {
-	this.appl.securityModule.userLoggedIn(_cxt, this.appl, u);
-}
-MockAppl.prototype.bindCards = function(_cxt, iv) {
-	if (!iv)
-		return;
-	var binding = {};
-	binding["main"] = this.appl.cards["main"];
-	iv.bindActual({ routes: binding });
-}
-MockAppl.prototype._currentRenderTree = function() {
-	return this.appl._currentRenderTree();
-}
-//--EXPORT
-/* istanbul ignore else */ 
-if (typeof(module) !== 'undefined')
-	module.exports = { MockContract, MockFLObject, MockHandler, MockAgent, MockCard, Expectation, BoundVar, ExplodingIdempotentHandler, MockAjax, MockAppl };
-else {
-	window.MockContract = MockContract;
-	window.MockFLObject = MockFLObject;
-	window.MockHandler = MockHandler;
-	window.MockAgent = MockAgent;
-	window.MockCard = MockCard;
-	window.MockAjax = MockAjax;
-	window.MockAppl = MockAppl;
-	window.Expectation = Expectation;
-	window.BoundVar = BoundVar;
-}
+export { MockContract, MockFLObject, MockHandler, MockAgent, MockCard, Expectation, BoundVar, ExplodingIdempotentHandler };

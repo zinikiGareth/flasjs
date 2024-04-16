@@ -1,6 +1,5 @@
-const { CommonEnv } = require('./env');
-const { SimpleBroker } = require('../../resources/ziwsh');
-//--REQUIRE
+import { CommonEnv } from '../runtime/flasjs.js';
+import { SimpleBroker } from '../../resources/ziwsh.js';
 
 const JSEnv = function(broker) {
 	if (broker == null)
@@ -22,10 +21,4 @@ JSEnv.prototype.addHistory = function(state, title, url) {
 	history.pushState(state, title, url);
 }
 
-//--EXPORT
-/* istanbul ignore next */
-if (typeof(module) !== 'undefined') {
-	module.exports = JSEnv;
-} else {
-	window.JSEnv = JSEnv;
-}
+export { JSEnv }

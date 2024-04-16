@@ -1,6 +1,6 @@
-const FLContext = require('../../main/javascript/runtime/flcxt');
-const { UTRunner } = require('../../main/javascript/unittest/runner');
-const { expect } = require('chai');
+import { UTRunner } from '../../main/javascript/unittest/runner.js';
+import { FLContext } from '../../main/javascript/runtime/flcxt.js';
+import { expect } from 'chai';
 
 describe('runner', () => {
     var runner = new UTRunner(console);

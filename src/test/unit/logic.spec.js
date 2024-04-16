@@ -1,6 +1,6 @@
-const FLContext = require('../../main/javascript/runtime/flcxt');
-const { True, False, FLBuiltin } = require('../../main/javascript/runtime/builtin');
-const { expect } = require('chai');
+import { FLContext } from '../../main/javascript/runtime/flcxt.js';
+import { True, False, FLBuiltin } from '../../main/javascript/runtime/builtin.js';
+import { expect } from 'chai';
 
 describe('basic logic', () => {
 	it('can evaluate true', () => {

@@ -19,9 +19,4 @@ FLError.eval = function(_cxt, msg) {
 	return new FLError(msg);
 }
 
-//--EXPORT
-/* istanbul ignore else */ 
-if (typeof(module) !== 'undefined')
-	module.exports = FLError;
-else
-	window.FLError = FLError;
+export { FLError };

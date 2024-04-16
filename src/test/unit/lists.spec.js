@@ -1,8 +1,11 @@
-const FLContext = require('../../main/javascript/runtime/flcxt');
-const { Nil, Cons } = require('../../main/javascript/runtime/lists');
-const { FLBuiltin } = require('../../main/javascript/runtime/builtin');
-const FLError = require('../../main/javascript/runtime/error');
-const { expect } = require('chai');
+import { FLContext } from '../../main/javascript/runtime/flcxt.js';
+import { FLError } from '../../main/javascript/runtime/error.js'
+import { Debug, Send, Assign } from '../../main/javascript/runtime/messages.js'
+import { FieldsContainer, SimpleBroker, IdempotentHandler } from '../../main/resources/ziwsh.js';
+import { FLBuiltin } from '../../main/javascript/runtime/builtin.js';
+import { expect } from 'chai';
+
+import { Nil, Cons } from '../../main/javascript/runtime/lists.js';
 
 describe('lists', () => {
 	it('Nil returns an empty list', () => {

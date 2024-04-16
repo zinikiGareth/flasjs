@@ -1,7 +1,6 @@
-const FLObject = require("./object");
-const { IdempotentHandler } = require('../../resources/ziwsh');
-const { ResponseWithMessages } = require("./messages");
-//--REQUIRE
+import { FLObject } from "./object.js";
+import { ResponseWithMessages } from "./messages.js";
+import { FLURI } from "./builtin.js";
 
 const Image = function(_cxt, _uri) {
     FLObject.call(this, _cxt);
@@ -37,10 +36,4 @@ Image.prototype.toString = function() {
     return "Image " + this.state.get("uri");
 }
 
-//--EXPORTS
-/* istanbul ignore else */
-if (typeof(module) !== 'undefined') {
-    module.exports = { Image };
-} else {
-    window.Image = Image;
-}
+export { Image };

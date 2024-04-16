@@ -1,14 +1,13 @@
-const FLContext = require('./flcxt');
-const { FLBuiltin } = require('./builtin');
-const { CallMe, Repeater, ContainerRepeater } = require('../container/repeater');
-const { Random } = require('./random');
-const { Crobag, CroEntry } = require('./crobag');
-const { Image } = require('./image');
-const { Html } = require('./html');
-const { Link } = require('./link');
-const { Calendar } = require('./time');
-const FLError = require('../runtime/error');
-//--REQUIRE
+import { FLContext } from './flcxt.js';
+import { FLBuiltin } from './builtin.js';
+import { ContainerRepeater } from './repeater.js';
+import { Random } from './random.js';
+import { Crobag, CroEntry } from './crobag.js';
+import { Image } from './image.js';
+import { Html } from './html.js';
+import { Link } from './link.js';
+import { Calendar } from './time.js';
+import { FLError } from './error.js';
 
 // should this be part of Ziniki?
 const ZiIdURI = function(s) {
@@ -61,13 +60,19 @@ CommonEnv.prototype.makeReady = function() {
 
 CommonEnv.prototype.clear = function() {
 	document.body.innerHTML = '';
+    this.cards = [];
+    this.nextDivId = 1;
+    this.divSince = this.nextDivId;
+    this.namedSubscriptions = new Map();
+    this.unnamedSubscriptions = new Map();
+	this.singletons = {};
 }
 
 CommonEnv.prototype.queueMessages = function(_cxt, msg) {
-    this.locker.lock();
+    this.locker.lock("queue");
     this.queue.push(msg);
     var self = this;
-    setTimeout(() => { self.dispatchMessages(_cxt); this.locker.unlock(); }, 0);
+    setTimeout(() => { self.dispatchMessages(_cxt); this.locker.unlock("queue"); }, 0);
 }
 
 CommonEnv.prototype.dispatchMessages = function(_cxt) {
@@ -171,10 +176,4 @@ if (typeof(window) !== 'undefined') {
     });
 }
 
-//--EXPORT
-/* istanbul ignore next */
-if (typeof(module) !== 'undefined') {
-	module.exports = { CommonEnv };
-} else {
-	window.CommonEnv = CommonEnv;
-}
+export { CommonEnv };
