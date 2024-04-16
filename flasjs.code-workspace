@@ -11,6 +11,9 @@
 		},
 		{
 			"path": "../ziniki-server/services"
+		},
+		{
+			"path": "../FLAS2/src/test/resources/gh-grammar"
 		}
 	]
 }
