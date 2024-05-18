@@ -9,15 +9,12 @@
 			"path": "../stdlib/jslib"
 		},
 		{
-			"name": "ziniki-js",
-			"path": "../ziniki-server/zinikijs"
-		},
-		{
-			"name": "gmmapowell.com",
-			"path": "../../../Clients/gmmapowell.com"
-		},
-		{
+			"name": "Grammar",
 			"path": "../FLAS2/src/test/resources/gh-grammar"
+		},
+		{
+			"name": "Ziniki JS",
+			"path": "../ziniki-server/services/js"
 		}
 	]
 }
