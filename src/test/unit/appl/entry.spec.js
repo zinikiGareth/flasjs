@@ -40,4 +40,12 @@ describe('Creating Routing Entry objects', () => {
         expect(settings).to.be.instanceOf(RoutingEntry);
         expect(settings.path).to.equal("settings");
 	});
+
+	it('params can handle history/{from}', () => {
+        var top = new RoutingEntry(paramsMap());
+        var history = top.route("history");
+        var lastYear = history.route("2023");
+        expect(lastYear).to.be.instanceOf(RoutingEntry);
+        expect(lastYear.param).to.equal("from");
+	});
 });

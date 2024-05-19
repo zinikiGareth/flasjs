@@ -67,7 +67,7 @@ var downagainMap = function() {
     };
   };
 
-// modified from the params routing system test to also have a static route
+// modified from the params routing system test to also have a simple static route AND a static/param route
 var paramsMap = function() {
     return {
       secure: false,
@@ -96,6 +96,39 @@ var paramsMap = function() {
             exit: [
             ],
             routes: [
+            ]
+        },
+        {
+            path: 'history', 
+            secure: false,
+            cards: [
+              { name: 'settings', card: /* test__golden.Settings */ SampleCard }
+            ],
+            enter: [
+              { card: 'settings', contract: 'Lifecycle', action: 'load', args: [{ str: 'in settings' }] },
+              { card: 'main', contract: 'Lifecycle', action: 'nest', args: [{ ref: 'settings' }] }
+            ],
+            at: [
+            ],
+            exit: [
+            ],
+            routes: [
+                {
+                    param: 'from', 
+                    secure: false,
+                    cards: [
+            
+                    ],
+                    enter: [
+                      { card: 'main', contract: 'Lifecycle', action: 'load', args: [{ param: 'from' }] }
+                    ],
+                    at: [
+                    ],
+                    exit: [
+                    ],
+                    routes: [
+                    ]
+                  }
             ]
         },
         {
