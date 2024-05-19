@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "FLAS JS client library",
   "scripts": {
-    "test": "mocha src/test/unit/*.spec.js",
+    "test": "mocha src/test/unit/*.spec.js src/test/unit/**/*.spec.js",
     "package": "node scripts/build.mjs",
     "coverage": "nyc --reporter=html npm run test"
   },

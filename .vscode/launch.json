@@ -6,7 +6,7 @@
     "configurations": [
         {
             "type": "node",
-            "runtimeExecutable": "/Users/gareth/.nvm/versions/node/v18.12.1/bin/npm",
+            "runtimeExecutable": "/usr/bin/npm",
             "request": "launch",
             "name": "Mocha Tests",
             "args": [

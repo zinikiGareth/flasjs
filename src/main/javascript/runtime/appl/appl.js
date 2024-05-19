@@ -1,17 +1,18 @@
-import { Debug, Send, Assign, ResponseWithMessages, UpdateDisplay } from './messages.js';
+import { Debug, Send, Assign, ResponseWithMessages, UpdateDisplay } from '../messages.js';
 
-const Application = function(_cxt, topdiv) {
+const Application = function(_cxt, topdiv, baseuri) {
 	if (typeof(topdiv) == 'string')
 		this.topdiv = document.getElementById(topdiv);
 	else
 		this.topdiv = topdiv;
+	this.baseuri = baseuri;
 	this.cards = {};
 	this.params = {};
 	this.currentRoute = null; // TODO: this should not just be a list of strings, but of UNDO actions
 }
 
 Application.prototype.baseUri = function(_cxt) {
-	return ''; // could be something like https://foo.com/app; set in the actual application object
+	return this.baseuri; // could be something like 'https://foo.com/app'
 }
 
 Application.prototype.nowLoggedIn = function(_cxt) {
@@ -56,25 +57,31 @@ Application.prototype.gotoRoute = function(_cxt, r, allDone) {
 }
 
 Application.prototype.parseRoute = function(_cxt, r) {
-	if (r instanceof Location || r instanceof URL) {
-		r = r.href;
-	}
 	var buri;
 	if (typeof(baseUri) !== 'undefined' && baseUri)
 		buri = baseUri;
 	else
 		buri = this.baseUri();
-	if (r.startsWith("/"))
-		r = buri + r;
-	if (!r.endsWith("/"))
-		r = r + "/";
-	try {
-		if (this.currentPath)
-			r = new URL(r, this.currentPath).href;
-		else 
-			r = new URL(r, this.baseUri()).href;
-	} catch (e) {}
-	this.currentPath = r;
+	if (r instanceof Location || r instanceof URL) {
+		if (!buri) {
+			// we don't have a base, so they *must* use the fragment
+			r = r.hash;
+		} else
+			r = r.href;
+	}
+	if (buri) {
+		if (r.startsWith("/"))
+			r = buri + r;
+		if (!r.endsWith("/"))
+			r = r + "/";
+		try {
+			if (this.currentPath)
+				r = new URL(r, this.currentPath).href;
+			else 
+				r = new URL(r, this.baseUri()).href;
+		} catch (e) {}
+		this.currentPath = r;
+	}
 	var url = r.replace(buri, '').replace(/^[#/]*/, '');
 	var parts = url.split("/").filter(x => !!x);
 	return parts;
