@@ -51,7 +51,8 @@ Route.parse = function(baseuri, table, path) {
     ret.parts.push(new Segment("/", table));
     var map = table;
     for (var s of route) {
-        ret.parts.push(new Segment(s, map.route(s)));
+        map = map.route(s);
+        ret.parts.push(new Segment(s, map));
     }
     return ret;
 }

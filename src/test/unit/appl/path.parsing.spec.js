@@ -47,4 +47,18 @@ describe('Parsing URL paths', () => {
         var path = Route.parse("/servlet", table, "https://hello.world/servlet/settings");
         expect(path.length()).to.equal(2);
 	});
+
+	it('we can parse a parameterized route', () => {
+        var path = Route.parse('', table, new URL("https://hello.world/#history/2024"));
+        expect(path.length()).to.equal(3);
+        expect(path.head().entry).to.equal(table);
+        path.advance();
+        expect(path.length()).to.equal(2);
+        expect(path.head().entry).to.equal(table.route("history"));
+        path.advance();
+        expect(path.length()).to.equal(1);
+        expect(path.head().entry).to.equal(table.route("history").route("2024"));
+        path.advance();
+        expect(path.length()).to.equal(0);
+	});
 });
