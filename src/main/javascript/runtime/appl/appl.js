@@ -8,7 +8,7 @@ const Application = function(_cxt, topdiv, baseuri) {
 	this.baseuri = baseuri;
 	this.cards = {};
 	this.params = {};
-	this.currentRoute = null; // TODO: this should not just be a list of strings, but of UNDO actions
+	this.currentRoute = null; // TODO: this will need to be a URI, set at the end of gotoRoute
 }
 
 Application.prototype.baseUri = function(_cxt) {
@@ -17,6 +17,13 @@ Application.prototype.baseUri = function(_cxt) {
 
 Application.prototype.nowLoggedIn = function(_cxt) {
 	this.gotoRoute(_cxt, this.routingPendingSecure.route);
+}
+
+Application.prototype.newgotoRoute = function(_cxt, route) {
+	var goto = Route.parse(this.baseUri(), this._routing(), route);
+	var moveTo = goto.movingFrom(this.currentRoute);
+	var event = new MoveAndReadyEvent(moveTo);
+	_cxt.env.queueMessages(_cxt, event);
 }
 
 Application.prototype.gotoRoute = function(_cxt, r, allDone) {
