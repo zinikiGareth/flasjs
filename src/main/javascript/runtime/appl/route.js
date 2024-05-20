@@ -2,7 +2,8 @@
 // what that means in terms of descent through the routing table.
 // This ends up basically just being an array of annotated routing entries
 
-var Segment = function(segment, map) {
+var Segment = function(action, segment, map) {
+    this.action = action;
     this.segment = segment;
     this.entry =  map;
 }
@@ -48,13 +49,17 @@ Route.parse = function(baseuri, table, path) {
     var route;
     route = path.split("/").filter(i => i);
     var ret = new Route();
-    ret.parts.push(new Segment("/", table));
+    ret.parts.push(new Segment("push", "/", table));
     var map = table;
     for (var s of route) {
         map = map.route(s);
-        ret.parts.push(new Segment(s, map));
+        ret.parts.push(new Segment("push", s, map));
     }
     return ret;
+}
+
+Route.prototype.reset = function() {
+    this.pos = 0;
 }
 
 Route.prototype.length = function() {
@@ -69,5 +74,31 @@ Route.prototype.advance = function() {
     this.pos++;
 }
 
+Route.prototype.movingFrom = function(from) {
+    // routes are both data and cursors, so we reset the "cursor" portion
+    this.reset();
+    from.reset();
+    var ret = new Route();
+    while (this.length() > 0 && from.length() > 0) {
+        if (this.head().segment != from.head().segment)
+            break;
+        this.advance();
+        from.advance();
+    }
+
+    // pop off the old things (in reverse order)
+    while (from.length() > 0) {
+        var s = from.head();
+        ret.parts.unshift(new Segment("pop", s.segment, s.entry));
+        from.advance();
+    }
+
+    // now push on the new things
+    while (this.length() > 0) {
+        ret.parts.push(this.head());
+        this.advance();
+    }
+    return ret;
+}
 
 export { Route };
