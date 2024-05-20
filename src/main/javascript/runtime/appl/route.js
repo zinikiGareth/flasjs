@@ -2,8 +2,14 @@
 // what that means in terms of descent through the routing table.
 // This ends up basically just being an array of annotated routing entries
 
+var Segment = function(segment, map) {
+    this.segment = segment;
+    this.entry =  map;
+}
+
 var Route = function() {
     this.parts = [];
+    this.pos = 0;
 }
 
 Route.parse = function(baseuri, table, path) {
@@ -15,7 +21,7 @@ Route.parse = function(baseuri, table, path) {
         throw new Error("path is not a url, location or string");
     }
     if (path.hash) {
-        path = path.hash;
+        path = path.hash.replace(/^#/, "");
     } else if (baseuri) {
         var buu = baseuri;
         if (typeof(buu) == 'string') {
@@ -42,12 +48,25 @@ Route.parse = function(baseuri, table, path) {
     var route;
     route = path.split("/").filter(i => i);
     var ret = new Route();
-    ret.parts = route; // good enough for now, but should match table entries
+    ret.parts.push(new Segment("/", table));
+    var map = table;
+    for (var s of route) {
+        ret.parts.push(new Segment(s, map.route(s)));
+    }
     return ret;
 }
 
 Route.prototype.length = function() {
-    return this.parts.length;
+    return this.parts.length - this.pos;
 }
+
+Route.prototype.head = function() {
+    return this.parts[this.pos];
+}
+
+Route.prototype.advance = function() {
+    this.pos++;
+}
+
 
 export { Route };
