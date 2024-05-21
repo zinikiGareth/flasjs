@@ -75,6 +75,10 @@ CommonEnv.prototype.queueMessages = function(_cxt, msg) {
     setTimeout(() => { self.dispatchMessages(_cxt); this.locker.unlock("queue"); }, 0);
 }
 
+CommonEnv.prototype.quiescent = function() {
+    return this.queue.length == 0;
+}
+
 CommonEnv.prototype.dispatchMessages = function(_cxt) {
     var set = [];
     _cxt.updateCards = set;

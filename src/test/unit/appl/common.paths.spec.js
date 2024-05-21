@@ -7,7 +7,7 @@ import { SampleApp, downagainMap, paramsMap } from './sample.js';
 describe('Finding relative routes', () => {
     var table = new RoutingEntry(paramsMap());
 
-	it.only('we can initially move home', () => {
+	it('we can initially move home', () => {
         var curr = null;
         var goto = Route.parse('', table, new URL("https://hello.world/"));
         var route = goto.movingFrom(curr);

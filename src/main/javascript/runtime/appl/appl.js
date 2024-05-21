@@ -22,7 +22,7 @@ Application.prototype.nowLoggedIn = function(_cxt) {
 Application.prototype.newgotoRoute = function(_cxt, route) {
 	var goto = Route.parse(this.baseUri(), this._routing(), route);
 	var moveTo = goto.movingFrom(this.currentRoute);
-	var event = new MoveAndReadyEvent(moveTo);
+	var event = new RouteEvent(moveTo, this);
 	_cxt.env.queueMessages(_cxt, event);
 }
 
