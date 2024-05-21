@@ -77,9 +77,10 @@ Route.prototype.advance = function() {
 Route.prototype.movingFrom = function(from) {
     // routes are both data and cursors, so we reset the "cursor" portion
     this.reset();
-    from.reset();
+    if (from)
+        from.reset();
     var ret = new Route();
-    while (this.length() > 0 && from.length() > 0) {
+    while (from && this.length() > 0 && from.length() > 0) {
         if (this.head().segment != from.head().segment)
             break;
         this.advance();
@@ -87,7 +88,7 @@ Route.prototype.movingFrom = function(from) {
     }
 
     // pop off the old things (in reverse order)
-    while (from.length() > 0) {
+    while (from && from.length() > 0) {
         var s = from.head();
         ret.parts.unshift(new Segment("pop", s.segment, s.entry));
         from.advance();

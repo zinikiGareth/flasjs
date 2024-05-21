@@ -7,6 +7,16 @@ import { SampleApp, downagainMap, paramsMap } from './sample.js';
 describe('Finding relative routes', () => {
     var table = new RoutingEntry(paramsMap());
 
+	it.only('we can initially move home', () => {
+        var curr = null;
+        var goto = Route.parse('', table, new URL("https://hello.world/"));
+        var route = goto.movingFrom(curr);
+        expect(route.length()).to.equal(1);
+        expect(route.head().action).to.equal("push");
+        expect(route.head().segment).to.equal("/");
+        expect(route.head().entry).to.equal(table);
+	});
+
 	it('a route to home is empty if we start at home', () => {
         var curr = Route.parse('', table, new URL("https://hello.world/"));
         var goto = Route.parse('', table, new URL("https://hello.world/"));
