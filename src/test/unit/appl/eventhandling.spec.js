@@ -9,22 +9,35 @@ import { Route } from '../../../main/javascript/runtime/appl/route.js';
 import { SampleApp, downagainMap, paramsMap } from './sample.js';
 import { RouteEvent } from '../../../main/javascript/runtime/appl/routeevent.js';
 
-describe('Firing events', () => {
+describe.only('Firing events', () => {
     var bridge = console;
     var broker = {};
     var env = new CommonEnv(bridge, broker);
     var cxt = env.newContext();
     var appl = {
         createCard: function() {},
+        oneAction: function() {},
         readyCard: function() {}
     };
-    var ma = sinon.mock(appl);
-    var table = new RoutingEntry(paramsMap());
 
 	it('an initial route will call the constructors for the main card', () => {
+        var table = new RoutingEntry(paramsMap());
         var goto = Route.parse('', table, new URL("https://hello.world/"));
+        var ma = sinon.mock(appl);
         var ev = new RouteEvent(goto.movingFrom(null), appl);
         ma.expects("createCard").returns(null);
+        ma.expects("readyCard", "main");
+        cxt.env.queueMessages(cxt, ev);
+        return waitForExpect(() => expect(cxt.env.quiescent()).to.be.true).then(() => ma.verify());
+	});
+
+    it('enter is called for an initial route', () => {
+        var table = new RoutingEntry(downagainMap());
+        var goto = Route.parse('', table, new URL("https://hello.world/"));
+        var ma = sinon.mock(appl);
+        var ev = new RouteEvent(goto.movingFrom(null), appl);
+        ma.expects("createCard");
+        ma.expects("oneAction");
         ma.expects("readyCard", "main");
         cxt.env.queueMessages(cxt, ev);
         return waitForExpect(() => expect(cxt.env.quiescent()).to.be.true).then(() => ma.verify());
