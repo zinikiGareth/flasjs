@@ -6,6 +6,10 @@ function RoutingEntry(entry) {
     this.paramRoute = null;
     this.path = entry.path;
     this.param = entry.param;
+    this.cards = entry.cards;
+    this.enter = entry.enter;
+    this.at = entry.at;
+    this.exit = entry.exit;
     for (var sub of entry.routes) {
         if (sub.path) {
             this.namedPaths[sub.path] = new RoutingEntry(sub);

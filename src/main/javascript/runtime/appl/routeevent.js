@@ -5,6 +5,7 @@
 
 var RouteTraversalState = function(appl) {
     this.appl = appl;
+    this.newcards = [];
 }
 
 var RouteEvent = function(route, stateOrAppl, lastAct) {
@@ -17,11 +18,68 @@ var RouteEvent = function(route, stateOrAppl, lastAct) {
 }
 
 RouteEvent.prototype.dispatch = function(cxt) {
-    console.log("route =", this.route, "action =", this.action);
+    if (this.route.head().action == "push")
+        this.processDownAction(cxt);
+    else
+        this.processUpAction(cxt);
+    this.queueNextAction(cxt);
+}
+
+RouteEvent.prototype.processDownAction = function(cxt) {
+    switch (this.action) {
+    case "title": {
+        if (this.route.head().title) {
+            this.state.appl.setTitle(this.route.head().title);
+        }
+        break;
+    }
+    case "secure": {
+        // TBD
+        break;
+    }
+    case "create": {
+        for (var ci of this.route.head().entry.cards) {
+            this.state.appl.createCard(ci);
+            this.state.newcards.push(ci.name);
+        }
+        break;
+    }
+    case "enter": {
+        for (var act of this.route.head().entry.enter)
+            this.state.appl.oneAction(act);
+        break;
+    }
+    case "at": {
+        for (var act of this.route.head().entry.at)
+            this.state.appl.oneAction(act);
+        break;
+    }
+    default: {
+        throw new Error("cannot handle action " + this.action);
+    }
+    }
+}
+RouteEvent.prototype.queueNextAction = function(cxt) {
+    // in the fullness of time, this should add the event to the "only fire when quiescent" list of messages
     var nev = new RouteEvent(this.route, this.state, this.action);
     if (nev.action) {
         cxt.env.queueMessages(cxt, nev);
+    } else {
+        this.route.advance();
+        if (this.route.length() > 0) {
+            // add the relevant event back in the "null" state ...
+        } else {
+            this.alldone(cxt);
+        }
     }
+}
+
+// make ready, set title & record history (see movedown - not sure why it is not in moveup)
+RouteEvent.prototype.alldone = function(cxt) {
+    for (var c of this.state.newcards) {
+        this.state.appl.readyCard(c);
+    }
+    this.state.appl.setTitle
 }
 
 // may need to think about this more carefully ...
@@ -29,6 +87,10 @@ function nextAction(curr) {
     switch (curr) {
     case null:
     case undefined:
+        return "title";
+    case "title":
+        return "secure";
+    case "secure":
         return "create";
     case "create":
         return "enter";

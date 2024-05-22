@@ -14,20 +14,24 @@ describe('Firing events', () => {
     var broker = {};
     var env = new CommonEnv(bridge, broker);
     var cxt = env.newContext();
-    var appl = sinon.mock({
-
-    });
+    var appl = {
+        createCard: function() {},
+        readyCard: function() {}
+    };
+    var ma = sinon.mock(appl);
     var table = new RoutingEntry(paramsMap());
 
 	it('an initial route will call the constructors for the main card', () => {
         var goto = Route.parse('', table, new URL("https://hello.world/"));
         var ev = new RouteEvent(goto.movingFrom(null), appl);
+        ma.expects("createCard").returns(null);
+        ma.expects("readyCard", "main");
         cxt.env.queueMessages(cxt, ev);
-        return waitForExpect(() => expect(cxt.env.quiescent()).to.be.true);
+        return waitForExpect(() => expect(cxt.env.quiescent()).to.be.true).then(() => ma.verify());
 	});
 });
 
-// For some reason, this takes 5s to load as a module, so I just pulled out the relevant code.
+// For some reason, "wait-for-expect" takes 5s to load as a module, so I just pulled out the relevant code.
 var defaults = {
     timeout: 4500,
     interval: 50

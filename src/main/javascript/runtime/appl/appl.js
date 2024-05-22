@@ -165,6 +165,32 @@ Application.prototype._closeCards = function(_cxt, ev, cards) {
 	}
 }
 
+Application.prototype.createCard = function(_cxt, ci) {
+	var card = this.cards[ci.name] = new ci.card(_cxt);
+	var ctr = _cxt.findContractOnCard(card, "Lifecycle");
+	if (ctr && ctr.init) {
+		var msgs = ctr.init(_cxt);
+		_cxt.env.queueMessages(_cxt, msgs);
+	}
+}
+
+Application.prototype.closeCard = function(_cxt, ci) {
+	var card = this.cards[ci.name];
+	var ctr = _cxt.findContractOnCard(card, "Lifecycle");
+	if (ctr && ctr.closing) {
+		var msgs = ctr.closing(_cxt);
+		_cxt.env.queueMessages(_cxt, msgs);
+	}
+	// TODO: I think we need an explicit on-card "cleanup" method which closes subscriptions and
+	// removes this card from any parents
+	// reset of render tree should probably be in there ...
+	if (card._renderTree) {
+		var div = document.getElementById(card._renderTree._id);
+		div.innerHTML = '';
+		card._renderTree = null;
+	}
+}
+
 function createOne(appl, ci) {
 	return (_cxt) => {
 		var card = appl.cards[ci.name] = new ci.card(_cxt);
@@ -201,6 +227,15 @@ Application.prototype._readyCards = function(_cxt, ev, cards) {
 	}
 }
 
+Application.prototype.readyCard = function(_cxt, name) {
+	var card = this.cards[name];
+	var ctr = _cxt.findContractOnCard(card, "Lifecycle");
+	if (ctr && ctr.ready) {
+		var msgs = ctr.ready(_cxt);
+		_cxt.env.queueMessages(_cxt, msgs);
+	}
+}
+
 function readyOne(appl, name) {
 	return (_cxt) => {
 		var card = appl.cards[name];
@@ -215,6 +250,32 @@ function readyOne(appl, name) {
 Application.prototype._routeActions = function(_cxt, ev, enter) {
 	for (var i=0;i<enter.length;i++) {
 		ev.add(oneAction(this, enter[i]));
+	}
+}
+
+Application.prototype.oneAction = function(_cxt, a) {
+	var card = appl.cards[a.card];
+	var ctr = _cxt.findContractOnCard(card, a.contract);
+	if (ctr) {
+		var m = a.action;
+		if (ctr[m]) {
+			var callWith = [ _cxt ];
+			for (var ai=0;ai<a.args.length;ai++) {
+				var aa = a.args[ai];
+				if (aa.str) {
+					callWith.push(aa.str);
+				} else if (aa.ref) {
+					callWith.push(appl.cards[aa.ref]);
+				} else if (aa.param) {
+					callWith.push(appl.params[aa.param]);
+				} else if (aa.expr) {
+					callWith.push(appl[aa.expr].call(appl, _cxt));
+				} else
+					throw new Error("huh? " + JSON.stringify(aa));
+			}
+			var msgs = ctr[m].apply(ctr, callWith);
+			_cxt.env.queueMessages(_cxt, msgs);
+		}
 	}
 }
 
