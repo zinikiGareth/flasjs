@@ -6,8 +6,13 @@ import { expect } from 'chai';
 // import waitForExpect from 'wait-for-expect';
 import { RoutingEntry } from '../../../main/javascript/runtime/appl/routingentry.js';
 import { Route } from '../../../main/javascript/runtime/appl/route.js';
-import { SampleApp, downagainMap, paramsMap } from './sample.js';
+import { SampleApp, downagainMap, paramsMap, queryMap } from './sample.js';
 import { RouteEvent } from '../../../main/javascript/runtime/appl/routeevent.js';
+
+// "at"
+// going up as well as down ("exit")
+// "secure"
+// query
 
 describe('Firing events', () => {
     var bridge = console;
@@ -71,6 +76,27 @@ describe('Firing events', () => {
             expect(act.calledBefore(rc)).to.be.true;
             expect(rc.getCalls().length).to.equal(1);
             expect(rc.getCall(0).args[0]).to.equal("home");
+        }).finally(() => {
+            cr.restore(); act.restore(); rc.restore();
+        });
+	});
+
+    it.only('query parameters are decoded and passed if requested in the map', () => {
+        var table = new RoutingEntry(queryMap());
+        var goto = Route.parse('', table, new URL("https://hello.world/?arg=hello"));
+        var ev = new RouteEvent(goto.movingFrom(null), appl);
+        var cr = sinon.spy(appl, "createCard");
+        var act = sinon.spy(appl, "oneAction");
+        var rc = sinon.spy(appl, "readyCard");
+        cxt.env.queueMessages(cxt, ev);
+        return waitForExpect(() => expect(cxt.env.quiescent()).to.be.true).then(() => {
+            expect(cr.calledBefore(act)).to.be.true;
+            expect(act.calledBefore(rc)).to.be.true;
+            expect(act.getCall(0).args.length).to.equal(2);
+            expect(act.getCall(0).args[0].card).to.equal("main");
+            expect(act.getCall(0).args[0].action).to.equal("query");
+            expect(act.getCall(0).args[0].args[0].str).to.equal("arg");
+            expect(act.getCall(0).args[1]).to.equal("hello");
         }).finally(() => {
             cr.restore(); act.restore(); rc.restore();
         });

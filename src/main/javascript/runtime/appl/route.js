@@ -21,6 +21,7 @@ Route.parse = function(baseuri, table, path) {
     } else if (!(path instanceof URL)) {
         throw new Error("path is not a url, location or string");
     }
+    var query = new URLSearchParams(path.search);
     if (path.hash) {
         path = path.hash.replace(/^#/, "");
     } else if (baseuri) {
@@ -55,6 +56,7 @@ Route.parse = function(baseuri, table, path) {
         map = map.route(s);
         ret.parts.push(new Segment("push", s, map));
     }
+    ret.query = query;
     return ret;
 }
 
@@ -80,6 +82,7 @@ Route.prototype.movingFrom = function(from) {
     if (from)
         from.reset();
     var ret = new Route();
+    ret.query = this.query;
     while (from && this.length() > 0 && from.length() > 0) {
         if (this.head().segment != from.head().segment)
             break;
@@ -100,6 +103,10 @@ Route.prototype.movingFrom = function(from) {
         this.advance();
     }
     return ret;
+}
+
+Route.prototype.getQueryParam = function(v) {
+    return this.query.get(v);
 }
 
 export { Route };

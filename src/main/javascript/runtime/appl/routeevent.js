@@ -48,8 +48,13 @@ RouteEvent.prototype.processDownAction = function(cxt) {
         break;
     }
     case "enter": {
-        for (var act of this.route.head().entry.enter)
-            this.state.appl.oneAction(act);
+        for (var act of this.route.head().entry.enter) {
+            var arg;
+            if (act.contract == "Lifecycle" && act.action == "query") {
+                arg = this.route.getQueryParam(act.args[0].str);
+            }
+            this.state.appl.oneAction(act, arg);
+        }
         break;
     }
     case "at": {

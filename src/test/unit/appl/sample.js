@@ -152,4 +152,22 @@ var paramsMap = function() {
   };
     
 
-export { SampleApp, downagainMap, paramsMap };
+var queryMap = function() {
+  return {
+    secure: false,
+    cards: [
+      { name: 'main', card: /* test__golden.Home */ SampleCard }
+    ],
+    enter: [
+      { card: 'main', contract: 'Lifecycle', action: 'query', args: [{ str: 'arg' }] }
+    ],
+    at: [
+    ],
+    exit: [
+    ],
+    routes: [
+    ]
+  };
+};
+
+export { SampleApp, downagainMap, paramsMap, queryMap };
