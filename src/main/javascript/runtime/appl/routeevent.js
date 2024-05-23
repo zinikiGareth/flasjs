@@ -62,11 +62,39 @@ RouteEvent.prototype.processDownAction = function(cxt) {
             this.state.appl.oneAction(act);
         break;
     }
+    case "exit": {
+        // does not apply downwards
+        break;
+    }
+   default: {
+        throw new Error("cannot handle action " + this.action);
+    }
+    }
+}
+
+RouteEvent.prototype.processUpAction = function(cxt) {
+    switch (this.action) {
+    case "title":
+    case "create":
+    case "enter":
+    case "secure":
+    case "at": {
+        // do not apply upwards
+        break;
+    }
+    case "exit": {
+        for (var act of this.route.head().entry.exit) {
+            var arg;
+            this.state.appl.oneAction(act, arg);
+        }
+        break;
+    }
     default: {
         throw new Error("cannot handle action " + this.action);
     }
     }
 }
+
 RouteEvent.prototype.queueNextAction = function(cxt) {
     // in the fullness of time, this should add the event to the "only fire when quiescent" list of messages
     var nev = new RouteEvent(this.route, this.state, this.action);
@@ -75,7 +103,8 @@ RouteEvent.prototype.queueNextAction = function(cxt) {
     } else {
         this.route.advance();
         if (this.route.length() > 0) {
-            // add the relevant event back in the "null" state ...
+            nev = new RouteEvent(this.route, this.state, null);
+            cxt.env.queueMessages(cxt, nev);
         } else {
             this.alldone(cxt);
         }
@@ -103,6 +132,8 @@ function nextAction(curr) {
     case "create":
         return "enter";
     case "enter":
+        return "exit";
+    case "exit":
         return "at";
     case "at":
         return null;

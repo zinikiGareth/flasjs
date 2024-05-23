@@ -94,6 +94,7 @@ var paramsMap = function() {
             at: [
             ],
             exit: [
+              { card: 'settings', contract: 'Lifecycle', action: 'closing', args: [] }
             ],
             routes: [
             ]
@@ -102,11 +103,11 @@ var paramsMap = function() {
             path: 'history', 
             secure: false,
             cards: [
-              { name: 'settings', card: /* test__golden.Settings */ SampleCard }
+              { name: 'history', card: /* test__golden.Settings */ SampleCard }
             ],
             enter: [
-              { card: 'settings', contract: 'Lifecycle', action: 'load', args: [{ str: 'in settings' }] },
-              { card: 'main', contract: 'Lifecycle', action: 'nest', args: [{ ref: 'settings' }] }
+              { card: 'history', contract: 'Lifecycle', action: 'load', args: [{ str: 'in history' }] },
+              { card: 'main', contract: 'Lifecycle', action: 'nest', args: [{ ref: 'history' }] }
             ],
             at: [
             ],
