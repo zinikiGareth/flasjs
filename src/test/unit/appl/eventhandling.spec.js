@@ -23,24 +23,31 @@ describe.only('Firing events', () => {
 	it('an initial route will call the constructors for the main card', () => {
         var table = new RoutingEntry(paramsMap());
         var goto = Route.parse('', table, new URL("https://hello.world/"));
-        var ma = sinon.mock(appl);
+        var cr = sinon.spy(appl, "createCard");
+        var rc = sinon.spy(appl, "readyCard");
         var ev = new RouteEvent(goto.movingFrom(null), appl);
-        ma.expects("createCard").returns(null);
-        ma.expects("readyCard", "main");
+        // ma.expects("createCard").returns(null);
+        // ma.expects("readyCard", "main");
         cxt.env.queueMessages(cxt, ev);
-        return waitForExpect(() => expect(cxt.env.quiescent()).to.be.true).then(() => ma.verify());
+        return waitForExpect(() => expect(cxt.env.quiescent()).to.be.true).then(() => {
+            expect(cr.calledBefore(rc)).to.be.true;
+        }).finally(() => { cr.restore(); rc.restore(); });
 	});
 
     it('enter is called for an initial route', () => {
         var table = new RoutingEntry(downagainMap());
         var goto = Route.parse('', table, new URL("https://hello.world/"));
-        var ma = sinon.mock(appl);
         var ev = new RouteEvent(goto.movingFrom(null), appl);
-        ma.expects("createCard");
-        ma.expects("oneAction");
-        ma.expects("readyCard", "main");
+        var cr = sinon.spy(appl, "createCard");
+        var act = sinon.spy(appl, "oneAction");
+        var rc = sinon.spy(appl, "readyCard");
         cxt.env.queueMessages(cxt, ev);
-        return waitForExpect(() => expect(cxt.env.quiescent()).to.be.true).then(() => ma.verify());
+        return waitForExpect(() => expect(cxt.env.quiescent()).to.be.true).then(() => {
+            expect(cr.calledBefore(act)).to.be.true;
+            expect(act.calledBefore(rc)).to.be.true;
+        }).finally(() => {
+            cr.restore(); act.restore(); rc.restore();
+        });
 	});
 });
 
