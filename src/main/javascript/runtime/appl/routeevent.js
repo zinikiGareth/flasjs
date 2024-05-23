@@ -18,6 +18,9 @@ var RouteEvent = function(route, stateOrAppl, lastAct) {
 }
 
 RouteEvent.prototype.dispatch = function(cxt) {
+    if (this.route.length() == 0) {
+        return; // we have nothing to do
+    }
     if (this.route.head().action == "push")
         this.processDownAction(cxt);
     else

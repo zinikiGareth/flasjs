@@ -9,7 +9,7 @@ import { Route } from '../../../main/javascript/runtime/appl/route.js';
 import { SampleApp, downagainMap, paramsMap } from './sample.js';
 import { RouteEvent } from '../../../main/javascript/runtime/appl/routeevent.js';
 
-describe.only('Firing events', () => {
+describe('Firing events', () => {
     var bridge = console;
     var broker = {};
     var env = new CommonEnv(bridge, broker);
@@ -45,6 +45,32 @@ describe.only('Firing events', () => {
         return waitForExpect(() => expect(cxt.env.quiescent()).to.be.true).then(() => {
             expect(cr.calledBefore(act)).to.be.true;
             expect(act.calledBefore(rc)).to.be.true;
+        }).finally(() => {
+            cr.restore(); act.restore(); rc.restore();
+        });
+	});
+
+    it('a subroute does not call ready on the main card again', () => {
+        var table = new RoutingEntry(downagainMap());
+        var from = Route.parse('', table, new URL("https://hello.world/"));
+        var goto = Route.parse('', table, new URL("https://hello.world/#home"));
+        var ev = new RouteEvent(goto.movingFrom(from), appl);
+        var cr = sinon.spy(appl, "createCard");
+        var act = sinon.spy(appl, "oneAction");
+        var rc = sinon.spy(appl, "readyCard");
+        cxt.env.queueMessages(cxt, ev);
+        return waitForExpect(() => expect(cxt.env.quiescent()).to.be.true).then(() => {
+            expect(cr.getCalls().length).to.equal(1);
+            expect(cr.getCall(0).args[0].name).to.equal("home");
+            expect(cr.calledBefore(act)).to.be.true;
+            expect(act.getCalls().length).to.equal(2);
+            expect(act.getCall(0).args[0].card).to.equal("home");
+            expect(act.getCall(0).args[0].action).to.equal("load");
+            expect(act.getCall(1).args[0].card).to.equal("main");
+            expect(act.getCall(1).args[0].action).to.equal("nest");
+            expect(act.calledBefore(rc)).to.be.true;
+            expect(rc.getCalls().length).to.equal(1);
+            expect(rc.getCall(0).args[0]).to.equal("home");
         }).finally(() => {
             cr.restore(); act.restore(); rc.restore();
         });
