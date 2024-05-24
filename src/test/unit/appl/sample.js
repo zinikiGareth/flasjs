@@ -121,7 +121,7 @@ var paramsMap = function() {
             
                     ],
                     enter: [
-                      { card: 'main', contract: 'Lifecycle', action: 'load', args: [{ param: 'from' }] }
+                      { card: 'history', contract: 'Lifecycle', action: 'load', args: [{ param: 'from' }] }
                     ],
                     at: [
                     ],

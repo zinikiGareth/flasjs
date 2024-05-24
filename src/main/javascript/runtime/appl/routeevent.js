@@ -43,7 +43,7 @@ RouteEvent.prototype.processDownAction = function(cxt) {
     case "create": {
         for (var ci of this.route.head().entry.cards) {
             this.state.appl.createCard(ci);
-            this.state.newcards.push(ci.name);
+            this.state.newcards.unshift(ci.name);
         }
         break;
     }

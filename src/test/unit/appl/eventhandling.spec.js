@@ -10,9 +10,8 @@ import { SampleApp, downagainMap, paramsMap, queryMap } from './sample.js';
 import { RouteEvent } from '../../../main/javascript/runtime/appl/routeevent.js';
 
 // "at"
-// going up as well as down ("exit")
-// going down multiple levels ("history/2400");
 // "secure"
+// what if a route does not exist?
 
 describe('Firing events', () => {
     var bridge = console;
@@ -48,8 +47,41 @@ describe('Firing events', () => {
         var rc = sinon.spy(appl, "readyCard");
         cxt.env.queueMessages(cxt, ev);
         return waitForExpect(() => expect(cxt.env.quiescent()).to.be.true).then(() => {
-            expect(cr.calledBefore(act)).to.be.true;
-            expect(act.calledBefore(rc)).to.be.true;
+            expect(cr.getCall(0).calledBefore(act.getCall(0))).to.be.true;
+            expect(act.getCall(0).calledBefore(rc.getCall(0))).to.be.true;
+        }).finally(() => {
+            cr.restore(); act.restore(); rc.restore();
+        });
+	});
+
+    it('three tiers happen getting to history/4200', () => {
+        var table = new RoutingEntry(paramsMap());
+        var goto = Route.parse('', table, new URL("https://hello.world/#history/4200"));
+        var ev = new RouteEvent(goto.movingFrom(null), appl);
+        var cr = sinon.spy(appl, "createCard");
+        var act = sinon.spy(appl, "oneAction");
+        var rc = sinon.spy(appl, "readyCard");
+        cxt.env.queueMessages(cxt, ev);
+        return waitForExpect(() => expect(cxt.env.quiescent()).to.be.true).then(() => {
+            expect(cr.getCalls().length).to.equal(2);
+            expect(act.getCalls().length).to.equal(3);
+            expect(rc.getCalls().length).to.equal(2);
+
+            expect(cr.getCall(0).args[0].name).to.equal("main");
+            expect(cr.getCall(1).args[0].name).to.equal("history");
+            expect(cr.getCall(1).calledBefore(act.getCall(0))).to.be.true;
+            
+            expect(act.getCall(0).args[0].card).to.equal("history");
+            expect(act.getCall(0).args[0].action).to.equal("load");
+            expect(act.getCall(1).args[0].card).to.equal("main");
+            expect(act.getCall(1).args[0].action).to.equal("nest");
+            expect(act.getCall(2).args[0].card).to.equal("history");
+            expect(act.getCall(2).args[0].action).to.equal("load");
+            expect(act.getCall(2).calledBefore(rc.getCall(0))).to.be.true;
+
+            expect(rc.getCall(0).args[0]).to.equal("history");
+            expect(rc.getCall(1).args[0]).to.equal("main");
+
         }).finally(() => {
             cr.restore(); act.restore(); rc.restore();
         });
