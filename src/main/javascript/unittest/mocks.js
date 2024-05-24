@@ -10,6 +10,7 @@ BoundVar.prototype.bindActual = function(obj) {
 	}
 	this.actual = obj;
 }
+
 BoundVar.prototype.introduced = function() {
 	if (!this.actual)
 		throw Error("bound var has not yet been bound");

@@ -145,6 +145,7 @@ WSBridge.handlers['runStep'] = function(msg) {
 WSBridge.handlers['assertSatisfied'] = function(msg) {
 	console.log("assert all expectations satisfied", msg);
 	try {
+		this.lock("assertSatisfied");
 		this.runner.assertSatisfied();
 		this.runner.checkAtEnd();
 		this.unlock("assertSatisfied");
