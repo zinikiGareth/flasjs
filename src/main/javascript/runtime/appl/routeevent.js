@@ -21,9 +21,10 @@ RouteEvent.prototype.dispatch = function(cxt) {
     if (this.route.length() == 0) {
         return; // we have nothing to do
     }
-    if (this.route.head().action == "push")
-        this.processDownAction(cxt);
-    else
+    if (this.route.head().action == "push") {
+        if (this.processDownAction(cxt) == "break")
+            return;
+    } else
         this.processUpAction(cxt);
     this.queueNextAction(cxt);
 }
@@ -31,13 +32,19 @@ RouteEvent.prototype.dispatch = function(cxt) {
 RouteEvent.prototype.processDownAction = function(cxt) {
     switch (this.action) {
     case "title": {
-        if (this.route.head().title) {
-            this.state.appl.setTitle(this.route.head().title);
+        if (this.route.head().entry.title) {
+            this.state.appl.setTitle(this.route.head().entry.title);
         }
         break;
     }
     case "secure": {
-        // TBD
+        var e = this.route.head();
+        if (this.route.head().entry.secure) {
+            // We pass the next event to handleSecurity and don't queue it
+            var nev = new RouteEvent(this.route, this.state, this.action);
+            this.state.appl.handleSecurity(cxt, nev);
+            return "break";
+        }
         break;
     }
     case "create": {
@@ -124,10 +131,10 @@ function nextAction(curr) {
     switch (curr) {
     case null:
     case undefined:
-        return "title";
-    case "title":
         return "secure";
     case "secure":
+        return "title";
+    case "title":
         return "create";
     case "create":
         return "enter";

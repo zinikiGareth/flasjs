@@ -1,4 +1,5 @@
 import { Debug, Send, Assign, ResponseWithMessages, UpdateDisplay } from '../messages.js';
+import { RouteEvent } from './routeevent.js';
 
 const Application = function(_cxt, topdiv, baseuri) {
 	if (typeof(topdiv) == 'string')
@@ -16,7 +17,11 @@ Application.prototype.baseUri = function(_cxt) {
 }
 
 Application.prototype.nowLoggedIn = function(_cxt) {
-	this.gotoRoute(_cxt, this.routingPendingSecure.route);
+	if (this.routingPendingSecure instanceof RouteEvent)
+		_cxt.env.queueMessages(this.routingPendingSecure);
+	else
+		this.gotoRoute(_cxt, this.routingPendingSecure.route);
+	this.routingPendingSecure = null;
 }
 
 Application.prototype.newgotoRoute = function(_cxt, route) {
@@ -24,6 +29,14 @@ Application.prototype.newgotoRoute = function(_cxt, route) {
 	var moveTo = goto.movingFrom(this.currentRoute);
 	var event = new RouteEvent(moveTo, this);
 	_cxt.env.queueMessages(_cxt, event);
+}
+
+Application.prototype.handleSecurity = function(_cxt, ev) {
+	if (this.securityModule.requireLogin(_cxt, this, this.topdiv)) {
+		this.routingPendingSecure = ev;
+	} else {
+		_cxt.queueMessages(ev);
+	}
 }
 
 Application.prototype.gotoRoute = function(_cxt, r, allDone) {

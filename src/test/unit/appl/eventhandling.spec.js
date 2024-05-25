@@ -10,8 +10,6 @@ import { SampleApp, downagainMap, paramsMap, queryMap } from './sample.js';
 import { RouteEvent } from '../../../main/javascript/runtime/appl/routeevent.js';
 
 // "at"
-// "secure"
-// what if a route does not exist?
 
 describe('Firing events', () => {
     var bridge = console;
@@ -19,6 +17,7 @@ describe('Firing events', () => {
     var env = new CommonEnv(bridge, broker);
     var cxt = env.newContext();
     var appl = {
+        handleSecurity: function() {},
         createCard: function() {},
         oneAction: function() {},
         readyCard: function() {}
@@ -49,6 +48,33 @@ describe('Firing events', () => {
         return waitForExpect(() => expect(cxt.env.quiescent()).to.be.true).then(() => {
             expect(cr.getCall(0).calledBefore(act.getCall(0))).to.be.true;
             expect(act.getCall(0).calledBefore(rc.getCall(0))).to.be.true;
+        }).finally(() => {
+            cr.restore(); act.restore(); rc.restore();
+        });
+	});
+
+    // If a route does not exist, we abandon it at the last meaningful location, in this case the root
+    // TODO: Do we/can we rewrite the current URL?
+    it('some routes do not exist', () => {
+        var table = new RoutingEntry(downagainMap());
+        var goto = Route.parse('', table, new URL("https://hello.world/#sort-of-404"));
+        var ev = new RouteEvent(goto.movingFrom(null), appl);
+        var cr = sinon.spy(appl, "createCard");
+        var act = sinon.spy(appl, "oneAction");
+        var rc = sinon.spy(appl, "readyCard");
+        cxt.env.queueMessages(cxt, ev);
+        return waitForExpect(() => expect(cxt.env.quiescent()).to.be.true).then(() => {
+            expect(cr.getCalls().length).to.equal(1);
+            expect(act.getCalls().length).to.equal(1);
+            expect(rc.getCalls().length).to.equal(1);
+
+            expect(cr.getCall(0).args[0].name).to.equal("main");
+            
+            expect(act.getCall(0).args[0].card).to.equal("main");
+            expect(act.getCall(0).args[0].action).to.equal("load");
+
+            expect(rc.getCall(0).args[0]).to.equal("main");
+
         }).finally(() => {
             cr.restore(); act.restore(); rc.restore();
         });
@@ -162,6 +188,25 @@ describe('Firing events', () => {
             expect(act.getCall(0).args[0].action).to.equal("query");
             expect(act.getCall(0).args[0].args[0].str).to.equal("arg");
             expect(act.getCall(0).args[1]).to.equal("hello");
+        }).finally(() => {
+            cr.restore(); act.restore(); rc.restore();
+        });
+	});
+
+    it('the top level can be secure', () => {
+        var qm = queryMap();
+        qm.secure = true;
+        var table = new RoutingEntry(qm);
+        var goto = Route.parse('', table, new URL("https://hello.world/"));
+        var ev = new RouteEvent(goto.movingFrom(null), appl);
+        var hs = sinon.spy(appl, "handleSecurity");
+        var cr = sinon.spy(appl, "createCard");
+        var act = sinon.spy(appl, "oneAction");
+        var rc = sinon.spy(appl, "readyCard");
+        cxt.env.queueMessages(cxt, ev);
+        return waitForExpect(() => expect(cxt.env.quiescent()).to.be.true).then(() => {
+            expect(hs.getCalls().length).to.equal(1);
+            expect(cr.getCalls().length).to.equal(0);
         }).finally(() => {
             cr.restore(); act.restore(); rc.restore();
         });

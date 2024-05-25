@@ -54,6 +54,10 @@ Route.parse = function(baseuri, table, path) {
     var map = table;
     for (var s of route) {
         map = map.route(s);
+        if (!map) {
+            // that's an error - the path does not exist, so stop here ...
+            break;
+        }
         ret.parts.push(new Segment("push", s, map));
     }
     ret.query = query;

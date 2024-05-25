@@ -61,4 +61,15 @@ describe('Parsing URL paths', () => {
         path.advance();
         expect(path.length()).to.equal(0);
 	});
+
+	it('we truncate a route that has an error', () => {
+        var path = Route.parse('', table, new URL("https://hello.world/#settings/cant-go-there"));
+        expect(path.length()).to.equal(2);
+        expect(path.head().entry).to.equal(table);
+        path.advance();
+        expect(path.length()).to.equal(1);
+        expect(path.head().entry).to.equal(table.route("settings"));
+        path.advance();
+        expect(path.length()).to.equal(0);
+	});
 });
