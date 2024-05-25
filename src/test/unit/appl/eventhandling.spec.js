@@ -9,8 +9,6 @@ import { Route } from '../../../main/javascript/runtime/appl/route.js';
 import { SampleApp, downagainMap, paramsMap, queryMap } from './sample.js';
 import { RouteEvent } from '../../../main/javascript/runtime/appl/routeevent.js';
 
-// "at"
-
 describe('Firing events', () => {
     var bridge = console;
     var broker = {};
@@ -39,6 +37,24 @@ describe('Firing events', () => {
 
     it('enter is called for an initial route', () => {
         var table = new RoutingEntry(downagainMap());
+        var goto = Route.parse('', table, new URL("https://hello.world/"));
+        var ev = new RouteEvent(goto.movingFrom(null), appl);
+        var cr = sinon.spy(appl, "createCard");
+        var act = sinon.spy(appl, "oneAction");
+        var rc = sinon.spy(appl, "readyCard");
+        cxt.env.queueMessages(cxt, ev);
+        return waitForExpect(() => expect(cxt.env.quiescent()).to.be.true).then(() => {
+            expect(cr.getCall(0).calledBefore(act.getCall(0))).to.be.true;
+            expect(act.getCall(0).calledBefore(rc.getCall(0))).to.be.true;
+        }).finally(() => {
+            cr.restore(); act.restore(); rc.restore();
+        });
+	});
+
+    it('at is called for an initial route', () => {
+        var map = downagainMap();
+        map.at.push(map.enter.shift()); // move enter entry to at
+        var table = new RoutingEntry(map);
         var goto = Route.parse('', table, new URL("https://hello.world/"));
         var ev = new RouteEvent(goto.movingFrom(null), appl);
         var cr = sinon.spy(appl, "createCard");
