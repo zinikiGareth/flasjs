@@ -131,28 +131,29 @@ WSBridge.handlers['prepareStage'] = function(msg) {
 
 WSBridge.handlers['runStep'] = function(msg) {
 	console.log("RUN STEP", msg.step);
+	// the lock is done on the Java side when calling
 	try {
 		var cxt = this.runner.newContext();
 		var step = this.currentTest[msg.step];
 		step.call(this.currentTest, cxt);
-		this.unlock("runstep");
 	} catch (e) {
 		console.log(e);
 		this.error(e.toString());
 	}
+	this.unlock("runstep");
 }
 
 WSBridge.handlers['assertSatisfied'] = function(msg) {
 	console.log("assert all expectations satisfied", msg);
+	// the lock is done on the Java side when calling
 	try {
-		this.lock("assertSatisfied");
 		this.runner.assertSatisfied();
 		this.runner.checkAtEnd();
-		this.unlock("assertSatisfied");
 	} catch (e) {
 		console.log(e);
 		this.error(e.toString());
 	}
+	this.unlock("assertSatisfied");
 }
 
 WSBridge.prototype.send = function(json) {

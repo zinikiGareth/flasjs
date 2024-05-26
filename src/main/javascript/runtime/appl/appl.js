@@ -1,5 +1,7 @@
 import { Debug, Send, Assign, ResponseWithMessages, UpdateDisplay } from '../messages.js';
+import { Route } from './route.js';
 import { RouteEvent } from './routeevent.js';
+import { RoutingEntry } from './routingentry.js';
 
 const Application = function(_cxt, topdiv, baseuri) {
 	if (typeof(topdiv) == 'string')
@@ -24,10 +26,10 @@ Application.prototype.nowLoggedIn = function(_cxt) {
 	this.routingPendingSecure = null;
 }
 
-Application.prototype.newgotoRoute = function(_cxt, route) {
-	var goto = Route.parse(this.baseUri(), this._routing(), route);
+Application.prototype.gotoRoute = function(_cxt, route, allDone) {
+	var goto = Route.parse(this.baseUri(), new RoutingEntry(this._routing()), route);
 	var moveTo = goto.movingFrom(this.currentRoute);
-	var event = new RouteEvent(moveTo, this);
+	var event = new RouteEvent(moveTo, this, null, allDone);
 	_cxt.env.queueMessages(_cxt, event);
 }
 
@@ -39,7 +41,7 @@ Application.prototype.handleSecurity = function(_cxt, ev) {
 	}
 }
 
-Application.prototype.gotoRoute = function(_cxt, r, allDone) {
+Application.prototype.OLDgotoRoute = function(_cxt, r, allDone) {
 	var routing = this._routing();
 	if (routing.secure) {
 		if (!this.securityModule.requireLogin(_cxt, this, this.topdiv)) {
@@ -126,6 +128,17 @@ Application.prototype.moveUp = function(_cxt) {
 	_cxt.env.queueMessages(_cxt, new UpdateDisplay(_cxt, this));
 }
 
+Application.prototype.setTitle = function(_cxt, title) {
+	if (title != null)
+		this.title = title;
+}
+
+Application.prototype.complete = function(_cxt, route) {
+	this.currentPath = route;
+	_cxt.env.queueMessages(_cxt, new UpdateDisplay(_cxt, this));
+	_cxt.addHistory({}, this.title, this.currentPath);
+}
+
 Application.prototype.moveDown = function(_cxt, table, path, allDone) {
 	if (table.title != null)
 		this.title = table.title;
@@ -179,6 +192,7 @@ Application.prototype._closeCards = function(_cxt, ev, cards) {
 }
 
 Application.prototype.createCard = function(_cxt, ci) {
+	debugger;
 	var card = this.cards[ci.name] = new ci.card(_cxt);
 	var ctr = _cxt.findContractOnCard(card, "Lifecycle");
 	if (ctr && ctr.init) {
@@ -267,7 +281,7 @@ Application.prototype._routeActions = function(_cxt, ev, enter) {
 }
 
 Application.prototype.oneAction = function(_cxt, a) {
-	var card = appl.cards[a.card];
+	var card = this.cards[a.card];
 	var ctr = _cxt.findContractOnCard(card, a.contract);
 	if (ctr) {
 		var m = a.action;
@@ -278,11 +292,11 @@ Application.prototype.oneAction = function(_cxt, a) {
 				if (aa.str) {
 					callWith.push(aa.str);
 				} else if (aa.ref) {
-					callWith.push(appl.cards[aa.ref]);
+					callWith.push(this.cards[aa.ref]);
 				} else if (aa.param) {
-					callWith.push(appl.params[aa.param]);
+					callWith.push(this.params[aa.param]);
 				} else if (aa.expr) {
-					callWith.push(appl[aa.expr].call(appl, _cxt));
+					callWith.push(this[aa.expr].call(this, _cxt));
 				} else
 					throw new Error("huh? " + JSON.stringify(aa));
 			}
@@ -321,13 +335,14 @@ function oneAction(appl, a) {
 }
 
 Application.prototype._currentRenderTree = function() {
-	var card = this.cards.main;
+	var card = this.cards['main'];
 	if (card == null)
 		return null;
 	return card._currentRenderTree();
 }
 
 Application.prototype._updateDisplay = function(_cxt, rt) {
+	debugger;
 	if (this.title) {
 		var titles = document.head.getElementsByTagName("title");
 		if (titles.length == 0) {
@@ -337,9 +352,12 @@ Application.prototype._updateDisplay = function(_cxt, rt) {
 		}
 		titles[0].innerText = this.title;
 	}
-	var card = this.cards.main;
+	var card = this.cards['main'];
 	if (card == null)
 		return;
+	if (card._renderTree == null) {
+		this.cards['main']._renderInto(_cxt, this.topdiv);
+	}
 	card._updateDisplay(_cxt, card._renderTree);
 }
 
@@ -363,7 +381,7 @@ EnterEvent.prototype.dispatch = function(_cxt) {
 	if (this.cnt < this.actions.length) {
 		this.actions[this.cnt](_cxt);
 	} else if (this.cnt == this.actions.length && this.div) {
-		this.appl.cards.main._renderInto(_cxt, this.div);
+		this.appl.cards['main']._renderInto(_cxt, this.div);
 	} else if ((this.cnt == this.actions.length && !this.div) ||
 			   (this.cnt == this.actions.length+1 && this.div)) {
 		if (this.andThenMsg)

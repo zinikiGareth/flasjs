@@ -15,12 +15,24 @@ var Route = function() {
 
 Route.parse = function(baseuri, table, path) {
     if (typeof(path) === 'string') {
-        path = new URL(path);
+        try {
+            var p1 = new URL(path);
+            path = p1;
+        } catch (e) { // handle the case(s) where they just give us a path...
+            try {
+                var p2 = new URL(baseuri + path);
+                path = p2;
+            } catch (f) {
+                var p3 = new URL("https://base.uri/#" + path);
+                path = p3;
+            }
+        }
     } else if (path instanceof Location) {
         path = new URL(path.href);
     } else if (!(path instanceof URL)) {
         throw new Error("path is not a url, location or string");
     }
+    this.claimedRoute = path;
     var query = new URLSearchParams(path.search);
     if (path.hash) {
         path = path.hash.replace(/^#/, "");

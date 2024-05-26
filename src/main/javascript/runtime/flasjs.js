@@ -1,4 +1,4 @@
-import { Application } from "./appl.js";
+import { Application } from "./appl/appl.js";
 import { Assign, AssignCons, Debug, Send, ResponseWithMessages, UpdateDisplay } from "./messages.js"
 import { CommonEnv } from "./env.js";
 import { ClickEvent, ScrollTo } from "./events.js";

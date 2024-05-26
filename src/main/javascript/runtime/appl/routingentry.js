@@ -2,6 +2,7 @@
 
 function RoutingEntry(entry) {
     this.secure = entry.secure;
+    this.title = entry.title;
     this.namedPaths = {};
     this.paramRoute = null;
     this.path = entry.path;

@@ -283,6 +283,15 @@ FLBuiltin.strlen = function(_cxt, str) {
 
 FLBuiltin.strlen.nfargs = function() { return 1; }
 
+FLBuiltin.numberFromString = function(_cxt, str) {
+	str = _cxt.head(str);
+	if (typeof(str) != "string")
+		return _cxt.error("not a string");
+	return parseFloat(str);
+}
+
+FLBuiltin.strlen.nfargs = function() { return 1; }
+
 FLBuiltin.isNull = function(_cxt, a) {
 	a = _cxt.full(a);
 	return a == null || a == undefined;
