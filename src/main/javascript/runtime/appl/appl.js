@@ -19,12 +19,14 @@ Application.prototype.baseUri = function(_cxt) {
 }
 
 Application.prototype.gotoRoute = function(_cxt, route, allDone) {
+	_cxt.log("going to route", route, "from", this.currentRoute);
 	var goto = Route.parse(this.baseUri(), new RoutingEntry(this._routing()), route);
 	var curr = null;
 	if (this.currentRoute) {
 		curr = Route.parse(this.baseUri(), new RoutingEntry(this._routing()), this.currentRoute);
 	}
 	var moveTo = goto.movingFrom(curr);
+	_cxt.log("move to is", moveTo);
 	var event = new RouteEvent(moveTo, this, null, allDone);
 	_cxt.env.queueMessages(_cxt, event);
 }
@@ -347,7 +349,7 @@ Application.prototype._currentRenderTree = function() {
 }
 
 Application.prototype._updateDisplay = function(_cxt, rt) {
-	debugger;
+	_cxt.log("updating display");
 	if (this.title) {
 		var titles = document.head.getElementsByTagName("title");
 		if (titles.length == 0) {

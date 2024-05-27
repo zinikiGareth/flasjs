@@ -8,9 +8,17 @@ var Segment = function(action, segment, map) {
     this.entry =  map;
 }
 
+Segment.prototype.toString = function() {
+    return this.action + "->" + this.segment;
+}
+
 var Route = function() {
     this.parts = [];
     this.pos = 0;
+}
+
+Route.prototype.toString = function() {
+    return this.parts.toString();
 }
 
 Route.parse = function(baseuri, table, path) {
@@ -101,7 +109,9 @@ Route.prototype.movingFrom = function(from) {
     var ret = new Route();
     ret.claimedRoute = this.claimedRoute;
     ret.query = this.query;
+    var popAt = null;
     while (from && this.length() > 0 && from.length() > 0) {
+        popAt = from.head();
         if (this.head().segment != from.head().segment)
             break;
         this.advance();
@@ -117,8 +127,14 @@ Route.prototype.movingFrom = function(from) {
 
     // now push on the new things
     while (this.length() > 0) {
+        popAt = this.head();
         ret.parts.push(this.head());
         this.advance();
+    }
+
+    // replicate the last thing on the list as an at operation
+    if (popAt != null && ret.parts.length > 0) {
+        ret.parts.push(new Segment("at", popAt.segment, popAt.entry));
     }
     return ret;
 }

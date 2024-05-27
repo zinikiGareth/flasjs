@@ -22,16 +22,26 @@ RouteEvent.prototype.dispatch = function(cxt) {
     if (this.route.length() == 0) {
         return; // we have nothing to do
     }
-    if (this.route.head().action == "push") {
-        if (this.processDownAction(cxt) == "break")
-            return;
-    } else
+    var needPause = null;
+    switch (this.route.head().action) {
+    case "push": {
+        needPause = this.processDownAction(cxt);
+        break;
+    }
+    case "pop": {
         this.processUpAction(cxt);
-    this.queueNextAction(cxt);
+        break;
+    }
+    case "at": {
+        this.processAtAction(cxt);
+        break;
+    }
+    }
+    if (needPause != "break")
+        this.queueNextAction(cxt);
 }
 
 RouteEvent.prototype.processDownAction = function(cxt) {
-    // debugger;
     cxt.log("processing route event for", this.route.pos, "is", this.route.head().action, "action", this.action);
     switch (this.action) {
     case "param": {
@@ -75,18 +85,9 @@ RouteEvent.prototype.processDownAction = function(cxt) {
         }
         break;
     }
-    case "at": {
-        for (var act of this.route.head().entry.at) {
-            var arg;
-            if (act.contract == "Lifecycle" && act.action == "query") {
-                arg = this.route.getQueryParam(act.args[0].str);
-            }
-            this.state.appl.oneAction(cxt, act, arg);
-        }
-        break;
-    }
+    case "at":
     case "exit": {
-        // does not apply downwards
+        // do not apply downwards
         break;
     }
    default: {
@@ -109,6 +110,34 @@ RouteEvent.prototype.processUpAction = function(cxt) {
     case "exit": {
         for (var act of this.route.head().entry.exit) {
             var arg;
+            this.state.appl.oneAction(cxt, act, arg);
+        }
+        break;
+    }
+    default: {
+        throw new Error("cannot handle action " + this.action);
+    }
+    }
+}
+
+RouteEvent.prototype.processAtAction = function(cxt) {
+    switch (this.action) {
+    case "param":
+    case "title":
+    case "create":
+    case "enter":
+    case "exit":
+    case "secure": {
+        // do not apply for "at"
+        break;
+    }
+    case "at": {
+        debugger;
+        for (var act of this.route.head().entry.at) {
+            var arg;
+            if (act.contract == "Lifecycle" && act.action == "query") {
+                arg = this.route.getQueryParam(act.args[0].str);
+            }
             this.state.appl.oneAction(cxt, act, arg);
         }
         break;
