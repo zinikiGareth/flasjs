@@ -18,14 +18,6 @@ Application.prototype.baseUri = function(_cxt) {
 	return this.baseuri; // could be something like 'https://foo.com/app'
 }
 
-Application.prototype.nowLoggedIn = function(_cxt) {
-	if (this.routingPendingSecure instanceof RouteEvent)
-		_cxt.env.queueMessages(this.routingPendingSecure);
-	else
-		this.gotoRoute(_cxt, this.routingPendingSecure.route);
-	this.routingPendingSecure = null;
-}
-
 Application.prototype.gotoRoute = function(_cxt, route, allDone) {
 	var goto = Route.parse(this.baseUri(), new RoutingEntry(this._routing()), route);
 	var moveTo = goto.movingFrom(this.currentRoute);
@@ -34,11 +26,17 @@ Application.prototype.gotoRoute = function(_cxt, route, allDone) {
 }
 
 Application.prototype.handleSecurity = function(_cxt, ev) {
-	if (this.securityModule.requireLogin(_cxt, this, this.topdiv)) {
+	if (!this.securityModule.requireLogin(_cxt, this, this.topdiv)) {
 		this.routingPendingSecure = ev;
 	} else {
-		_cxt.queueMessages(ev);
+		_cxt.env.queueMessages(ev);
 	}
+}
+
+Application.prototype.nowLoggedIn = function(_cxt) {
+	if (this.routingPendingSecure instanceof RouteEvent)
+		_cxt.env.queueMessages(_cxt, this.routingPendingSecure);
+	this.routingPendingSecure = null;
 }
 
 Application.prototype.OLDgotoRoute = function(_cxt, r, allDone) {
