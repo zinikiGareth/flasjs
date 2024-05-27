@@ -34,6 +34,14 @@ RouteEvent.prototype.processDownAction = function(cxt) {
     // debugger;
     cxt.log("processing route event for", this.route.pos, "is", this.route.head().action, "action", this.action);
     switch (this.action) {
+    case "param": {
+        var p = this.route.head().entry.param;
+        if (p) {
+            var q = this.route.head().segment;
+            this.state.appl.bindParam(cxt, p, q);
+        }
+        break;
+    }
     case "title": {
         if (this.route.head().entry.title) {
             this.state.appl.setTitle(cxt, this.route.head().entry.title);
@@ -89,6 +97,7 @@ RouteEvent.prototype.processDownAction = function(cxt) {
 
 RouteEvent.prototype.processUpAction = function(cxt) {
     switch (this.action) {
+    case "param":
     case "title":
     case "create":
     case "enter":
@@ -141,6 +150,8 @@ function nextAction(curr) {
     switch (curr) {
     case null:
     case undefined:
+        return "param";
+    case "param":
         return "secure";
     case "secure":
         return "title";

@@ -134,9 +134,13 @@ Application.prototype.setTitle = function(_cxt, title) {
 }
 
 Application.prototype.complete = function(_cxt, route) {
-	this.currentPath = route;
+	this.currentRoute = route;
 	_cxt.env.queueMessages(_cxt, new UpdateDisplay(_cxt, this));
-	_cxt.addHistory({}, this.title, this.currentPath);
+	_cxt.addHistory({}, this.title, this.currentRoute);
+}
+
+Application.prototype.bindParam = function(_cxt, param, value) {
+	this.params[param] = value;
 }
 
 Application.prototype.moveDown = function(_cxt, table, path, allDone) {
@@ -192,7 +196,6 @@ Application.prototype._closeCards = function(_cxt, ev, cards) {
 }
 
 Application.prototype.createCard = function(_cxt, ci) {
-	debugger;
 	var card = this.cards[ci.name] = new ci.card(_cxt);
 	var ctr = _cxt.findContractOnCard(card, "Lifecycle");
 	if (ctr && ctr.init) {

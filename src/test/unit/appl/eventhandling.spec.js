@@ -16,6 +16,7 @@ describe('Firing events', () => {
     var cxt = env.newContext();
     var appl = {
         handleSecurity: function() {},
+        bindParam: function() {},
         createCard: function() {},
         oneAction: function() {},
         readyCard: function() {}
@@ -101,6 +102,7 @@ describe('Firing events', () => {
         var goto = Route.parse('', table, new URL("https://hello.world/#history/4200"));
         var ev = new RouteEvent(goto.movingFrom(null), appl);
         var cr = sinon.spy(appl, "createCard");
+        var bp = sinon.spy(appl, "bindParam");
         var act = sinon.spy(appl, "oneAction");
         var rc = sinon.spy(appl, "readyCard");
         cxt.env.queueMessages(cxt, ev);
@@ -120,6 +122,11 @@ describe('Firing events', () => {
             expect(act.getCall(2).args[1].card).to.equal("history");
             expect(act.getCall(2).args[1].action).to.equal("load");
             expect(act.getCall(2).calledBefore(rc.getCall(0))).to.be.true;
+
+            expect(bp.getCalls().length).to.equal(1);
+            expect(bp.getCall(0).args.length).to.equal(3);
+            expect(bp.getCall(0).args[1]).to.equal("from");
+            expect(bp.getCall(0).args[2]).to.equal("4200");
 
             expect(rc.getCall(0).args[1]).to.equal("history");
             expect(rc.getCall(1).args[1]).to.equal("main");

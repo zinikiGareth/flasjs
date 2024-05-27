@@ -32,7 +32,7 @@ Route.parse = function(baseuri, table, path) {
     } else if (!(path instanceof URL)) {
         throw new Error("path is not a url, location or string");
     }
-    this.claimedRoute = path;
+    var claimedRoute = path;
     var query = new URLSearchParams(path.search);
     if (path.hash) {
         path = path.hash.replace(/^#/, "");
@@ -62,6 +62,7 @@ Route.parse = function(baseuri, table, path) {
     var route;
     route = path.split("/").filter(i => i);
     var ret = new Route();
+    ret.claimedRoute = claimedRoute;
     ret.parts.push(new Segment("push", "/", table));
     var map = table;
     for (var s of route) {
@@ -98,6 +99,7 @@ Route.prototype.movingFrom = function(from) {
     if (from)
         from.reset();
     var ret = new Route();
+    ret.claimedRoute = this.claimedRoute;
     ret.query = this.query;
     while (from && this.length() > 0 && from.length() > 0) {
         if (this.head().segment != from.head().segment)
