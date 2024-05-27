@@ -135,7 +135,7 @@ RouteEvent.prototype.queueNextAction = function(cxt) {
     }
 }
 
-// make ready, set title & record history (see movedown - not sure why it is not in moveup)
+// make ready, set title & record history
 RouteEvent.prototype.alldone = function(cxt) {
     // debugger;
     for (var c of this.state.newcards) {

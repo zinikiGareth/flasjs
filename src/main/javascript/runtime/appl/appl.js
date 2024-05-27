@@ -20,7 +20,11 @@ Application.prototype.baseUri = function(_cxt) {
 
 Application.prototype.gotoRoute = function(_cxt, route, allDone) {
 	var goto = Route.parse(this.baseUri(), new RoutingEntry(this._routing()), route);
-	var moveTo = goto.movingFrom(this.currentRoute);
+	var curr = null;
+	if (this.currentRoute) {
+		curr = Route.parse(this.baseUri(), new RoutingEntry(this._routing()), this.currentRoute);
+	}
+	var moveTo = goto.movingFrom(curr);
 	var event = new RouteEvent(moveTo, this, null, allDone);
 	_cxt.env.queueMessages(_cxt, event);
 }
