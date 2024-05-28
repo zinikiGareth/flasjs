@@ -42,7 +42,7 @@ RouteEvent.prototype.dispatch = function(cxt) {
 }
 
 RouteEvent.prototype.processDownAction = function(cxt) {
-    cxt.log("processing route event for", this.route.pos, "is", this.route.head().action, "action", this.action);
+    cxt.log("processing down event for", this.route.pos, "is", this.route.head().action, "action", this.action, "#", this.posn);
     switch (this.action) {
     case "param": {
         var p = this.route.head().entry.param;
@@ -62,7 +62,7 @@ RouteEvent.prototype.processDownAction = function(cxt) {
         var e = this.route.head();
         if (this.route.head().entry.secure) {
             // We pass the next event to handleSecurity and don't queue it
-            var nev = new RouteEvent(this.route, this.state, this.action, 0);
+            var nev = new RouteEvent(this.route, this.state, this.action, null);
             this.state.appl.handleSecurity(cxt, nev);
             return "break";
         }
@@ -76,13 +76,12 @@ RouteEvent.prototype.processDownAction = function(cxt) {
         break;
     }
     case "enter": {
-        for (var act of this.route.head().entry.enter) {
-            var arg;
-            if (act.contract == "Lifecycle" && act.action == "query") {
-                arg = this.route.getQueryParam(act.args[0].str);
-            }
-            this.state.appl.oneAction(cxt, act, arg);
+        var act = this.route.head().entry.enter[this.posn];
+        var arg;
+        if (act.contract == "Lifecycle" && act.action == "query") {
+            arg = this.route.getQueryParam(act.args[0].str);
         }
+        this.state.appl.oneAction(cxt, act, arg);
         break;
     }
     case "at":
@@ -97,6 +96,7 @@ RouteEvent.prototype.processDownAction = function(cxt) {
 }
 
 RouteEvent.prototype.processUpAction = function(cxt) {
+    cxt.log("processing up event for", this.route.pos, "is", this.route.head().action, "action", this.action, "#", this.posn);
     switch (this.action) {
     case "param":
     case "title":
@@ -108,10 +108,9 @@ RouteEvent.prototype.processUpAction = function(cxt) {
         break;
     }
     case "exit": {
-        for (var act of this.route.head().entry.exit) {
-            var arg;
-            this.state.appl.oneAction(cxt, act, arg);
-        }
+        var act = this.route.head().entry.exit[this.posn];
+        var arg;
+        this.state.appl.oneAction(cxt, act, arg);
         break;
     }
     default: {
@@ -121,6 +120,7 @@ RouteEvent.prototype.processUpAction = function(cxt) {
 }
 
 RouteEvent.prototype.processAtAction = function(cxt) {
+    cxt.log("processing at event for", this.route.pos, "is", this.route.head().action, "action", this.action, "#", this.posn);
     switch (this.action) {
     case "param":
     case "title":
@@ -132,14 +132,12 @@ RouteEvent.prototype.processAtAction = function(cxt) {
         break;
     }
     case "at": {
-        debugger;
-        for (var act of this.route.head().entry.at) {
-            var arg;
-            if (act.contract == "Lifecycle" && act.action == "query") {
-                arg = this.route.getQueryParam(act.args[0].str);
-            }
-            this.state.appl.oneAction(cxt, act, arg);
+        var act = this.route.head().entry.at[this.posn];
+        var arg;
+        if (act.contract == "Lifecycle" && act.action == "query") {
+            arg = this.route.getQueryParam(act.args[0].str);
         }
+        this.state.appl.oneAction(cxt, act, arg);
         break;
     }
     default: {
@@ -156,7 +154,7 @@ RouteEvent.prototype.queueNextAction = function(cxt) {
     } else {
         this.route.advance();
         if (this.route.length() > 0) {
-            nev = new RouteEvent(this.route, this.state, null, 0);
+            nev = new RouteEvent(this.route, this.state, null, null);
             cxt.env.queueMessages(cxt, nev);
         } else {
             this.alldone(cxt);
@@ -166,12 +164,12 @@ RouteEvent.prototype.queueNextAction = function(cxt) {
 
 // make ready, set title & record history
 RouteEvent.prototype.alldone = function(cxt) {
-    // debugger;
     for (var c of this.state.newcards) {
         this.state.appl.readyCard(cxt, c);
     }
     this.state.appl.complete(cxt, this.route.claimedRoute);
-    this.state.allDone();
+    if (this.state.allDone)
+        this.state.allDone();
 }
 
 // may need to think about this more carefully ...
@@ -192,34 +190,31 @@ RouteEvent.prototype.nextAction = function(head, curr, posn) {
         break;
     case "create":
         // it is possible that we find out we want to use posn here ...
-        this.action = "enter";
+        this.nextAction(head, "enter", null);
         break;
     case "enter": {
-        if (posn+1 < head.enter.length) {
-            this.action = "enter";
-            this.posn = posn+1;
+        if (head.enter.length == 0 || (posn != null && posn+1 >= head.enter.length)) {
+            this.nextAction(head, "exit", null);
         } else {
-            this.action = "exit";
-            this.posn = 0;
+            this.action = "enter";
+            this.posn = posn == null ? 0 : posn+1;
         }
         break;
     }
     case "exit":
-        if (posn+1 < head.enter.length) {
-            this.action = "exit";
-            this.posn = posn+1;
+        if (head.exit.length == 0 || (posn != null && posn+1 >= head.exit.length)) {
+            this.nextAction(head, "at", null);
         } else {
-            this.action = "at";
-            this.posn = 0;
+            this.action = "exit";
+            this.posn = posn == null ? 0 : posn+1;
         }
         break;
     case "at":
-        if (posn+1 < head.enter.length) {
-            this.action = "at";
-            this.posn = posn+1;
-        } else {
+        if (head.at.length == 0 || (posn != null && posn+1 >= head.at.length)) {
             this.action = null;
-            this.posn = 0;
+        } else {
+            this.action = "at";
+            this.posn = posn == null ? 0 : posn+1;
         }
         break;
     }

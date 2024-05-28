@@ -19,7 +19,8 @@ describe('Firing events', () => {
         bindParam: function() {},
         createCard: function() {},
         oneAction: function() {},
-        readyCard: function() {}
+        readyCard: function() {},
+        complete: function() {}
     };
 
 	it('an initial route will call the constructors for the main card', () => {
@@ -45,6 +46,10 @@ describe('Firing events', () => {
         var rc = sinon.spy(appl, "readyCard");
         cxt.env.queueMessages(cxt, ev);
         return waitForExpect(() => expect(cxt.env.quiescent()).to.be.true).then(() => {
+            expect(cr.getCalls().length).to.equal(1);
+            expect(act.getCalls().length).to.equal(1);
+            expect(rc.getCalls().length).to.equal(1);
+
             expect(cr.getCall(0).calledBefore(act.getCall(0))).to.be.true;
             expect(act.getCall(0).calledBefore(rc.getCall(0))).to.be.true;
         }).finally(() => {
@@ -172,22 +177,22 @@ describe('Firing events', () => {
         var rc = sinon.spy(appl, "readyCard");
         cxt.env.queueMessages(cxt, ev);
         return waitForExpect(() => expect(cxt.env.quiescent()).to.be.true).then(() => {
-            expect(act.getCalls().length).to.equal(4);
+            expect(act.getCalls().length).to.equal(3);
             expect(cr.getCalls().length).to.equal(1);
             expect(rc.getCalls().length).to.equal(1);
 
             expect(act.getCall(0).args[1].card).to.equal("settings");
             expect(act.getCall(0).args[1].action).to.equal("closing");
-            expect(act.getCall(1).calledBefore(cr.getCall(0))).to.be.true;
+            expect(act.getCall(0).calledBefore(cr.getCall(0))).to.be.true;
 
             expect(cr.getCall(0).args[1].name).to.equal("history");
-            expect(cr.getCall(0).calledBefore(act.getCall(2))).to.be.true;
+            expect(cr.getCall(0).calledBefore(act.getCall(1))).to.be.true;
             
-            expect(act.getCall(2).args[1].card).to.equal("history");
-            expect(act.getCall(2).args[1].action).to.equal("load");
-            expect(act.getCall(3).args[1].card).to.equal("main");
-            expect(act.getCall(3).args[1].action).to.equal("nest");
-            expect(act.getCall(3).calledBefore(rc.getCall(0))).to.be.true;
+            expect(act.getCall(1).args[1].card).to.equal("history");
+            expect(act.getCall(1).args[1].action).to.equal("load");
+            expect(act.getCall(2).args[1].card).to.equal("main");
+            expect(act.getCall(2).args[1].action).to.equal("nest");
+            expect(act.getCall(2).calledBefore(rc.getCall(0))).to.be.true;
 
             expect(rc.getCall(0).args[1]).to.equal("history");
         }).finally(() => {
