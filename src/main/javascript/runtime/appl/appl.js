@@ -27,7 +27,7 @@ Application.prototype.gotoRoute = function(_cxt, route, allDone) {
 	}
 	var moveTo = goto.movingFrom(curr);
 	_cxt.log("move to is", moveTo);
-	var event = new RouteEvent(moveTo, this, null, allDone);
+	var event = new RouteEvent(moveTo, this, null, 0, allDone);
 	_cxt.env.queueMessages(_cxt, event);
 }
 

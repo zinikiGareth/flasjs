@@ -9,9 +9,9 @@ var RouteTraversalState = function(appl, allDone) {
     this.allDone = allDone;
 }
 
-var RouteEvent = function(route, stateOrAppl, lastAct, allDone) {
+var RouteEvent = function(route, stateOrAppl, lastAct, posn, allDone) {
     this.route = route;
-    this.action = nextAction(lastAct);
+    this.nextAction(route.head().entry, lastAct, posn);
     if (stateOrAppl instanceof RouteTraversalState)
         this.state = stateOrAppl;
     else
@@ -62,7 +62,7 @@ RouteEvent.prototype.processDownAction = function(cxt) {
         var e = this.route.head();
         if (this.route.head().entry.secure) {
             // We pass the next event to handleSecurity and don't queue it
-            var nev = new RouteEvent(this.route, this.state, this.action);
+            var nev = new RouteEvent(this.route, this.state, this.action, 0);
             this.state.appl.handleSecurity(cxt, nev);
             return "break";
         }
@@ -150,13 +150,13 @@ RouteEvent.prototype.processAtAction = function(cxt) {
 
 RouteEvent.prototype.queueNextAction = function(cxt) {
     // in the fullness of time, this should add the event to the "only fire when quiescent" list of messages
-    var nev = new RouteEvent(this.route, this.state, this.action);
+    var nev = new RouteEvent(this.route, this.state, this.action, this.posn);
     if (nev.action) {
         cxt.env.queueMessages(cxt, nev);
     } else {
         this.route.advance();
         if (this.route.length() > 0) {
-            nev = new RouteEvent(this.route, this.state, null);
+            nev = new RouteEvent(this.route, this.state, null, 0);
             cxt.env.queueMessages(cxt, nev);
         } else {
             this.alldone(cxt);
@@ -175,25 +175,54 @@ RouteEvent.prototype.alldone = function(cxt) {
 }
 
 // may need to think about this more carefully ...
-function nextAction(curr) {
+RouteEvent.prototype.nextAction = function(head, curr, posn) {
     switch (curr) {
     case null:
     case undefined:
-        return "param";
+        this.action = "param";
+        break;
     case "param":
-        return "secure";
+        this.action = "secure";
+        break;
     case "secure":
-        return "title";
+        this.action = "title";
+        break;
     case "title":
-        return "create";
+        this.action = "create";
+        break;
     case "create":
-        return "enter";
-    case "enter":
-        return "exit";
+        // it is possible that we find out we want to use posn here ...
+        this.action = "enter";
+        break;
+    case "enter": {
+        if (posn+1 < head.enter.length) {
+            this.action = "enter";
+            this.posn = posn+1;
+        } else {
+            this.action = "exit";
+            this.posn = 0;
+        }
+        break;
+    }
     case "exit":
-        return "at";
+        if (posn+1 < head.enter.length) {
+            this.action = "exit";
+            this.posn = posn+1;
+        } else {
+            this.action = "at";
+            this.posn = 0;
+        }
+        break;
     case "at":
-        return null;
+        if (posn+1 < head.enter.length) {
+            this.action = "at";
+            this.posn = posn+1;
+        } else {
+            this.action = null;
+            this.posn = 0;
+        }
+        break;
     }
 }
+
 export { RouteEvent };
