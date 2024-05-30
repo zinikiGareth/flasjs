@@ -287,15 +287,15 @@ Application.prototype._routeActions = function(_cxt, ev, enter) {
 	}
 }
 
-Application.prototype.oneAction = function(_cxt, a) {
-	var card = this.cards[a.card];
-	var ctr = _cxt.findContractOnCard(card, a.contract);
+Application.prototype.oneAction = function(_cxt, act, arg) {
+	var card = this.cards[act.card];
+	var ctr = _cxt.findContractOnCard(card, act.contract);
 	if (ctr) {
-		var m = a.action;
+		var m = act.action;
 		if (ctr[m]) {
 			var callWith = [ _cxt ];
-			for (var ai=0;ai<a.args.length;ai++) {
-				var aa = a.args[ai];
+			for (var ai=0;ai<act.args.length;ai++) {
+				var aa = act.args[ai];
 				if (aa.str) {
 					callWith.push(aa.str);
 				} else if (aa.ref) {
@@ -306,6 +306,9 @@ Application.prototype.oneAction = function(_cxt, a) {
 					callWith.push(this[aa.expr].call(this, _cxt));
 				} else
 					throw new Error("huh? " + JSON.stringify(aa));
+			}
+			if (typeof(arg) !== 'undefined') {
+				callWith.push(arg);
 			}
 			var msgs = ctr[m].apply(ctr, callWith);
 			_cxt.env.queueMessages(_cxt, msgs);

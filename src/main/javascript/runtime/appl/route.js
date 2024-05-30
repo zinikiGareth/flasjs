@@ -31,7 +31,13 @@ Route.parse = function(baseuri, table, path) {
                 var p2 = new URL(baseuri + path);
                 path = p2;
             } catch (f) {
-                var p3 = new URL("https://base.uri/#" + path);
+                var p3;
+                if (path.includes("#"))
+                    p3 = new URL("https://base.uri/" + path);
+                else if (path.includes("?"))
+                    p3 = new URL("https://base.uri/" + path + "#/");
+                else
+                    p3 = new URL("https://base.uri/#" + path);
                 path = p3;
             }
         }
