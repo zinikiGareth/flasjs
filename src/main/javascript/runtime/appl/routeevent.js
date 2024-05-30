@@ -85,7 +85,8 @@ RouteEvent.prototype.processDownAction = function(cxt) {
         break;
     }
     case "at":
-    case "exit": {
+    case "exit":
+    case "destroy": {
         // do not apply downwards
         break;
     }
@@ -113,6 +114,12 @@ RouteEvent.prototype.processUpAction = function(cxt) {
         this.state.appl.oneAction(cxt, act, arg);
         break;
     }
+    case "destroy": {
+        for (var ci of this.route.head().entry.cards) {
+            this.state.appl.destroyCard(cxt, ci);
+        }
+        break;
+    }
     default: {
         throw new Error("cannot handle action " + this.action);
     }
@@ -127,6 +134,7 @@ RouteEvent.prototype.processAtAction = function(cxt) {
     case "create":
     case "enter":
     case "exit":
+    case "destroy":
     case "secure": {
         // do not apply for "at"
         break;
@@ -211,11 +219,14 @@ RouteEvent.prototype.nextAction = function(head, curr, posn) {
         break;
     case "at":
         if (head.at.length == 0 || (posn != null && posn+1 >= head.at.length)) {
-            this.action = null;
+            this.action = "destroy";
         } else {
             this.action = "at";
             this.posn = posn == null ? 0 : posn+1;
         }
+        break;
+    case "destroy":
+        this.action = null;
         break;
     }
 }

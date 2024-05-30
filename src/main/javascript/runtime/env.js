@@ -72,7 +72,7 @@ CommonEnv.prototype.queueMessages = function(_cxt, msg) {
     this.locker.lock("queue");
     this.queue.push(msg);
     var self = this;
-    setTimeout(() => { self.dispatchMessages(_cxt); this.locker.unlock("queue"); }, 0);
+    setTimeout(() => { try { self.dispatchMessages(_cxt); } catch (e) { self.logger.log(e); } finally { this.locker.unlock("queue"); } }, 0);
 }
 
 CommonEnv.prototype.quiescent = function() {

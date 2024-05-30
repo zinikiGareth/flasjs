@@ -20,6 +20,7 @@ describe('Firing events', () => {
         createCard: function() {},
         oneAction: function() {},
         readyCard: function() {},
+        destroyCard: function() {},
         complete: function() {}
     };
 
@@ -174,16 +175,22 @@ describe('Firing events', () => {
         var ev = new RouteEvent(goto.movingFrom(from), appl);
         var cr = sinon.spy(appl, "createCard");
         var act = sinon.spy(appl, "oneAction");
+        var destroy = sinon.spy(appl, "destroyCard");
         var rc = sinon.spy(appl, "readyCard");
         cxt.env.queueMessages(cxt, ev);
         return waitForExpect(() => expect(cxt.env.quiescent()).to.be.true).then(() => {
             expect(act.getCalls().length).to.equal(3);
             expect(cr.getCalls().length).to.equal(1);
+            expect(destroy.getCalls().length).to.equal(1);
             expect(rc.getCalls().length).to.equal(1);
 
             expect(act.getCall(0).args[1].card).to.equal("settings");
             expect(act.getCall(0).args[1].action).to.equal("closing");
-            expect(act.getCall(0).calledBefore(cr.getCall(0))).to.be.true;
+            expect(act.getCall(0).calledBefore(destroy.getCall(0))).to.be.true;
+            
+            expect(destroy.getCall(0).args.length).to.equal(2);
+            expect(destroy.getCall(0).args[1].name).to.equal("settings");
+            expect(destroy.getCall(0).calledBefore(act.getCall(1))).to.be.true;
 
             expect(cr.getCall(0).args[1].name).to.equal("history");
             expect(cr.getCall(0).calledBefore(act.getCall(1))).to.be.true;

@@ -513,6 +513,12 @@ FLCard.prototype._updatePunnet = function(_cxt, _renderTree, field, value, fn) {
         node.appendChild(pe);
         value._renderInto(_cxt, pe);
     } else if (Array.isArray(value)) {
+        for (var i=0;i<value.length;i++) {
+            if (value[i].destroyed) {
+                value.splice(i, 1);
+                --i;
+            }
+        }
         var sw = this._diffLists(_cxt, crt.children, value);
         if (sw === true) {
             // everything matched
@@ -550,6 +556,14 @@ FLCard.prototype._updatePunnet = function(_cxt, _renderTree, field, value, fn) {
                 if (ai.where < node.childElementCount-1)
                     node.insertBefore(node.lastElementChild, node.children[ai.where]);
             }
+        } else if (sw.op === 'removefromend') {
+            debugger;
+            for (var i=value.length;i<crt.children.length;i++) {
+                var child = crt.children[i];
+                node.removeChild(child.value._containedIn);
+            }
+            crt.children.splice(value.length);
+    
         } else {
             throw new Error("cannot handle punnet change: " + sw.op);
         }

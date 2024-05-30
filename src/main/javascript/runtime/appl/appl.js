@@ -208,21 +208,10 @@ Application.prototype.createCard = function(_cxt, ci) {
 	}
 }
 
-Application.prototype.closeCard = function(_cxt, ci) {
+Application.prototype.destroyCard = function(_cxt, ci) {
 	var card = this.cards[ci.name];
-	var ctr = _cxt.findContractOnCard(card, "Lifecycle");
-	if (ctr && ctr.closing) {
-		var msgs = ctr.closing(_cxt);
-		_cxt.env.queueMessages(_cxt, msgs);
-	}
-	// TODO: I think we need an explicit on-card "cleanup" method which closes subscriptions and
-	// removes this card from any parents
-	// reset of render tree should probably be in there ...
-	if (card._renderTree) {
-		var div = document.getElementById(card._renderTree._id);
-		div.innerHTML = '';
-		card._renderTree = null;
-	}
+	card.destroyed = true;
+	card._updateDisplay(_cxt, card._renderTree);
 }
 
 function createOne(appl, ci) {
