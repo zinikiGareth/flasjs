@@ -290,7 +290,7 @@ FLBuiltin.numberFromString = function(_cxt, str) {
 	return parseFloat(str);
 }
 
-FLBuiltin.strlen.nfargs = function() { return 1; }
+FLBuiltin.numberFromString.nfargs = function() { return 1; }
 
 FLBuiltin.isNull = function(_cxt, a) {
 	a = _cxt.full(a);
