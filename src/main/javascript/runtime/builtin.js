@@ -215,6 +215,19 @@ FLBuiltin.replace = function(_cxt, list, n, elt) {
 
 FLBuiltin.replace.nfargs = function() { return 3; }
 
+FLBuiltin.reverse = function(_cxt, list) {
+	list = _cxt.spine(list);
+	if (!Array.isArray(list))
+		return new FLError("no matching case");
+	var ret = new Array(list.length);
+	for (var i=0;i<list.length;i++) {
+		ret[list.length-i-1] = list[i];
+	}
+	return ret;
+}
+
+FLBuiltin.reverse.nfargs = function() { return 1; }
+
 FLBuiltin.concatLists = function(_cxt, list) {
 	list = _cxt.spine(list);
 	var ret = [];
