@@ -1,6 +1,10 @@
 {
 	"folders": [
 		{
+			"name": "domjs",
+			"path": "../Tools/domjs"
+		},
+		{
 			"name": "flasjs",
 			"path": "."
 		},
