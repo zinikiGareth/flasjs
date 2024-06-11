@@ -29,4 +29,4 @@ FLMakeSend.prototype.toString = function() {
 	return "MakeSend[" + this.nargs + "]";
 }
 
-export default FLMakeSend;
+export { FLMakeSend };

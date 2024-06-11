@@ -1,5 +1,5 @@
 import { FLContext } from '../../main/javascript/runtime/flcxt.js';
-import FLCurry from '../../main/javascript/runtime/curry.js';
+import { FLCurry } from '../../main/javascript/runtime/curry.js';
 import { expect } from 'chai';
 
 function f(_cxt, a, b) {

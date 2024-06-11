@@ -1,8 +1,9 @@
 import { FLContext } from '../../main/javascript/runtime/flcxt.js';
 import { Debug, Send, Assign } from '../../main/javascript/runtime/messages.js'
 import { FieldsContainer, SimpleBroker, IdempotentHandler } from '../../main/resources/ziwsh.js';
-import FLMakeSend from '../../main/javascript/runtime/makesend.js';
+import { FLMakeSend } from '../../main/javascript/runtime/makesend.js';
 import { expect } from 'chai';
+import { FLCurry } from '../../main/javascript/runtime/curry.js';
 
 describe('debug', () => {
 	it('has tostring', () => {
@@ -154,6 +155,6 @@ describe('mksend', () => {
         var _cxt = new FLContext({logger: console});
 		var v1 = _cxt.mksend('hello', {}, 2);
 		var v2 = _cxt.closure(v1, 'hello');
-		expect(_cxt.full(v2)).to.be.instanceOf(FLMakeSend);
+		expect(_cxt.full(v2)).to.be.instanceOf(FLCurry);
 	});
 });

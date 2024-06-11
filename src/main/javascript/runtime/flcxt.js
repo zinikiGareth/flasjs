@@ -1,6 +1,6 @@
-import FLClosure from './closure.js';
-import FLCurry from './curry.js';
-import FLMakeSend from './makesend.js';
+import { FLClosure } from './closure.js';
+import { FLCurry } from './curry.js';
+import { FLMakeSend } from './makesend.js';
 import { FLError } from './error.js';
 import { FLEventSourceTrait } from './events.js';
 import { Debug, Send, Assign, ResponseWithMessages, UpdateDisplay } from './messages.js';
