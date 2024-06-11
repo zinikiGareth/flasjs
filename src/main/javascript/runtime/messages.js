@@ -55,6 +55,10 @@ Send.prototype._compare = function(cx, other) {
 }
 Send.prototype.dispatch = function(cx) {
 	this._full(cx);
+	if (this.obj instanceof FLError) {
+		cx.log(this.obj);
+		return null;
+	}
 	if (this.obj instanceof ResponseWithMessages) {
 		// build an array of messages with the RWM ones first and "me" last
 		const ret = ResponseWithMessages.messages(cx, this.obj);
