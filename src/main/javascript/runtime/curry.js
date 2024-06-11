@@ -41,11 +41,11 @@ FLCurry.prototype.apply = function(_, args) {
 }
 
 FLCurry.prototype.nfargs = function() {
-	return this.reqd;
+	return this.missing.length;
 }
 
 FLCurry.prototype.toString = function() {
-	return "FLCurry[" + this.reqd + "]";
+	return "FLCurry[" + this.missing.length + "]";
 }
 
-export default FLCurry;
+export { FLCurry };

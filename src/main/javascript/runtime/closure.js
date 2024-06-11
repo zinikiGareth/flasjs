@@ -1,4 +1,5 @@
 import { FLError } from './error.js';
+import { FLCurry } from './curry.js';
 import { Debug, Send, Assign, ResponseWithMessages, UpdateDisplay } from './messages.js';
 
 const FLClosure = function(obj, fn, args) {
@@ -25,6 +26,13 @@ FLClosure.prototype.eval = function(_cxt) {
 	if (this.fn instanceof FLError)
 		return this.fn;
 	var cnt = this.fn.nfargs();
+	if (this.args.length < cnt+1) {
+		var xcs = {};
+		for (var i=1;i<this.args.length;i++) {
+			xcs[i] = this.args[i];
+		}
+		return new FLCurry(this.obj, this.fn, cnt, xcs);
+	}
 	this.val = this.fn.apply(this.obj, this.args.slice(0, cnt+1)); // +1 for cxt
 	if (typeof(this.msgsTo) !== 'undefined') {
 		if (this.val instanceof ResponseWithMessages) {
@@ -43,6 +51,8 @@ FLClosure.prototype.eval = function(_cxt) {
 
 FLClosure.prototype.apply = function(_, args) {
 	const asfn = this.eval(args[0]);
+	if (asfn instanceof FLError)
+		return asfn;
 	return asfn.apply(null, args);
 }
 
@@ -52,4 +62,4 @@ FLClosure.prototype.toString = function() {
 	return "FLClosure[]";
 }
 
-export default FLClosure;
+export { FLClosure };
