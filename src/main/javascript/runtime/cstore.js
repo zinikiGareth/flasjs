@@ -9,6 +9,7 @@ const ContractStore = function(_cxt) {
 
 ContractStore.prototype.record = function(_cxt, name, impl) {
     this.recorded[name] = impl;
+    _cxt.broker.register(name, impl);
 }
 
 ContractStore.prototype.contractFor = function(_cxt, name) {
