@@ -2,18 +2,16 @@ import { FLError } from './error.js';
 import { FLCurry } from './curry.js';
 import { Debug, Send, Assign, ResponseWithMessages, UpdateDisplay } from './messages.js';
 
+var closNum = 1;
 const FLClosure = function(obj, fn, args) {
 	/* istanbul ignore if */
 	if (!fn)
 		throw new Error("must define a function");
+	this.label = "Clos#" + (++closNum);
 	this.obj = obj;
 	this.fn = fn;
 	args.splice(0,0, null);
 	this.args = args;
-}
-
-FLClosure.prototype.splitRWM = function(msgsTo) {
-	this.msgsTo = msgsTo;
 }
 
 FLClosure.prototype.eval = function(_cxt) {
@@ -34,19 +32,15 @@ FLClosure.prototype.eval = function(_cxt) {
 		return new FLCurry(this.obj, this.fn, cnt, xcs);
 	}
 	this.val = this.fn.apply(this.obj, this.args.slice(0, cnt+1)); // +1 for cxt
-	if (typeof(this.msgsTo) !== 'undefined') {
-		if (this.val instanceof ResponseWithMessages) {
-			_cxt.addAll(this.msgsTo, ResponseWithMessages.messages(_cxt, this.val));
-			this.val = ResponseWithMessages.response(_cxt, this.val);
-		} else if (this.val instanceof FLClosure) {
-			this.val.splitRWM(this.msgsTo);
-		}
+	var ret = this.val;
+	if (this.val instanceof ResponseWithMessages) {
+		this.val = ResponseWithMessages.response(_cxt, this.val);
 	}
 	// handle the case where there are arguments left over
 	if (cnt+1 < this.args.length) {
-		this.val = new FLClosure(this.obj, this.val, this.args.slice(cnt+1));
+		ret = this.val = new FLClosure(this.obj, this.val, this.args.slice(cnt+1));
 	}
-	return this.val;
+	return ret;
 }
 
 FLClosure.prototype.apply = function(_, args) {

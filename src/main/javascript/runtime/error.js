@@ -13,6 +13,11 @@ class FLError extends Error {
 	_throw() {
 		return true;
 	}
+
+	_updateTemplate(_cxt) {
+		_cxt.log("error: " + this.message);
+		return this;
+	}
 }
 
 FLError.eval = function(_cxt, msg) {

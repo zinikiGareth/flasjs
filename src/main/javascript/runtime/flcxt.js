@@ -156,8 +156,13 @@ FLContext.prototype.makeStatic = function(clz, meth) {
 }
 
 FLContext.prototype.head = function(obj) {
-	while (obj instanceof FLClosure)
+	while (obj instanceof FLClosure) {
 		obj = obj.eval(this);
+		if (obj instanceof ResponseWithMessages) {
+			this.env.queueMessages(this, ResponseWithMessages.messages(this, obj));
+			obj = ResponseWithMessages.response(this, obj);
+		}
+	}
 	return obj;
 }
 
