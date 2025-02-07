@@ -53,7 +53,8 @@ DispatcherInvoker.prototype.invoke = function(meth, args) {
     if (!cx.subcontext) {
         cx = cx.bindTo(hdlr);
     }
-    this.env.queueMessages(cx, Send.eval(cx, this.call, meth, pass, hdlr, hdlrName));
+    var resp = Send.eval(cx, this.call, meth, pass, hdlr, hdlrName);
+    this.env.queueMessages(cx, resp);
 }
 
 export { ContractStore };

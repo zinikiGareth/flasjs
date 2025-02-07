@@ -168,16 +168,4 @@ CommonEnv.prototype.cacheSingleton = function(name, value) {
 	this.singletons[name] = value;
 }
 
-if (typeof(window) !== 'undefined') {
-    window.addEventListener('resize', function(ev) {
-        if (window.appl) {
-            var keys = Object.keys(window.appl.cards);
-            for (var i=0;i<keys.length;i++) {
-                var card = window.appl.cards[keys[i]];
-                card._resizeDisplayElements(env.newContext(), card._renderTree);
-            }
-        }
-    });
-}
-
 export { CommonEnv };

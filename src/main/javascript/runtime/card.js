@@ -65,10 +65,11 @@ FLCard.prototype._setSizeOf = function(_cxt, img, cw, ch, alg) {
             return;
         if (vprat < imgrat) { // portrait
             // 1. Figure the desired height of the image to appear in the container and make that thing.height
-            parent.style.height = ch;
-            img.style.height = ch;
+            parent.style.height = ch + "px";
+            img.style.height = ch + "px";
             parent.style.width = "auto";
             img.style.width = "auto";
+            parent.style.top = "0px";
 
             // 2. Figure out the new left
             var newImgWid = ch * imgrat;
@@ -78,14 +79,14 @@ FLCard.prototype._setSizeOf = function(_cxt, img, cw, ch, alg) {
                 if (left > 0)
                     left /= 2;
             }
-            parent.style.left = left;
+            parent.style.left = left + "px";
         } else { // landscape
             // 1. Figure the desired width of the image to appear in the container and make that thing.width
-            parent.style.width = cw;
-            img.style.width = cw;
+            parent.style.width = cw + "px";
+            img.style.width = cw + "px";
             parent.style.height = "auto";
             img.style.height = "auto";
-            parent.style.left = 0;
+            parent.style.left = "0px";
 
             // 2. Figure out the new top
             var newImgHt = cw / imgrat;
@@ -95,7 +96,7 @@ FLCard.prototype._setSizeOf = function(_cxt, img, cw, ch, alg) {
                 if (top > 0)
                     top /= 2;
             }
-            parent.style.top = top;
+            parent.style.top = top + "px";
         }
     } else if (alg.startsWith("min-aspect-")) {
         parent.style.position = "relative";
@@ -114,10 +115,10 @@ FLCard.prototype._setSizeOf = function(_cxt, img, cw, ch, alg) {
         var mp = Math.min(xp, yp);
         xr = xr * mp;
         yr = yr * mp;
-        img.style.width = xr;
-        img.style.height = yr;
-        img.style.left = xc - xr/2;
-        img.style.top = yc - yr/2;
+        img.style.width = xr + "px";
+        img.style.height = yr + "px";
+        img.style.left = (xc - xr/2) + "px";
+        img.style.top = (yc - yr/2) + "px";
     } else if (alg.startsWith("promote-box-")) {
         parent.style.position = "relative";
         var props = alg.replace("promote-box-", "");
@@ -135,11 +136,11 @@ FLCard.prototype._setSizeOf = function(_cxt, img, cw, ch, alg) {
         var md = Math.min(cw/ar, ch);
         // thus figure the desired width and height, without border width
         var dw = md*ar * (1 - 2*sm), dh = md * (1 - 2*sm);
-        img.style.width = dw;
-        img.style.height = dh;
+        img.style.width = dw + "px";
+        img.style.height = dh + "px";
         if (sm > 0) {
-            img.style.borderTopWidth = img.style.borderBottomWidth = md * sm;
-            img.style.borderLeftWidth = img.style.borderRightWidth = md * ar * sm;
+            img.style.borderTopWidth = img.style.borderBottomWidth = (md * sm) + "px";
+            img.style.borderLeftWidth = img.style.borderRightWidth = (md * ar * sm) + "px";
         }
     } else if (alg.startsWith("text-")) {
         var props = alg.replace("text-", "");
@@ -147,7 +148,7 @@ FLCard.prototype._setSizeOf = function(_cxt, img, cw, ch, alg) {
         var parent = img.parentElement;
         var ps = Math.min(parent.clientWidth, parent.clientHeight);
         var sz = rs * ps;
-        parent.style.fontSize = sz;
+        parent.style.fontSize = sz + "px";
     } else {
         _cxt.log("do not know sizing algorithm " + alg);
     }
@@ -286,7 +287,7 @@ FLCard.prototype._updateLink = function(_cxt, rt, templateName, field, option, s
         rt[field].fromField = fromField;
     }
     var env = _cxt.env;
-    node.onclick = ev => window.appl.gotoRoute(env.newContext(), linkRef);
+    node.onclick = ev => env.appl.gotoRoute(env.newContext(), linkRef);
     node.dataset.route = linkRef;
     node.innerText = linkTitle;
 }

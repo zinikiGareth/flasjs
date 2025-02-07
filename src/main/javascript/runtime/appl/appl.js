@@ -4,6 +4,9 @@ import { RouteEvent } from './routeevent.js';
 import { RoutingEntry } from './routingentry.js';
 
 const Application = function(_cxt, topdiv, baseuri) {
+	if (!_cxt)
+		return;
+	this._env = _cxt.env;
 	if (typeof(topdiv) == 'string')
 		this.topdiv = document.getElementById(topdiv);
 	else
@@ -12,6 +15,22 @@ const Application = function(_cxt, topdiv, baseuri) {
 	this.cards = {};
 	this.params = {};
 	this.currentRoute = null; // TODO: this will need to be a URI, set at the end of gotoRoute
+
+	this.addResizeListener(_cxt.env);
+}
+
+Application.prototype.addResizeListener = function(env) {
+	if (typeof(window) === 'undefined')
+		return;
+
+	var appl = this;
+	window.addEventListener('resize', function(ev) {
+		var keys = Object.keys(appl.cards);
+		for (var i=0;i<keys.length;i++) {
+			var card = appl.cards[keys[i]];
+			card._resizeDisplayElements(env.newContext(), card._renderTree);
+		}
+	});
 }
 
 Application.prototype.baseUri = function(_cxt) {
