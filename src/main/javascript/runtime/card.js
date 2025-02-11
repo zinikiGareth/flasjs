@@ -287,7 +287,7 @@ FLCard.prototype._updateLink = function(_cxt, rt, templateName, field, option, s
         rt[field].fromField = fromField;
     }
     var env = _cxt.env;
-    node.onclick = ev => env.appl.gotoRoute(env.newContext(), linkRef);
+    node.onclick = ev => env.appl.relativeRoute(env.newContext(), linkRef);
     node.dataset.route = linkRef;
     node.innerText = linkTitle;
 }

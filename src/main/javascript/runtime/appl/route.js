@@ -80,12 +80,14 @@ Route.parse = function(baseuri, table, path) {
     ret.parts.push(new Segment("push", "/", table));
     var map = table;
     for (var s of route) {
-        map = map.route(s);
-        if (!map) {
+        var next = map.route(s);
+        if (!next) {
             // that's an error - the path does not exist, so stop here ...
+            console.log("there is no entry in the routing table for", s, "in", next);
             break;
         }
-        ret.parts.push(new Segment("push", s, map));
+        ret.parts.push(new Segment("push", s, next));
+        map = next;
     }
     ret.query = query;
     return ret;

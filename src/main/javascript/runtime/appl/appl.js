@@ -37,6 +37,11 @@ Application.prototype.baseUri = function(_cxt) {
 	return this.baseuri; // could be something like 'https://foo.com/app'
 }
 
+Application.prototype.relativeRoute = function(_cxt, path, allDone) {
+	var route = new URL(path, this.currentRoute);
+	this.gotoRoute(_cxt, route, allDone);
+}
+
 Application.prototype.gotoRoute = function(_cxt, route, allDone) {
 	_cxt.log("going to route", route, "from", this.currentRoute);
 	var goto = Route.parse(this.baseUri(), new RoutingEntry(this._routing()), route);
@@ -46,8 +51,10 @@ Application.prototype.gotoRoute = function(_cxt, route, allDone) {
 	}
 	var moveTo = goto.movingFrom(curr);
 	_cxt.log("move to is", moveTo);
-	var event = new RouteEvent(moveTo, this, null, null, allDone);
-	_cxt.env.queueMessages(_cxt, event);
+	if (moveTo.head()) {
+		var event = new RouteEvent(moveTo, this, null, null, allDone);
+		_cxt.env.queueMessages(_cxt, event);
+	}
 }
 
 Application.prototype.handleSecurity = function(_cxt, ev) {
