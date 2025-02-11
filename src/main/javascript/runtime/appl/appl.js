@@ -7,6 +7,7 @@ const Application = function(_cxt, topdiv, baseuri) {
 	if (!_cxt)
 		return;
 	this._env = _cxt.env;
+	this._env.appl = this;
 	if (typeof(topdiv) == 'string')
 		this.topdiv = document.getElementById(topdiv);
 	else

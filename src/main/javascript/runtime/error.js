@@ -4,7 +4,7 @@ class FLError extends Error {
     	this.name = "FLError";
 	}
 	
-	_compare(cx, other) {
+	_compare(_cxt, other) {
 		if (!(other instanceof FLError)) return false;
 		if (other.message != this.message) return false;
 		return true;
