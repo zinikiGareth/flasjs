@@ -175,7 +175,11 @@ RouteEvent.prototype.alldone = function(cxt) {
     for (var c of this.state.newcards) {
         this.state.appl.readyCard(cxt, c);
     }
-    this.state.appl.complete(cxt, this.route.claimedRoute);
+    var rn = this.route.claimedRoute;
+    if (!rn.pathname.endsWith("/") && this.route.parts[this.route.parts.length-1].isdir()) {
+        rn.pathname += '/';
+    }
+    this.state.appl.complete(cxt, rn);
     if (this.state.allDone)
         this.state.allDone();
 }

@@ -8,6 +8,10 @@ var Segment = function(action, segment, map) {
     this.entry =  map;
 }
 
+Segment.prototype.isdir = function() {
+    return Object.keys(this.entry.namedPaths).length > 0 || this.entry.paramRoute != null;
+}
+
 Segment.prototype.toString = function() {
     return this.action + "->" + this.segment;
 }
