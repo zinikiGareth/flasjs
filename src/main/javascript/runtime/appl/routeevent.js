@@ -42,7 +42,7 @@ RouteEvent.prototype.dispatch = function(cxt) {
 }
 
 RouteEvent.prototype.processDownAction = function(cxt) {
-    cxt.log("processing down event for", this.route.pos, "is", this.route.head().action, "action", this.action, "#", this.posn);
+    // cxt.log("processing down event for", this.route.pos, "is", this.route.head().action, "action", this.action, "#", this.posn);
     switch (this.action) {
     case "param": {
         var p = this.route.head().entry.param;
@@ -97,7 +97,7 @@ RouteEvent.prototype.processDownAction = function(cxt) {
 }
 
 RouteEvent.prototype.processUpAction = function(cxt) {
-    cxt.log("processing up event for", this.route.pos, "is", this.route.head().action, "action", this.action, "#", this.posn);
+    // cxt.log("processing up event for", this.route.pos, "is", this.route.head().action, "action", this.action, "#", this.posn);
     switch (this.action) {
     case "param":
     case "title":
@@ -127,7 +127,7 @@ RouteEvent.prototype.processUpAction = function(cxt) {
 }
 
 RouteEvent.prototype.processAtAction = function(cxt) {
-    cxt.log("processing at event for", this.route.pos, "is", this.route.head().action, "action", this.action, "#", this.posn);
+    // cxt.log("processing at event for", this.route.pos, "is", this.route.head().action, "action", this.action, "#", this.posn);
     switch (this.action) {
     case "param":
     case "title":

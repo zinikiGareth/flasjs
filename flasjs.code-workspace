@@ -9,6 +9,10 @@
 			"path": "."
 		},
 		{
+			"name": "stdlib-fl",
+			"path": "../stdlib/flas/src/main/flas"
+		},
+		{
 			"name": "stdlib-jslib",
 			"path": "../stdlib/jslib"
 		},
