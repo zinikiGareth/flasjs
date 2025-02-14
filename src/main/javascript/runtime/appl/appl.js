@@ -40,6 +40,7 @@ Application.prototype.baseUri = function(_cxt) {
 
 Application.prototype.relativeRoute = function(_cxt, path, allDone) {
 	var route = new URL(path, this.currentRoute);
+	_cxt.env.addHistory({}, null, route);
 	this.gotoRoute(_cxt, route, allDone);
 }
 
@@ -111,7 +112,16 @@ Application.prototype.setTitle = function(_cxt, title) {
 Application.prototype.complete = function(_cxt, route) {
 	this.currentRoute = route;
 	_cxt.env.queueMessages(_cxt, new UpdateDisplay(_cxt, this));
-	_cxt.addHistory({}, this.title, this.currentRoute);
+
+	// While I can see why I did this, extensive investigation says that there are many instances when you *don't* want to do this,
+	// such as:
+	//  * when you are going back (and the history is already there)
+	//  * likewise, going forward
+	//  * when you are doing some kind of internal shift (such as an action is complete and the URL has already moved on)
+	// _cxt.addHistory({}, this.title, this.currentRoute);
+
+	// But we do want to make sure that the URL is correct if we ended up changing it:
+	_cxt.replaceRoute(this.currentRoute);
 }
 
 Application.prototype.bindParam = function(_cxt, param, value) {

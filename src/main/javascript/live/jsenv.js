@@ -18,4 +18,8 @@ JSEnv.prototype.addHistory = function(state, title, url) {
 	history.pushState(state, title, url);
 }
 
+JSEnv.prototype.replaceRoute = function(url) {
+	history.replaceState(history.state, null, url);
+}
+
 export { JSEnv }

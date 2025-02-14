@@ -412,4 +412,8 @@ UTRunner.prototype.addHistory = function(state, title, url) {
 	// we could forward this to the bridge if we wanted to do something specific
 }
 
+UTRunner.prototype.replaceRoute = function(url) {
+	// we could forward this to the bridge if we wanted to do something specific
+}
+
 export { UTRunner };

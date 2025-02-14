@@ -425,6 +425,10 @@ FLContext.prototype.addHistory = function(state, title, url) {
 	this.env.addHistory(state, title, url);
 }
 
+FLContext.prototype.replaceRoute = function(url) {
+	this.env.replaceRoute(url);
+}
+
 FLContext.prototype._bindNamedHandler = function(nh) {
 	// TODO: this will need to become a lot more complicated, because it needs to be a hierarchy
 	if (!this.subcontext) {
