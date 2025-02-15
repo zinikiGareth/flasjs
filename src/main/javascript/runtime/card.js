@@ -480,6 +480,9 @@ FLCard.prototype._updatePunnet = function(_cxt, _renderTree, field, value, fn) {
     if (!_renderTree)
         return;
     value = _cxt.full(value);
+    if (value instanceof FLCard && value.destroyed) {
+        value = null; // it should have been destroyed and removed already
+    }
     var div = document.getElementById(_renderTree._id);
     const node = div.querySelector("[data-flas-punnet='" + field + "']");
     if (!node.id) {
@@ -829,6 +832,7 @@ FLCard.prototype._diffLists = function(_cxt, rtc, list) {
 }
 
 FLCard.prototype._close = function(cx) {
+    cx.log("closing card", this);
     cx.unsubscribeAll(this);
 }
 

@@ -140,6 +140,7 @@ Application.prototype.createCard = function(_cxt, ci) {
 Application.prototype.destroyCard = function(_cxt, ci) {
 	var card = this.cards[ci.name];
 	card.destroyed = true;
+	card._destroy(_cxt);
 	card._updateDisplay(_cxt, card._renderTree);
 }
 
