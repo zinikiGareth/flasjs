@@ -85,7 +85,7 @@ UTRunner.prototype.close = function(_cxt, dest) {
 	if (dest instanceof MockCard) {
 		dest = dest.card;
 	}
-	dest._close(_cxt);
+	dest._destroy(_cxt);
 	// we don't have a lot of choice but to update all cards
 	this.updateAllCards(_cxt);
 }
