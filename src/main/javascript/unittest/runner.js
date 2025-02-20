@@ -11,6 +11,7 @@ const UTRunner = function(bridge) {
 	CommonEnv.call(this, bridge, new SimpleBroker(bridge, this, {}));
 	this.modules = {};
 	this.moduleInstances = {};
+	this.expectCards = [];
 	this.clear();
 }
 
@@ -20,6 +21,7 @@ UTRunner.prototype.constructor = UTRunner;
 UTRunner.prototype.clear = function() {
 	CommonEnv.prototype.clear.apply(this);
 	this.toCancel = new Map();
+	this.expectCards = [];
 	this.errors = [];
 	this.mocks = {};
 	this.appls = [];
@@ -384,9 +386,11 @@ UTRunner.prototype.mockCard = function(_cxt, name, card) {
 	this.cards.push(ret);
 	return ret;
 }
+
 UTRunner.prototype._updateDisplay = function(_cxt, rt) {
 	this.updateAllCards(_cxt);
 }
+
 UTRunner.prototype.updateAllCards = function(_cxt) {
 	for (var i=0;i<this.cards.length;i++) {
 		var mo = this.cards[i];
@@ -397,6 +401,37 @@ UTRunner.prototype.updateAllCards = function(_cxt) {
 			var c = mo.card;
 			if (c._updateDisplay)
 				c._updateDisplay(_cxt, c._renderTree);
+		}
+	}
+}
+
+UTRunner.prototype.expectCardCreation = function(_cxt, type, storeAs) {
+	_cxt.log("expecting card to be created of type", type, "and will store as", storeAs);
+	this.expectCards.push({ type, storeAs });
+}
+
+UTRunner.prototype.expectCardClose = function(_cxt, card) {
+	_cxt.log("expecting card to be closed", card);
+	this.expectCards.push({ card });
+}
+
+UTRunner.prototype.createRoutingCard = function(card) {
+	for (var i=0;i<this.expectCards.length;i++) {
+		var x = this.expectCards[i];
+		if (x.type && card.name() == x.type) {
+			x.storeAs.bindActual(card);
+			this.expectCards.splice(i, 1);
+			break;
+		}
+	}
+}
+
+UTRunner.prototype.closeRoutingCard = function(card) {
+	for (var i=0;i<this.expectCards.length;i++) {
+		var x = this.expectCards[i];
+		if (x.card && card == x.card) {
+			this.expectCards.splice(i, 1);
+			break;
 		}
 	}
 }

@@ -479,4 +479,16 @@ FLContext.prototype.unsubscribeAll = function(card) {
 	this.env.unsubscribeAll(this, card);
 }
 
+FLContext.prototype.createRoutingCard = function(card) {
+	if (this.env.createRoutingCard) {
+		this.env.createRoutingCard(card);
+	}
+}
+
+FLContext.prototype.closeRoutingCard = function(card) {
+	if (this.env.closeRoutingCard) {
+		this.env.closeRoutingCard(card);
+	}
+}
+
 export { FLContext };

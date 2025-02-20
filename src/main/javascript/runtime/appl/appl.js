@@ -130,6 +130,7 @@ Application.prototype.bindParam = function(_cxt, param, value) {
 
 Application.prototype.createCard = function(_cxt, ci) {
 	var card = this.cards[ci.name] = new ci.card(_cxt);
+	_cxt.createRoutingCard(card);
 	var ctr = _cxt.findContractOnCard(card, "Lifecycle");
 	if (ctr && ctr.init) {
 		var msgs = ctr.init(_cxt);
@@ -139,8 +140,8 @@ Application.prototype.createCard = function(_cxt, ci) {
 
 Application.prototype.destroyCard = function(_cxt, ci) {
 	var card = this.cards[ci.name];
-	card.destroyed = true;
 	card._destroy(_cxt);
+	_cxt.closeRoutingCard(card);
 	card._updateDisplay(_cxt, card._renderTree);
 }
 

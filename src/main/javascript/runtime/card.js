@@ -480,7 +480,7 @@ FLCard.prototype._updatePunnet = function(_cxt, _renderTree, field, value, fn) {
     if (!_renderTree)
         return;
     value = _cxt.full(value);
-    if (value instanceof FLCard && value.destroyed) {
+    if (value instanceof FLCard && value._destroyed) {
         value = null; // it should have been destroyed and removed already
     }
     var div = document.getElementById(_renderTree._id);
@@ -518,7 +518,7 @@ FLCard.prototype._updatePunnet = function(_cxt, _renderTree, field, value, fn) {
         value._renderInto(_cxt, pe);
     } else if (Array.isArray(value)) {
         for (var i=0;i<value.length;i++) {
-            if (value[i].destroyed) {
+            if (value[i]._destroyed) {
                 value.splice(i, 1);
                 --i;
             }
@@ -832,7 +832,8 @@ FLCard.prototype._diffLists = function(_cxt, rtc, list) {
 }
 
 FLCard.prototype._close = function(cx) {
-    cx.log("closing card", this);
+    cx.log("closing card", this.name());
+	this._destroyed = true;
     cx.unsubscribeAll(this);
 }
 
