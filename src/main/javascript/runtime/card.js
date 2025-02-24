@@ -561,13 +561,14 @@ FLCard.prototype._updatePunnet = function(_cxt, _renderTree, field, value, fn) {
                     node.insertBefore(node.lastElementChild, node.children[ai.where]);
             }
         } else if (sw.op === 'removefromend') {
-            debugger;
             for (var i=value.length;i<crt.children.length;i++) {
                 var child = crt.children[i];
                 node.removeChild(child.value._containedIn);
             }
             crt.children.splice(value.length);
-    
+        } else if (sw.op === 'disaster') {
+            var rts  = crt.children;
+            debugger;
         } else {
             throw new Error("cannot handle punnet change: " + sw.op);
         }
