@@ -54,7 +54,7 @@ Route.parse = function(baseuri, table, path) {
     var query = new URLSearchParams(path.search);
     if (path.hash) {
         path = path.hash.replace(/^#/, "");
-    } else if (baseuri) {
+    } else if (baseuri || typeof(baseuri) === 'string') {
         var buu = baseuri;
         if (typeof(buu) == 'string') {
             try {
