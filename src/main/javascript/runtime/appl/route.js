@@ -89,7 +89,6 @@ Route.parse = function(baseuri, table, path) {
         if (!next) {
             // that's an error - the path does not exist, so stop here ...
             console.log("there is no entry in the routing table for", s, "in", next);
-            debugger;
             break;
         }
         if (tmp.length > 1) {
