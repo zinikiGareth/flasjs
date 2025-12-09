@@ -51,7 +51,7 @@ const CommonEnv = function(bridge, broker) {
     if (bridge.lock)
         this.locker = bridge;
     else
-        this.locker = { lock: function() {}, unlock: function() {} };
+        this.locker = { lock: function() {}, unlock: function() {}, requestId: 0 };
 }
 
 CommonEnv.prototype.makeReady = function() {
@@ -69,10 +69,11 @@ CommonEnv.prototype.clear = function() {
 }
 
 CommonEnv.prototype.queueMessages = function(_cxt, msg) {
-    this.locker.lock("queue");
+	var reqId = this.locker.requestId++;
+    this.locker.lock(reqId, "queue");
     this.queue.push(msg);
     var self = this;
-    setTimeout(() => { try { self.dispatchMessages(_cxt); } catch (e) { self.logger.log(e); } finally { this.locker.unlock("queue"); } }, 0);
+    setTimeout(() => { try { self.dispatchMessages(_cxt); } catch (e) { self.logger.log(e); } finally { this.locker.unlock(reqId, "queue"); } }, 0);
 }
 
 CommonEnv.prototype.quiescent = function() {
