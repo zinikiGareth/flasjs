@@ -902,6 +902,13 @@ FLCard.prototype._handleScrollables = function() {
                                 sq.offset = ev.target.scrollLeft - ev.target.children[i].offsetLeft;
                                 break;
                             case "y":
+                                for (var i=ev.target.children.length-1;i>0;i--) {
+                                    if (ev.target.children[i].offsetTop < ev.target.scrollTop) {
+                                        break;
+                                    }
+                                }
+                                sq.firstChild = i;
+                                sq.offset = ev.target.scrollTop - ev.target.children[i].offsetTop;
                                 break;
                             }
                         }
@@ -926,6 +933,20 @@ FLCard.prototype._handleScrollables = function() {
                     }
                     break;
                 case "y":
+                    if (si && si.firstChild && si.firstChild < s.children.length) {
+                        sy = s.children[si.firstChild].offsetTop + si.offset;
+                        nsi.firstChild = si.firstChild;
+                        nsi.offset = si.offset;
+                    } else {
+                        switch (q) {
+                        case "first-item":
+                            sy = 0;
+                            break;
+                        case "last-item":
+                            sy = s.children[s.children.length-1].offsetTop;
+                            break;
+                        }
+                    }
                     break;
                 }
                 s.scrollTo(sx, sy);
