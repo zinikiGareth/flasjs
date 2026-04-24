@@ -7,6 +7,8 @@ import { Image } from "./image.js";
 const FLCard = function(cx) {
     this._renderTree = null;
     this._containedIn = null;
+    this._scrollables = null;
+    this._scrollInfo = new Map();
 }
 
 FLCard.prototype._renderInto = function(_cxt, div) {
@@ -29,6 +31,7 @@ FLCard.prototype._renderInto = function(_cxt, div) {
     if (this._eventHandlers) {
         this._attachHandlers(_cxt, this._renderTree, div, "_", null, 1, this); // unbound ones
     }
+    this._scrollables = document.getElementsByClassName("flas-scrollable");
 }
 
 FLCard.prototype._resizeDisplayElements = function(_cxt, _rt) {
@@ -48,6 +51,9 @@ FLCard.prototype._resizeDisplayElements = function(_cxt, _rt) {
                 break;
             }
         }
+    }
+    if (this._scrollables) {
+        this._handleScrollables();
     }
 }
 
@@ -858,8 +864,78 @@ FLCard.prototype._diffLists = function(_cxt, rtc, list) {
     return ret;
 }
 
+FLCard.prototype._handleScrollables = function() {
+    var self = this;
+    if (this._scrollables.length > 0) { 
+        var scrollInfo =  new Map();
+        var scrollables = Array.from(this._scrollables);
+        for (var s of scrollables) {
+            if (s.children.length > 0) {
+                var styles = window.getComputedStyle(s);
+                var q = styles.getPropertyValue("--flas-scroll-to");
+                if (!q) {
+                    q = "first-item";
+                }
+                var si = this._scrollInfo.get(s);
+                var nsi = { scrollTo: q };
+                scrollInfo.set(s, nsi);
+                if (styles.getPropertyValue("overflow-x") == "scroll") {
+                    nsi.scrollMode = "x";
+                } else if (styles.getPropertyValue("overflow-y") == "scroll") {
+                    nsi.scrollMode = "y";
+                } else {
+                    nsi.scrollMode = "none";
+                }
+
+                if (!si) {
+                    s.addEventListener("scroll", ev => {
+                        var sq = self._scrollInfo.get(ev.target);
+                        if (sq) {
+                            switch (sq.scrollMode) {
+                            case "x":
+                                for (var i=ev.target.children.length-1;i>0;i--) {
+                                    if (ev.target.children[i].offsetLeft < ev.target.scrollLeft) {
+                                        break;
+                                    }
+                                }
+                                sq.firstChild = i;
+                                sq.offset = ev.target.scrollLeft - ev.target.children[i].offsetLeft;
+                                break;
+                            case "y":
+                                break;
+                            }
+                        }
+                    })
+                }
+                var sx = 0, sy = 0;
+                switch (nsi.scrollMode) {
+                case "x":
+                    if (si && si.firstChild && si.firstChild < s.children.length) {
+                        sx = s.children[si.firstChild].offsetLeft + si.offset;
+                        nsi.firstChild = si.firstChild;
+                        nsi.offset = si.offset;
+                    } else {
+                        switch (q) {
+                        case "first-item":
+                            sx = 0;
+                            break;
+                        case "last-item":
+                            sx = s.children[s.children.length-1].offsetLeft;
+                            break;
+                        }
+                    }
+                    break;
+                case "y":
+                    break;
+                }
+                s.scrollTo(sx, sy);
+            }
+        }
+        this._scrollInfo = scrollInfo;
+    }
+}
+
 FLCard.prototype._close = function(cx) {
-    cx.log("closing card", this.name());
 	this._destroyed = true;
     cx.unsubscribeAll(this);
 }
